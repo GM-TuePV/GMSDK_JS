@@ -9,6 +9,10 @@
  *
  * No game.json yet: it is made from config.json (entry game.js, orientation any), version <today>01. The dev page
  * is index.html by default, skipped when it does not exist. Prints the new version.
+ *
+ * config.json gameCode null (the owner has no code yet, AI_INSTALL.md step 0): a temporary code g + yyyymmddhhmmss
+ * of this moment is written into config.json once, so the save key stays the same from then on. Replace it with
+ * the owner's code before release (config.json, or gameCode in the package's index.html).
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -41,6 +45,15 @@ export function formatJson(value) {
   });
 }
 
+/** Temporary game code: g + yyyymmddhhmmss (local time), e.g. g20261020143205. A real code is g + a short number. */
+export function tempGameCode(now = new Date()) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `g${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
+}
+
+/** g + 14 digits: the temporary code of tempGameCode(). */
+export const isTempGameCode = (code) => /^g\d{14}$/.test(String(code ?? ''));
+
 /** yyyymmddXX after `prev` on `now`'s day: XX + 1 on the same day, else 01. Throws after build 99 of a day. */
 export function nextVersion(prev, now = new Date()) {
   const day = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
@@ -57,6 +70,14 @@ function main() {
   const file = args.find((a, i) => !a.startsWith('--') && (pageAt < 0 || i !== pageAt + 1)) ?? 'public/game.json';
 
   const config = existsSync(KIT_CONFIG) ? readJson(readFileSync(KIT_CONFIG, 'utf8')) : null;
+  // No code from the owner yet: a temporary one, written into config.json once (the save key must not move).
+  if (config && (config.gameCode === null || config.gameCode === undefined || config.gameCode === '')) {
+    config.gameCode = tempGameCode();
+    writeFileSync(KIT_CONFIG, `${formatJson(config)}\n`);
+    console.log(`gameCode: temporary ${config.gameCode} written to config.json (no code from the owner yet): replace it before release`);
+  } else if (config && isTempGameCode(config.gameCode)) {
+    console.log(`note: gameCode ${config.gameCode} is temporary: replace it with the owner's code before release`);
+  }
   if (!existsSync(file) && !config) throw new Error(`${file} and ${KIT_CONFIG} are both missing: fill config.json first`);
   let game = existsSync(file) ? readJson(readFileSync(file, 'utf8')) : { entry: 'game.js', orientation: 'any' };
   if (config) game = withConfig(game, config);

@@ -68,6 +68,8 @@ function readJson(path, label) {
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 const GAME_CODE = /^g\d+$/;
+/** Temporary game code (tools/bump-version.mjs): g + yyyymmddhhmmss. */
+const TEMP_CODE = /^g\d{14}$/;
 const GD_KEY = /^[0-9a-f]{32}$/i;
 
 /** A BCP 47 tag in its canonical case: language (2-3 lower), optional Script (Title), optional REGION / 3 digits. */
@@ -134,7 +136,9 @@ if (configPath) {
       else if (!key.startsWith('$') && !CONFIG_KEYS.has(key)) warn(`config.json: unknown key "${key}"`);
     }
     if (!SLUG.test(config.id ?? '')) err(`config.json id "${config.id}": the portal slug (a-z, 0-9, -) the owner gives`);
-    if (!GAME_CODE.test(config.gameCode ?? '')) err(`config.json gameCode "${config.gameCode}": g<number> the owner gives`);
+    if (config.gameCode === null) warn('config.json gameCode is null: run tools/bump-version.mjs once (it writes a temporary code), or ask the owner');
+    else if (!GAME_CODE.test(config.gameCode ?? '')) err(`config.json gameCode "${config.gameCode}": g<number> the owner gives, or null`);
+    else if (TEMP_CODE.test(config.gameCode)) warn(`config.json gameCode ${config.gameCode} is temporary: replace it with the owner's code before release (or gameCode in the package's index.html)`);
     if (!config.name || typeof config.name !== 'string' || config.name.includes('<')) err(`config.json name "${config.name}": the display name is required`);
     checkLanguages('config.json', Array.isArray(config.languages) ? config.languages : [], config.defaultLanguage);
     if (config.leaderboardId === undefined) warn('config.json leaderboardId is missing: the board id the owner gives (docs/LEADERBOARD.md), or null when the game has no leaderboard');
@@ -348,6 +352,7 @@ function checkPackage() {
   if (m) {
     if (!SLUG.test(m.id ?? '')) err(`game.json id "${m.id}": a lowercase slug (a-z, 0-9, -) is required`);
     if (!GAME_CODE.test(m.gameCode ?? '')) err(`game.json gameCode "${m.gameCode}": g<number> is required (the save key azgames.<gameCode>)`);
+    else if (TEMP_CODE.test(m.gameCode)) warn(`game.json gameCode ${m.gameCode} is temporary: replace it before release (config.json, or gameCode in index.html after the build)`);
     if (!m.name || typeof m.name !== 'string') err('game.json name is missing');
     if (!validVersion(m.version)) err(`game.json version "${m.version}": yyyymmddXX is required (date + build of the day, tools/bump-version.mjs)`);
     entry = m.entry ?? 'game.js';

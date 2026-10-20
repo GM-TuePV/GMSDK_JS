@@ -45,7 +45,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 **`config.json` là nguồn duy nhất.** `tools/bump-version.mjs` (bước đầu của mọi lần build) chép `id`, `gameCode`, `name`, `languages`, `defaultLanguage`, `gdKey` sang `public/game.json` và trang dev `index.html`. Đổi giá trị thì chỉ sửa `config.json`; không sửa tay `game.json`, không dùng `.env`.
 
 - **Không có `config.json`, hoặc file báo lỗi:** dừng lại, hỏi chủ game. **Không tự đặt, không suy từ tên game.**
-- **Chủ game chưa có giá trị:** để placeholder `<!--GAME_ID-->`, `<!--GAME_CODE-->` và ghi rõ trong báo cáo là còn chờ. Game vẫn chạy được (lưu tạm `azgames.dev`).
+- **Chủ game chưa có giá trị:** vẫn hỏi trước. Chưa có `gameCode` thì để `null`: lần chạy đầu của `tools/bump-version.mjs` đặt **mã tạm** `g` + năm tháng ngày giờ phút giây (ví dụ `g20261020143205`) và ghi vào `config.json`, cố định từ đó. Có mã thật thì đổi ở `config.json` trước khi build, hoặc sửa `gameCode` trong `index.html` của gói sau khi build. Giá trị khác (`id`…) chưa có thì để placeholder `<!--GAME_ID-->`. Ghi rõ trong báo cáo là còn chờ.
 - **`version`:** quy chuẩn GM `yyyymmddXX` (ngày build + lần build trong ngày), do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2, §4](docs/EXPORT.md)). Không lấy từ `package.json`.
 - **Giá trị không định danh khác** (`orientation`, `entry`): lấy từ code của game (cấu hình canvas).
 

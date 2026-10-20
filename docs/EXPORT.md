@@ -36,7 +36,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 | Trường | Bắt buộc | Ý nghĩa |
 | --- | --- | --- |
 | `id` | ✓ | Slug của game trên portal (`a-z`, `0-9`, `-`). Tool build điền vào `GMSDKJS_OPTIONS.gameId` |
-| `gameCode` | ✓ | `g<số>`: key lưu trữ `azgames.<gameCode>`. Tool build điền vào `GMSDKJS_OPTIONS.gameCode` |
+| `gameCode` | ✓ | `g<số>`: key lưu trữ `azgames.<gameCode>`. Tool build điền vào `GMSDKJS_OPTIONS.gameCode`, sửa được ở `index.html` sau khi build. Chủ game chưa có mã: `bump-version` đặt mã tạm `g` + năm tháng ngày giờ phút giây (`check-export` cảnh báo), đổi trước khi phát hành |
 | `name` | ✓ | Tên hiển thị |
 | `version` | ✓ | Quy chuẩn GM `yyyymmddXX`: ngày build và lần build trong ngày (`01`, `02`…), ví dụ `2026101701`. Mỗi lần build tăng 1, bằng `tools/bump-version.mjs` (§4). Gửi GMA và hiện ở góc màn hình (`V2026101701`) |
 | `entry` | | Mặc định `game.js` |
