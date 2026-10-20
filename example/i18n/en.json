@@ -28,6 +28,7 @@
     "more": "More",
     "edit_profile": "Name & flag",
     "name": "Name",
+    "name_rule": "Up to 20 letters, numbers, _ or -",
     "country": "Flag",
     "save": "Save",
     "cancel": "Cancel",

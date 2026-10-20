@@ -4,7 +4,7 @@
 // Text comes from the game's t() (keys leaderboard.*, i18n/<tag>.json); a key the game has not added yet falls back
 // to English here, so the screen never shows a raw key. No copyright / brand text (docs/INTEGRATION.md §9).
 
-import { PERIODS } from './leaderboard.js';
+import { PERIODS, cleanName } from './leaderboard.js';
 
 const EN = {
   title: 'Leaderboard',
@@ -21,6 +21,7 @@ const EN = {
   more: 'More',
   edit_profile: 'Name & flag',
   name: 'Name',
+  name_rule: 'Up to 20 letters, numbers, _ or -',
   country: 'Flag',
   save: 'Save',
   cancel: 'Cancel',
@@ -62,6 +63,7 @@ const CSS = `
 .gmlb-pick{display:flex;align-items:center;gap:8px}
 .gmlb-pick select{flex:1;min-width:0}
 .gmlb-error{color:#ff8a80;font-size:.9em}
+.gmlb-hint{font-size:.85em;opacity:.65}
 `;
 
 const el = (tag, cls, text) => {
@@ -237,7 +239,13 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     name.maxLength = 20;
     name.value = p.name;
     name.autocomplete = 'off';
-    nameBox.appendChild(name);
+    name.spellcheck = false;
+    // The server's rule (1-20 of A-Z a-z 0-9 _ -): cleaned while typing, so Save never sends a name it refuses.
+    name.addEventListener('input', () => {
+      const clean = cleanName(name.value);
+      if (clean !== name.value) name.value = clean;
+    });
+    nameBox.append(name, el('span', 'gmlb-hint', text('name_rule')));
 
     const countryBox = el('label', '', text('country'));
     const pick = el('div', 'gmlb-pick');

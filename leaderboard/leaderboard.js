@@ -27,12 +27,18 @@ const NAME_MAX = 20;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const reason = (e) => String(e?.error ?? e?.message ?? (e?.status ? `http ${e.status}` : e) ?? 'unknown').slice(0, 100);
 
-/** A clean name: trimmed, inner spaces collapsed, at most 20 characters, no control characters. '' when unusable. */
+/**
+ * A name the GMA server accepts: 1-20 characters of A-Z a-z 0-9 _ - (it answers "invalid name" otherwise). Spaces
+ * become "_", accents are dropped (é → e), anything else is removed. '' when nothing is left.
+ */
 export function cleanName(name) {
   return String(name ?? '')
-    .replace(/[\u0000-\u001f\u007f]/g, '')
-    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[đĐ]/g, (c) => (c === 'đ' ? 'd' : 'D'))
     .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^A-Za-z0-9_-]/g, '')
     .slice(0, NAME_MAX);
 }
 

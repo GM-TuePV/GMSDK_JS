@@ -50,7 +50,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 | `board.ready()` | `Promise<boolean>` | Đã đăng nhập, dùng được. Lần đầu chờ gmsdkjs tối đa `waitMs`; `false` thì lần gọi sau thử lại |
 | `board.player()` | `{ id, name, country } \| null` | `null` trước khi `ready()`. `country` là mã ISO (`US`, `VN`, `GB-ENG`), `''` = chưa chọn |
 | `board.needsName()` | `boolean` | Người chơi còn tên mặc định `playerXXXXXX` |
-| `board.setPlayer({ name?, country? })` | `Promise<boolean>` | Đổi tên (tối đa 20 ký tự) / cờ. Bản trên máy chỉ đổi khi máy chủ nhận |
+| `board.setPlayer({ name?, country? })` | `Promise<boolean>` | Đổi tên / cờ. Bản trên máy chỉ đổi khi máy chủ nhận. **Luật tên của máy chủ:** 1–20 ký tự `A-Z a-z 0-9 _ -`; `cleanName()` tự đổi dấu cách thành `_`, bỏ dấu (é → e) và ký tự khác |
 | `board.submit(score, metadata?)` | `Promise<{ rank, score } \| null>` | Ký rồi gửi. `null` = điểm không lên bảng (mạng, token, chưa đăng nhập) |
 | `board.top(period?, { offset?, limit? })` | `Promise<{ period, total, entries } \| null>` | `period`: `daily` / `weekly` / `monthly` / `alltime` (mặc định). **`null` = không tải được**, khác bảng trống (`entries: []`) |
 | `board.me(period?)` | `Promise<entry \| null \| undefined>` | Hạng của người chơi. `null` = chưa có điểm kỳ này, `undefined` = không tải được |
@@ -73,7 +73,7 @@ Khoá chữ (nhóm `leaderboard`, `t('leaderboard.title')`…):
     "title": "Leaderboard", "daily": "Today", "weekly": "This week", "monthly": "This month", "alltime": "All time",
     "loading": "Loading…", "offline": "Could not load the leaderboard.", "retry": "Try again",
     "empty": "No scores yet. Be the first!", "you": "You", "no_score": "No score yet", "more": "More",
-    "edit_profile": "Name & flag", "name": "Name", "country": "Flag", "save": "Save", "cancel": "Cancel",
+    "edit_profile": "Name & flag", "name": "Name", "name_rule": "Up to 20 letters, numbers, _ or -", "country": "Flag", "save": "Save", "cancel": "Cancel",
     "save_failed": "Could not save. Check the name and try again.", "close": "Close"
   }
 }
@@ -96,6 +96,7 @@ Trang dev phải nạp GMA thì mới có bảng: `gma: { host: 'https://gm.azga
 | `ready()` → `false`, console `the GM SDK did not sign in` | Trang không có `gma` (trang dev chưa điền), mất mạng, hoặc trình chặn quảng cáo chặn `gm-sdk.js` |
 | `submit` → `null`, lý do `invalid request` (400) | Token sai / hết hạn (giờ máy lệch quá 30 phút), hoặc điểm ngoài giới hạn của bảng |
 | `top` → `null`, lỗi 500 `server error` | `leaderboardId` không có trên GMA (id sai, hoặc chưa tạo bảng cho game) |
+| `setPlayer` → `false`, lý do `invalid name` | Tên ngoài luật của máy chủ (dấu cách, có dấu, quá 20 ký tự): đưa qua `cleanName()` trước; `ui.js` tự lọc khi gõ |
 | Cờ `US`, tên `playerXXXXXX` | Người chơi chưa chọn: gmsdkjs đăng nhập lần đầu với giá trị mặc định. Chọn trong màn hình tên + cờ là lưu lên máy chủ |
 
 ## 7. QA

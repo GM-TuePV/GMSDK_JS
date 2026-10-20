@@ -28,6 +28,7 @@
     "more": "Más",
     "edit_profile": "Nombre y bandera",
     "name": "Nombre",
+    "name_rule": "Hasta 20 letras, números, _ o -",
     "country": "Bandera",
     "save": "Guardar",
     "cancel": "Cancelar",

@@ -8,7 +8,7 @@ export const PERIODS: readonly Period[];
 export interface Player {
   /** GMA player id. */
   id: string;
-  /** Display name (at most 20 characters). */
+  /** Display name: 1-20 of A-Z a-z 0-9 _ - (the server's rule). */
   name: string;
   /** ISO 3166 code of the flag (US, VN, GB-ENG); '' = none chosen. */
   country: string;
