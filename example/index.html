@@ -14,16 +14,18 @@
     #log { position: fixed; top: 8px; left: 8px; margin: 0; padding: 0; list-style: none; font: 12px/1.4 ui-monospace, monospace; opacity: .7; }
   </style>
   <script>
-    // The dev page of this example (template/index.html filled in). gameId / gameCode are example values.
+    // The dev page of this example (template/index.html filled in). gameId / gameCode are example values; gameId,
+    // gma and game.json leaderboardId are the Duet test values the owner gave, so the leaderboard can be tried
+    // against the real GMA (docs/LEADERBOARD.md §5).
     window.GMSDKJS_OPTIONS = {
       platform: 'dev',
       sdkType: 'gm',
-      gameId: 'gmsdk-example',
+      gameId: 'duet',
       gameCode: 'g0',
       version: '2026101701',
       api: null,
       portal: 'https://1games.io/',
-      gma: null,
+      gma: { host: 'https://gm.azgame.io', suffix: '-az' }, // GMA key duet-az: tracking + leaderboard sign-in
       brand: { name: 'gamesforfree.io', logo: 'https://games.1games.io/lib/brand/gamesforfree.io.png', url: 'https://gamesforfree.io/' },
       ads: { enable_preroll: 'yes', time_show_inter: 30, time_show_reward: 0 },
       adsTest: true,

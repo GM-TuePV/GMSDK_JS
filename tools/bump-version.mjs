@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * The first step of every build (docs/EXPORT.md §4). config.json (next to the kit) is the one source of the
- * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage,
+ * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId,
  * portals.gd.gameKey) and the dev page (gameId, gameCode). Then the next version, GM standard yyyymmddXX
  * (EXPORT.md §2): today's date (this machine's local time) and the build of the day, 01, 02, … Plain Node 18+.
  *
@@ -21,6 +21,9 @@ const readJson = (text) => JSON.parse(text.replace(/^\uFEFF/, ''));
 export function withConfig(game, config) {
   const out = { ...game };
   for (const key of ['id', 'gameCode', 'name', 'languages', 'defaultLanguage']) if (config[key] !== undefined) out[key] = config[key];
+  // leaderboardId: the board of docs/LEADERBOARD.md; null = the game has none (and none in game.json).
+  if (typeof config.leaderboardId === 'string') out.leaderboardId = config.leaderboardId;
+  else if (config.leaderboardId === null) delete out.leaderboardId;
   if (typeof config.gdKey === 'string') out.portals = { ...out.portals, gd: { ...out.portals?.gd, gameKey: config.gdKey } };
   else if (config.gdKey === null && out.portals?.gd) {
     const { gd, ...rest } = out.portals;

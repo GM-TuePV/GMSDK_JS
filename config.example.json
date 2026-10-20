@@ -5,6 +5,7 @@
   "name": "<display name, e.g. Wheelie Spooky>",
   "languages": ["en"],
   "defaultLanguage": "en",
+  "leaderboardId": null,
   "gdKey": null,
   "brief": null,
   "notes": []

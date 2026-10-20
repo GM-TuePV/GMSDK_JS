@@ -6,7 +6,7 @@ Mỗi bước ghi: **làm gì**, **xong khi nào**, **tài liệu chi tiết**.
 
 ## Bước 0. Giá trị của game
 
-- `docs/GMSDK_JS/config.json` (chép từ `config.example.json`, ngay trong folder kit): điền `id`, `gameCode`, `name`, `languages`, `defaultLanguage`, `gdKey` theo giá trị chủ game cấp, và `brief` mô tả game. Chưa có thì để `null` hoặc hỏi, **không đoán** ([AI_INSTALL.md](../AI_INSTALL.md) Bước 0).
+- `docs/GMSDK_JS/config.json` (chép từ `config.example.json`, ngay trong folder kit): điền `id`, `gameCode`, `name`, `languages`, `defaultLanguage`, `leaderboardId` (game có bảng xếp hạng), `gdKey` theo giá trị chủ game cấp, và `brief` mô tả game. Chưa có thì để `null` hoặc hỏi, **không đoán** ([AI_INSTALL.md](../AI_INSTALL.md) Bước 0).
 - Xong khi: `node docs/GMSDK_JS/tools/check-export.mjs` báo `OK`.
 
 ## Bước 1. Engine và khung repo
@@ -27,7 +27,8 @@ Luồng tối thiểu. Người mới phải vào được gameplay sau **tối 
 | Menu (hoặc vào chơi luôn) | Nút chơi to nhất màn; Settings; chỗ vào các tính năng ([UX.md](UX.md) §5) | `loadingDone()` khi menu hiện, rồi `preroll()` |
 | Gameplay | HUD; nút pause (và phím ESC / P); lớp điều khiển cho người mới | `gameplayStart()` ở input đầu tiên |
 | Pause | Tiếp tục, chơi lại, về menu | `gameplayStop()` |
-| Thua / thắng | Kết quả, lý do thua + mẹo, Retry 1 cú bấm, nút thưởng (nếu có) | `gameplayStop()`, `rewarded()` trong click |
+| Thua / thắng | Kết quả, lý do thua + mẹo, Retry 1 cú bấm, nút thưởng (nếu có); hạng vừa đạt (nếu có bảng xếp hạng) | `gameplayStop()`, `rewarded()` trong click, `board.submit(score)` |
+| Bảng xếp hạng (nếu có `leaderboardId`) | Mở từ menu và màn kết quả; 4 kỳ, hạng của người chơi, đổi tên + cờ ([LEADERBOARD.md](LEADERBOARD.md)) | `openLeaderboard()` hoặc màn tự vẽ |
 | Về menu sau ván | Chỗ nghỉ tự nhiên | `interstitial()` theo luật của game |
 | Settings | Âm lượng nhạc / hiệu ứng, ngôn ngữ, Show tutorial, More Games, `V<version>`, trademark | `setMuted()`, `moreGamesUrl()`, `brand.trademark()` |
 

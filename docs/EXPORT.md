@@ -43,6 +43,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 | `orientation` | | `any` (mặc định), `landscape`, `portrait` |
 | `languages` | ✓ | Thẻ BCP 47 có file trong `i18n/` (`en`, `en-US`, `zh-TW`…, đúng chữ hoa / thường). Phải có một tiếng Anh (`en` hoặc `en-XX`) |
 | `defaultLanguage` | ✓ | Ngôn ngữ dự phòng, có file đủ mọi key. Người chơi chưa chọn thì game theo trình duyệt trước (INTEGRATION.md §7) |
+| `leaderboardId` | khi có bảng xếp hạng | Id bảng trên GMA ([LEADERBOARD.md](LEADERBOARD.md)); chép từ `config.json`. Không có khoá này = game không có bảng |
 | `portals.gd.gameKey` | khi lên GameDistribution | Game ID của GameDistribution (32 hex), giá trị **mặc định**. Tool build điền vào `GMSDKJS_OPTIONS.gdKey` của template GD; ô GD key ở form game trên API (khối GMSDK JS), nếu điền, được dùng thay |
 
 `id`, `gameCode` và `portals.gd.gameKey` do chủ game cấp: **không đoán**. Chúng (cùng `name`, `languages`, `defaultLanguage`) được ghi trong `docs/GMSDK_JS/config.json`; `tools/bump-version.mjs` chép sang `game.json` mỗi lần build (§4). Không sửa tay ở `game.json`, không dùng `.env`.
@@ -64,7 +65,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 - Mọi đường dẫn **tương đối** (`assets/…`, `i18n/…`): gói được đặt dưới một thư mục bất kỳ trên CDN.
 - Không gọi `localStorage` / `sessionStorage` trực tiếp: lưu qua `sdk.storage`.
 - Không còn comment dev hay tiếng Việt trong `game.js` (minify bỏ comment; chữ hiển thị nằm trong `i18n/`).
-- Chữ hiển thị nằm trong `i18n/`; trong code chỉ có key. Không còn thư mục `Language/` (bố cục trước kit 2.0.0: `check-export` báo lỗi).
+- Chữ hiển thị nằm trong `i18n/`; trong code chỉ có key. Không có thư mục `Language/` (`check-export` báo lỗi).
 
 ## 4. Xuất bằng Vite
 

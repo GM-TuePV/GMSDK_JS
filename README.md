@@ -59,7 +59,9 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/QA.md](docs/QA.md) | Tiêu chuẩn QA đạt / không đạt trước khi giao portal (GD, CrazyGames, Poki): thiết bị, checklist, trải nghiệm người mới, hiệu năng, lỗi hay gặp, mẫu báo cáo |
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`marketing/<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
+| [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
 | `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js` (+ `.d.ts`), `i18n.js`, `net.js`. JS thuần, không cần build |
+| `leaderboard/` | Game có bảng xếp hạng: `leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`) chép vào `src/sdk/leaderboard/`; `flags/`, `countries.json` chép vào `public/assets/leaderboard/` |
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |
 | `tools/check-export.mjs` | Kiểm `config.json`, `analytics.json`, `licenses.json` (tự tìm cạnh kit) và gói xuất trước khi giao (Node 18+, không cần cài gì) |
@@ -76,7 +78,8 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | Licence, màn khoá, chuyển hướng, SDK quảng cáo, GMA, giãn cách quảng cáo | `gmsdkjs.js` |
 | Trang HTML theo platform, `GMSDKJS_OPTIONS`, obfuscate, khoá domain, nén, CDN | Trang **Build SDK JS** và khung **SOURCE** của form game trên admin API: xem thử ở `game.1games.io`, phát hành lên CDN `gdn.1games.io` (api.1games.io `GMSDK_JS/docs/GUIDE.md`) |
 | Giá trị theo publisher (1games, azgames, ofree: API, trang chủ, GMA, thương hiệu) và theo portal (GD, CrazyGames, Poki) | `presets.json` của tool build (api.1games.io `lib/1games/gmsdkjs/templates/`). Game không chứa |
-| Gameplay, màn loading, chỗ đặt quảng cáo, tạm dừng khi có quảng cáo, bảng dịch, nút More Games, sự kiện của game, hướng dẫn người chơi | Game, theo kit này |
+| Bảng xếp hạng: gửi điểm, đọc bảng, tên + cờ (trên GMA, dùng lần đăng nhập của gmsdkjs) | `leaderboard/` của kit, chép vào game ([docs/LEADERBOARD.md](docs/LEADERBOARD.md)) |
+| Gameplay, màn loading, chỗ đặt quảng cáo, tạm dừng khi có quảng cáo, bảng dịch, nút More Games, nút bảng xếp hạng, sự kiện của game, hướng dẫn người chơi | Game, theo kit này |
 
 ## Cập nhật
 

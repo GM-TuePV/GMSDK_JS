@@ -32,6 +32,7 @@ Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay 
 | `name`: tên hiển thị | `Wheelie Spooky` | `game.json` |
 | `languages`, `defaultLanguage` | `["en", "es", "zh-TW"]` / `en` (thẻ BCP 47) | `game.json`, `i18n/` |
 | `gdKey`: Game ID GameDistribution | 32 ký tự hex, ghi thẳng vào đây; `null` = chưa lên GD. **Không dùng file `.env`** | `game.json` → `portals.gd.gameKey` |
+| `leaderboardId` | `leaderboard-topscore` hoặc `null` | Id bảng xếp hạng trên GMA ([LEADERBOARD.md](docs/LEADERBOARD.md)); `null` = game không có bảng |
 | `brief` | `"Đua xe một bánh, giữ thăng bằng, Phaser"` hoặc `null` | Mô tả game mới; game có sẵn để `null` |
 | `notes` | `["Save cũ ở azgames.g0: chuyển sang azgames.g475"]` | Luật riêng của game |
 
@@ -55,6 +56,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 | `sdk/gmsdkjs-shim.js`, `sdk/gmsdkjs-shim.d.ts`, `sdk/i18n.js`, `sdk/net.js`, `sdk/net.d.ts` | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
 | `template/index.html` | `index.html` ở gốc | Game đã có `index.html`: chỉ thêm khối `GMSDKJS_OPTIONS`, thẻ `gmsoft-jssdk` vào `<head>` và `<div id="game">`. Bỏ mọi thẻ `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
+| `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags/`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
 
 ## Bước 2. Manifest và bảng dịch
 
@@ -70,6 +72,7 @@ Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng c�
 4. Xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5).
 5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
 6. More Games, trademark, `V<version>` (§9).
+   Có bảng xếp hạng: `createLeaderboard` sau `game.json`, `submit` một lần mỗi ván, nút mở bảng ([LEADERBOARD.md](docs/LEADERBOARD.md)).
 7. Tracking để phân tích game: làm theo quy trình [ANALYTICS.md §6](docs/ANALYTICS.md), không chờ ai viết sẵn.
    - đọc code, gắn bộ chuẩn §3 và bộ phân tích §4 qua một module tracking của game;
    - rồi **sinh** `docs/GMSDK_JS/analytics.json` từ chính những gì đã gắn.

@@ -15,6 +15,7 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 └── src/
     ├── main.js           entry của game
     └── sdk/              chép từ kit: gmsdkjs-shim.js, i18n.js, net.js (+ gmsdkjs-shim.d.ts, net.d.ts nếu dùng TypeScript)
+        └── leaderboard/  chép từ kit khi game có bảng xếp hạng (LEADERBOARD.md §2); cờ ở public/assets/leaderboard/
 ```
 
 - Các file trong `src/sdk/` **chép nguyên**, không sửa. Cập nhật thì chép lại từ kit (hoặc tải `https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs-shim.js` và `.d.ts`).
@@ -146,7 +147,19 @@ versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 - Trademark và phiên bản thường đặt ở góc màn hình menu hoặc bảng Settings.
 - **Chữ bản quyền chỉ lấy từ `sdk.brand.trademark()`.** Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… trong code hay `i18n/*.json`: API quyết hiện gì (`0` không hiện, `1` tên miền `azgames.io`, `2` tên `AZ Games`), mặc định `1`. `check-export` cảnh báo khi thấy chữ viết cứng. Thêm chữ trang trí (ví dụ `©` đứng trước) thì ghép trong code và bỏ khi `trademark()` là `''`.
 
-## 10. Không được làm
+## 10. Bảng xếp hạng
+
+Game có `leaderboardId` trong `game.json`: tạo bảng sau khi đọc `game.json`, gửi điểm một lần mỗi ván (sau `gameplayStop`), mở bảng từ menu và tạm dừng game khi bảng mở. Chi tiết: [LEADERBOARD.md](LEADERBOARD.md).
+
+```js
+const board = manifest.leaderboardId ? createLeaderboard({ sdk, boardId: manifest.leaderboardId }) : null;
+// hết ván
+board?.submit(score).then((r) => r && showRank(r.rank));
+// nút ở menu
+openLeaderboard({ board, t, onClose: resumeMenu });
+```
+
+## 11. Không được làm
 
 - Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`.
 - Nạp script ngoài, đường dẫn tuyệt đối (`/assets/…`), tự kiểm domain hay tự chuyển hướng.

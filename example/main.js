@@ -3,6 +3,8 @@
 import { getSDK } from '../sdk/gmsdkjs-shim.js';
 import { initI18n, languageList, onLangChange, setLang, t } from '../sdk/i18n.js';
 import { loadJSON } from '../sdk/net.js';
+import { createLeaderboard } from '../leaderboard/leaderboard.js';
+import { openLeaderboard } from '../leaderboard/ui.js';
 
 // 1. The SDK first, with the game's own code: used for the save key if the page has no options block.
 const sdk = getSDK({ gameCode: 'g0' });
@@ -35,6 +37,8 @@ const el = (tag, text, onClick) => {
 };
 
 let manifest;
+/** The board of game.json leaderboardId (docs/LEADERBOARD.md); null when the game has none. */
+let board = null;
 
 async function boot() {
   // 3. The manifest, then English: if they cannot load, the player gets "Try again" (never a frozen screen).
@@ -47,6 +51,12 @@ async function boot() {
 
   // ...load the game's assets here, calling sdk.loadingProgress(0..1)...
   sdk.loadingProgress(1);
+
+  // The leaderboard rides on the GMA sign-in gmsdkjs does: create it now, it signs in in the background.
+  if (manifest.leaderboardId) {
+    board = createLeaderboard({ sdk, boardId: manifest.leaderboardId });
+    board.ready().then((ok) => log(`leaderboard ready → ${ok}`));
+  }
 
   // 5. The SDK's licence answer and ad config (5 s at most), then the menu is really on screen.
   const info = await sdk.ready();
@@ -62,6 +72,16 @@ function showMenu() {
   root.replaceChildren();
   const best = sdk.storage.get('profile', { best: 0 }).best;
   root.append(el('h1', manifest.name), el('div', t('best_score', best)), el('button', t('play'), startRun));
+
+  // Leaderboard: the default screen of the kit (leaderboard/ui.js). Pause what runs while it is open.
+  if (board) {
+    root.append(
+      el('button', t('leaderboard_button'), () => {
+        root.classList.add('paused');
+        openLeaderboard({ board, t, assets: '../leaderboard/', onClose: () => root.classList.remove('paused') });
+      }),
+    );
+  }
 
   // More games: the API's URL, or no button.
   const url = sdk.moreGamesUrl();
@@ -109,6 +129,15 @@ async function endRun(score) {
   sdk.storage.patch('profile', { best });
 
   root.replaceChildren(el('h2', t('game_over')), el('div', t('score', score)));
+  // One submit per run: the server keeps each period's best and answers with the rank.
+  if (board) {
+    const rank = el('div');
+    root.append(rank);
+    board.submit(score).then((r) => {
+      if (r) rank.textContent = t('rank', r.rank);
+      log(`submit ${score} → ${r ? `rank ${r.rank}` : 'not sent'}`);
+    });
+  }
   // Rewarded: the button only when an ad is ready; call rewarded() straight from the click.
   if (sdk.rewardedAvailable()) {
     const bonus = el('button', t('double_score'), () => {

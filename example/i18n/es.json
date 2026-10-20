@@ -10,5 +10,28 @@
   "sound_on": "Sonido: sí",
   "sound_off": "Sonido: no",
   "load_failed": "No se pudo cargar el juego. Revisa tu conexión a internet e inténtalo de nuevo.",
-  "try_again": "Reintentar"
+  "try_again": "Reintentar",
+  "leaderboard_button": "Clasificación",
+  "rank": "Puesto #{0}",
+  "leaderboard": {
+    "title": "Clasificación",
+    "daily": "Hoy",
+    "weekly": "Esta semana",
+    "monthly": "Este mes",
+    "alltime": "Siempre",
+    "loading": "Cargando…",
+    "offline": "No se pudo cargar la clasificación.",
+    "retry": "Reintentar",
+    "empty": "Aún no hay puntuaciones. ¡Sé el primero!",
+    "you": "Tú",
+    "no_score": "Sin puntuación",
+    "more": "Más",
+    "edit_profile": "Nombre y bandera",
+    "name": "Nombre",
+    "country": "Bandera",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "save_failed": "No se pudo guardar. Revisa el nombre e inténtalo de nuevo.",
+    "close": "Cerrar"
+  }
 }

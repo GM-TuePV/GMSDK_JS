@@ -109,9 +109,12 @@ function validVersion(v) {
 }
 
 // --- config.json: the game's values (AI_INSTALL.md step 0) -----------------------------------------------------
-const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'gdKey', 'notes', 'brief']);
-/** Keys an older kit had: CHANGELOG.md 1.3.0. */
+const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'gdKey', 'notes', 'brief']);
+/** Keys of the kit before 1.0.0: not read any more. */
 const GONE_KEYS = new Set(['branch', 'kitVersion']);
+/** A GMA board id (docs/LEADERBOARD.md), e.g. leaderboard-topscore. */
+const BOARD_ID = /^[a-z0-9][a-z0-9_-]*$/i;
+const PLACEHOLDER_BOARDS = new Set(['idleaderboard', 'id-leaderboard', 'leaderboard-id', 'leaderboardid']);
 
 /** The GD key of config.json: a 32 hex string, or null (not on GameDistribution yet). No .env file is read. */
 function resolveGdKey(value) {
@@ -127,13 +130,15 @@ if (configPath) {
   config = existsSync(configPath) ? readJson(configPath, 'config.json') : (err(`${configPath} is missing: copy docs/GMSDK_JS/config.example.json`), null);
   if (config) {
     for (const key of Object.keys(config)) {
-      if (GONE_KEYS.has(key)) warn(`config.json: "${key}" is no longer used, remove it (CHANGELOG.md 1.3.0)`);
+      if (GONE_KEYS.has(key)) warn(`config.json: "${key}" is no longer used, remove it`);
       else if (!key.startsWith('$') && !CONFIG_KEYS.has(key)) warn(`config.json: unknown key "${key}"`);
     }
     if (!SLUG.test(config.id ?? '')) err(`config.json id "${config.id}": the portal slug (a-z, 0-9, -) the owner gives`);
     if (!GAME_CODE.test(config.gameCode ?? '')) err(`config.json gameCode "${config.gameCode}": g<number> the owner gives`);
     if (!config.name || typeof config.name !== 'string' || config.name.includes('<')) err(`config.json name "${config.name}": the display name is required`);
     checkLanguages('config.json', Array.isArray(config.languages) ? config.languages : [], config.defaultLanguage);
+    if (config.leaderboardId === undefined) warn('config.json leaderboardId is missing: the board id the owner gives (docs/LEADERBOARD.md), or null when the game has no leaderboard');
+    else if (config.leaderboardId !== null && (typeof config.leaderboardId !== 'string' || !BOARD_ID.test(config.leaderboardId) || PLACEHOLDER_BOARDS.has(config.leaderboardId.toLowerCase()))) err(`config.json leaderboardId "${config.leaderboardId}": the board id the owner gives (e.g. leaderboard-topscore), or null`);
     configGdKey = resolveGdKey(config.gdKey);
     if (typeof configGdKey === 'string' && !GD_KEY.test(configGdKey)) err(`config.json gdKey "${configGdKey}": the GameDistribution game id is 32 hex characters`);
     if (configGdKey === null) console.log('note: config.json gdKey is null: the game does not go to GameDistribution yet');
@@ -348,6 +353,7 @@ function checkPackage() {
     const gdKey = m.portals?.gd?.gameKey;
     if (gdKey !== undefined && !GD_KEY.test(String(gdKey))) err(`game.json portals.gd.gameKey "${gdKey}": the GameDistribution game id is 32 hex characters`);
     if (gdKey === undefined) console.log('note: no portals.gd.gameKey: the package cannot go to GameDistribution yet');
+    if (m.leaderboardId !== undefined && (typeof m.leaderboardId !== 'string' || !BOARD_ID.test(m.leaderboardId))) err(`game.json leaderboardId "${m.leaderboardId}": a board id (docs/LEADERBOARD.md)`);
 
     // game.json must carry config.json's values
     if (config) {
@@ -356,6 +362,7 @@ function checkPackage() {
       }
       const want = [...(config.languages ?? [])].sort().join(',');
       if (languages.slice().sort().join(',') !== want) err(`game.json languages [${languages}] differ from config.json [${config.languages}]`);
+      if (config.leaderboardId !== undefined && (m.leaderboardId ?? null) !== config.leaderboardId) err(`game.json leaderboardId "${m.leaderboardId ?? ''}" differs from config.json "${config.leaderboardId ?? ''}": run tools/bump-version.mjs`);
       if (configGdKey !== undefined && (gdKey ?? null) !== configGdKey) err(`game.json portals.gd.gameKey "${gdKey ?? ''}" differs from config.json gdKey "${configGdKey ?? ''}"`);
     }
   }
@@ -364,7 +371,7 @@ function checkPackage() {
   const ALLOWED_ROOT = new Set(['game.json', entry, 'i18n', 'assets']);
   if (existsSync(join(dir, 'Language'))) {
     ALLOWED_ROOT.add('Language'); // reported here, not again below
-    err('Language/ is the layout before kit 2.0.0: move each file to i18n/<tag>.json (BCP 47 tags, CHANGELOG.md 2.0.0)');
+    err('Language/ is not read: move each file to i18n/<tag>.json (BCP 47 tags, docs/INTEGRATION.md §7)');
   }
   // index.html + preview.html are allowed only as the gm page tools/assemble.mjs puts there (EXPORT.md §7): the
   // platform template, filled, the same file twice. A page of the game's own is still an error.
@@ -390,6 +397,13 @@ function checkPackage() {
     if (/import\(\s*["'`]https?:/.test(js)) err(`${entry} imports a module from a URL: no outside script may be loaded`);
     if (/["'`]\/(assets|i18n|Language)\//.test(js)) err(`${entry} uses an absolute path ("/assets/…" or "/i18n/…"): every path must be relative`);
     if (!/getSDK|GMSDKJS/.test(js)) warn(`${entry} never mentions getSDK / GMSDKJS: is the SDK wired in?`);
+    // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
+    if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
+    if (/gmlb-panel/.test(js)) {
+      for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags/GLOBE.png']) {
+        if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/leaderboard/flags/ and countries.json to public/assets/leaderboard/ (docs/LEADERBOARD.md §2)`);
+      }
+    }
     const owner = ownerInStrings(js);
     if (owner) warn(`${entry} writes ${owner.slice(0, 60)} itself: ${OWNER_HINT}`);
     // Event names stay as string literals in the minified code: a required one that never appears is not sent.
@@ -462,6 +476,7 @@ if (srcDir) {
   else {
     for (const f of walk(srcDir)) {
       if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim/.test(f)) continue;
+      if (/createLeaderboard\(/.test(readFileSync(f, 'utf8')) && config && !config.leaderboardId && !/[\\/]leaderboard[\\/]/.test(f)) err(`${relative(process.cwd(), f)} creates a leaderboard but config.json leaderboardId is null`);
       const lines = readFileSync(f, 'utf8').split('\n');
       lines.forEach((line, i) => {
         // Comment lines (//, /* or /**, and * inside a block) only talk about storage.

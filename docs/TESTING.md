@@ -22,7 +22,7 @@ Các tuỳ chọn hay đổi khi thử:
 
 `adsTest` và `debug` là **tuỳ chọn ẩn**: chỉ trang dev ghi chúng. Template của platform và trang build không có hai khoá này, SDK coi là tắt; trên trang thật, thêm `?debug` vào URL để xem log.
 | `api: 'https://api.1games.io/sdk/gmadsv2'` | Hỏi API licence thật cho `gameId` (licence, màn khoá, chuyển hướng, cấu hình quảng cáo của admin) |
-| `gma: { host: 'https://gma.readyplayer1.xyz', suffix: '-1games' }` | Gửi sự kiện lên GMA thật |
+| `gma: { host: 'https://gma.readyplayer1.xyz', suffix: '-1games' }` | Gửi sự kiện lên GMA thật. **Bảng xếp hạng cần dòng này** (key = `gameId` + `suffix`, có thật trên GMA), ví dụ `{ host: 'https://gm.azgame.io', suffix: '-az' }` ([LEADERBOARD.md §5](LEADERBOARD.md)) |
 | `sdkType: 'gd' \| 'crazy' \| 'poki'` (+ `gdKey` cho GD), `adsTest: false` | Thử như trên portal đó (cùng preset với template của tool build, bên dưới). Ngoài domain của portal, SDK của họ có thể chạy ở chế độ thử hoặc không có quảng cáo: kết quả cuối cùng phải xem trên portal |
 
 Preset của từng portal (tool build dùng; trang dev chỉ cần đổi khi muốn thử như portal đó):

@@ -96,7 +96,11 @@ Một key `localStorage` duy nhất cho mỗi game: **`azgames.<gameCode>`**, gi
 | `loadLogo()` | `Promise<HTMLImageElement \| null>`: logo đã nạp (CORS, vẽ WebGL được), hoặc `null` |
 | `trademark()` | Chữ bản quyền, theo `gameinfo.trademark` của API: `0` → `''` (**không hiện gì**); `1` (mặc định, cả khi API không trả lời) → tên miền chủ bản quyền (`azgames.io`); `2` → tên chủ bản quyền (`AZ Games`). Chủ bản quyền là `copyright` trong preset của tool build, giống nhau ở mọi publisher. Trên GD, CrazyGames, Poki luôn là `''` (template tắt). **Game không tự viết chữ bản quyền** |
 
-## 8. Những gì SDK tự làm, game không đụng tới
+## 8. Bảng xếp hạng
+
+Không nằm trong `sdk`: module `leaderboard/` của kit, dùng lần đăng nhập GMA của gmsdkjs. Hàm, lỗi, màn hình mặc định: [LEADERBOARD.md](LEADERBOARD.md).
+
+## 9. Những gì SDK tự làm, game không đụng tới
 
 - Kiểm licence với API; site không được phép thì tắt quảng cáo và hiện màn khoá.
 - Chuyển hướng trang mở trực tiếp không qua portal (`force_redirect` của API).
