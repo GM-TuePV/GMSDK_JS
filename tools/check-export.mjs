@@ -15,7 +15,7 @@
  * direct localStorage / sessionStorage use (the built game.js is minified, so it is checked there).
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const USAGE = 'usage: node docs/GMSDK_JS/tools/check-export.mjs [<packageDir>] [--config <config.json>] [--src <sourceDir>]';
@@ -486,6 +486,14 @@ function checkPackage() {
   const files = walk(dir);
   const maps = files.filter((f) => extname(f) === '.map');
   if (maps.length) warn(`${maps.length} source map file(s) in the package: leave them out`);
+  // The package holds only what the game uses (EXPORT.md §3): files that are never game resources. The game
+  // decides the rest (an unused image or sound), the kit does not guess it.
+  const JUNK = /(\.(psd|psb|ai|xcf|kra|blend|blend1|fla|aseprite|ase|sketch|fig|bak|tmp|orig|log|md)|~|^thumbs\.db|^\.ds_store|^desktop\.ini)$/i;
+  const junk = files.filter((f) => JUNK.test(f.split(/[\\/]/).pop()) && !f.includes(`${sep}i18n${sep}`));
+  if (junk.length) {
+    const size = junk.reduce((n, f) => n + statSync(f).size, 0);
+    warn(`${junk.length} file(s) that are not game resources, ${(size / 1024 / 1024).toFixed(2)} MB: ${junk.slice(0, 6).map((f) => relative(dir, f)).join(', ')}: remove them from public/ (EXPORT.md §3)`);
+  }
   const total = files.reduce((n, f) => n + statSync(f).size, 0);
   console.log(`${files.length} files, ${(total / 1024 / 1024).toFixed(2)} MB`);
 }

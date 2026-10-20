@@ -63,6 +63,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 - Game vẽ vào phần tử `#game` của template (chiếm toàn trang).
 - Không nạp script ngoài, không `import()` từ URL. SDK quảng cáo và GMA do `gmsdkjs.js` lo.
 - Mọi đường dẫn **tương đối** (`assets/…`, `i18n/…`): gói được đặt dưới một thư mục bất kỳ trên CDN.
+- **Gói chỉ chứa thứ game dùng.** Bundler chép nguyên `public/`, nên thứ không dùng phải bỏ **ở `public/`** trước khi build: ảnh / nhạc / font / dữ liệu cũ hoặc thay thế, bản trùng, file thiết kế (`.psd`, `.ai`, `.xcf`, `.kra`, `.blend`, `.fla`), file tạm / sao lưu, file hệ thống (`Thumbs.db`, `.DS_Store`), ghi chú. Kit không đoán file nào thừa (tên ghép lúc chạy như `'level' + n + '.png'` chỉ game biết): game tự rà, bỏ, và ghi trong báo cáo đã bỏ gì (AI_INSTALL.md Bước 5). `check-export` cảnh báo các loại file chắc chắn không phải tài nguyên game.
 - Không gọi `localStorage` / `sessionStorage` trực tiếp: lưu qua `sdk.storage`.
 - Không còn comment dev hay tiếng Việt trong `game.js` (minify bỏ comment; chữ hiển thị nằm trong `i18n/`).
 - Chữ hiển thị nằm trong `i18n/`; trong code chỉ có key. Không có thư mục `Language/` (`check-export` báo lỗi).

@@ -100,6 +100,7 @@ Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|C
 3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
 4. Báo cáo cho chủ game:
    - những gì đã thay;
+   - file đã bỏ khỏi `public/` vì không dùng (gói chỉ chứa thứ game dùng, [EXPORT.md §3](docs/EXPORT.md)), dung lượng gói trước / sau;
    - trường hợp đã làm (game mới / gắn SDK / nâng cấp: các mục CHANGELOG đã làm);
    - sự kiện đã gắn và `analytics.json` đã sinh (mục nào của ANALYTICS §4 game không có, vì sao);
    - `licenses.json`: asset nào còn `unknown`, giấy phép nào cần ghi công, cần chủ game xác nhận gì;

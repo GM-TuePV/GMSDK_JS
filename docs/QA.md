@@ -119,6 +119,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | 6.4 | Dung lượng tải trước màn đầu tiên | ≤ 3 MB [Nội bộ]. CrazyGames: tải ban đầu (tới `gameplayStart`) ≤ 50 MB, ≤ 20 MB để lên trang chủ di động | Major nếu vượt mức của portal | [Nội bộ] [CG] |
 | 6.5 | Thời gian tới lúc chơi được | ≤ 10 s trên mạng thường (Poki: người chơi bỏ đi sau 10 s; CrazyGames QA: ≤ 20 s) | Minor | [Poki] [CG] |
 | 6.6 | Tổng gói | ≤ 250 MB và ≤ 1.500 file | Major | [CG] |
+| 6.7 | Gói chỉ chứa thứ game dùng | Không có asset cũ / trùng / không ai gọi, file thiết kế, file tạm; `check-export` không cảnh báo loại file thừa ([EXPORT.md §3](EXPORT.md)) | Minor | [Nội bộ] |
 
 Đo bằng DevTools → Performance (CPU 6× slowdown) và tab Network với cache tắt. Game có công cụ đo riêng thì dùng công cụ đó.
 
