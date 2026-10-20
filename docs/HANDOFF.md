@@ -21,6 +21,7 @@ Thiếu marketing kit thì kéo [PROMPT_MARKETING.md](../PROMPT_MARKETING.md) v�
 ```
 <Tên game> <version>: <id> / <gameCode>
 - Gói: export/<id>-<version>/<id>-<version>.zip (check-export OK)
+- Git: <url repo> · nhánh <nhánh> · commit Build <version> (<mã ngắn>) — nếu đã đẩy (EXPORT.md §9)
 - QA: docs/qa/<version>.md: 0 Major, <n> Minor
 - Giấy phép: licenses.json, 0 unknown; ghi công CC-BY hiện ở <Credits / store description>
 - Marketing: marketing/<id>/ (check-marketing OK); zip thư mục này để đưa lên form game

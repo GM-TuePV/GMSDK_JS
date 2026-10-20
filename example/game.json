@@ -2,7 +2,7 @@
   "id": "duet",
   "gameCode": "g0",
   "name": "GMSDK Example",
-  "version": "2026101701",
+  "version": "26101701",
   "entry": "game.js",
   "orientation": "any",
   "languages": ["en", "es"],

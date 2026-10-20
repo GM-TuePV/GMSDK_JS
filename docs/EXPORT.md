@@ -24,7 +24,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
   "id": "wheelie-spooky",
   "gameCode": "g131",
   "name": "Wheelie Spooky",
-  "version": "2026101701",
+  "version": "26101701",
   "entry": "game.js",
   "orientation": "any",
   "languages": ["en", "es", "pt", "fr", "de", "it"],
@@ -38,7 +38,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 | `id` | ✓ | Slug của game trên portal (`a-z`, `0-9`, `-`). Tool build điền vào `GMSDKJS_OPTIONS.gameId` |
 | `gameCode` | ✓ | `g<số>`: key lưu trữ `azgames.<gameCode>`. Tool build điền vào `GMSDKJS_OPTIONS.gameCode`, sửa được ở `index.html` sau khi build. Chủ game chưa có mã: `bump-version` đặt mã tạm `g` + năm tháng ngày giờ phút giây (`check-export` cảnh báo), đổi trước khi phát hành |
 | `name` | ✓ | Tên hiển thị |
-| `version` | ✓ | Quy chuẩn GM `yyyymmddXX`: ngày build và lần build trong ngày (`01`, `02`…), ví dụ `2026101701`. Mỗi lần build tăng 1, bằng `tools/bump-version.mjs` (§4). Gửi GMA và hiện ở góc màn hình (`V2026101701`) |
+| `version` | ✓ | Quy chuẩn GM `yymmddXX`: ngày build và lần build trong ngày (`01`, `02`…), ví dụ `26101701`. Mỗi lần build tăng 1, bằng `tools/bump-version.mjs` (§4). Gửi GMA và hiện ở góc màn hình (`V26101701`) |
 | `entry` | | Mặc định `game.js` |
 | `orientation` | | `any` (mặc định), `landscape`, `portrait` |
 | `languages` | ✓ | Thẻ BCP 47 có file trong `i18n/` (`en`, `en-US`, `zh-TW`…, đúng chữ hoa / thường). Phải có một tiếng Anh (`en` hoặc `en-XX`) |
@@ -171,3 +171,25 @@ node docs/GMSDK_JS/tools/zip.mjs
 - Viết xong, tool đọc lại zip và so từng file với thư mục; lệch là báo lỗi, exit 1.
 - Thiếu `index.html` (chưa chạy `assemble`) thì không đóng zip.
 - Không chạy được trên thư mục `-<portal>` của §7: zip chỉ dành cho gói gm.
+
+## 9. Sau khi build: commit và đẩy git (hỏi trước)
+
+Không tự làm. Build xong (`npm run build` báo `OK`, có file zip), AI **hỏi** chủ game một câu: "Đã build xong `<version>`. Commit và đẩy lên git không?". Không đồng ý thì dừng ở đây. Đồng ý thì làm đúng thứ tự (như kit 2.x):
+
+1. **Commit chỉ thứ thuộc bản build**, ghi chú `Build <version>`, thân là bản này có gì (mỗi ý một dòng, lời thường):
+   - vào: mã nguồn, tài nguyên mà build dùng, `public/game.json`, `docs/GMSDK_JS/config.json`, tài liệu của bản (`docs/qa/<version>.md`…);
+   - không vào: file editor tự lưu lại, thư mục nháp, file trùng, `export/` (đã trong `.gitignore`). Để nguyên trong working tree và nói một dòng đã bỏ gì, vì sao.
+   - Không có gì thay đổi thì commit trống (`git commit --allow-empty -m "Build <version>"`) để đánh dấu bản build.
+2. **`git fetch`, kiểm ahead / behind** của nhánh: máy chủ có commit mới mà máy chưa có thì **dừng, không đẩy mù**; báo chủ game kéo về (pull) trước.
+3. **`git push`** (nhánh chưa theo dõi máy chủ thì `git push -u origin <nhánh>`).
+4. **In khối thông tin git** để chủ game chép đi:
+
+   ```
+   <Tên game> — Build <version>
+   Git: <url repo, không có token>
+   Nhánh: <nhánh>
+   Commit: Build <version> (<mã commit ngắn>)
+   ```
+
+Dự án chưa gắn máy chủ git (`git remote` trống): chỉ commit, ghi `Git: (chưa gắn máy chủ)`, không đẩy.
+

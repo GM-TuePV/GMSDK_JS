@@ -8,7 +8,7 @@ Chép `template/index.html` về gốc repo game, điền ba giá trị chủ ga
 | --- | --- | --- |
 | `gameId: '<!--GAME_ID-->'` | `wheelie-spooky` | = `id` trong `game.json` |
 | `gameCode: '<!--GAME_CODE-->'` | `g131` | = `gameCode` trong `game.json` |
-| `version: '<!--GAME_VERSION-->'` | `2026101701` | = `version` trong `game.json` (`yyyymmddXX`); `tools/bump-version.mjs` cập nhật mỗi lần build |
+| `version: '<!--GAME_VERSION-->'` | `26101701` | = `version` trong `game.json` (`yymmddXX`); `tools/bump-version.mjs` cập nhật mỗi lần build |
 | `language: '<!--LANGUAGE-->'` | `en` | Ngôn ngữ người chơi mới thấy (một thẻ trong `languages`). `bump-version` điền `defaultLanguage` khi còn trống; đổi tay để thử ngôn ngữ khác (xoá lựa chọn đã lưu: Local Storage, vùng `settings.language`) |
 
 Chưa điền thì trang vẫn chạy (console báo lỗi tuỳ chọn, lưu tạm vào `azgames.dev`).

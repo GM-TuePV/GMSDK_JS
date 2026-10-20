@@ -30,10 +30,10 @@ function crc32(buf) {
   return (c ^ 0xffffffff) >>> 0;
 }
 
-/** MS-DOS date / time of the version's day at 00:00 (yyyymmddXX), or 1980-01-01. */
+/** MS-DOS date / time of the version's day at 00:00 (yymmddXX), or 1980-01-01. */
 function dosDateTime(version) {
-  const m = /^(\d{4})(\d{2})(\d{2})/.exec(version ?? '');
-  const [y, mo, d] = m ? [+m[1], +m[2], +m[3]] : [1980, 1, 1];
+  const m = /^(\d{2})(\d{2})(\d{2})\d{2}$/.exec(version ?? '');
+  const [y, mo, d] = m ? [2000 + +m[1], +m[2], +m[3]] : [1980, 1, 1];
   return { date: ((y - 1980) << 9) | (mo << 5) | d, time: 0 };
 }
 

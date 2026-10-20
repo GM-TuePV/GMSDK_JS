@@ -19,7 +19,7 @@ sdk.track('level_end', { level: 'forest', level_index: 1, attempt: 3, result: 'l
 - **Gọi sớm vẫn không mất:** sự kiện gọi trước khi GMA sẵn sàng được xếp hàng (tối đa 100), rồi gửi theo thứ tự.
 - **SDK tự gắn vào mọi sự kiện:**
   - **game và publisher:** `gameId` + `suffix`;
-  - **phiên bản build:** `version`, dạng `yyyymmddXX`;
+  - **phiên bản build:** `version`, dạng `yymmddXX`;
   - **một mã người chơi ẩn danh:** đặt một lần, lưu trong storage.
 
   Nhờ vậy GMA tách được số liệu theo người chơi, theo publisher, theo bản build. Game **không** gửi lại những thứ này.
@@ -274,7 +274,7 @@ Phần này viết cho người phân tích, hay AI nối GMA qua MCP. Dùng nó
 ### 7.3 Đánh giá một bản cải thiện
 
 1. **Chọn một KPI** (§7.2) và nêu giả thuyết. Ví dụ: "level 3 có 70 % người chơi chết ở 40–50 % vì `spike`; dời spike ra xa thì tỉ lệ qua level 3 tăng".
-2. **Chỉ đổi đúng một thứ** cho giả thuyết đó, rồi build bản mới; `version` tăng theo `yyyymmddXX`.
+2. **Chỉ đổi đúng một thứ** cho giả thuyết đó, rồi build bản mới; `version` tăng theo `yymmddXX`.
 3. **So sánh hai `version`** trên cùng KPI, cùng publisher, cùng loại người chơi. Ví dụ chỉ người mới (`session_index` = 1) hay cùng khoảng `progress`.
 4. **Mỗi bản cần đủ mẫu:** tối thiểu khoảng 500 người chơi khác nhau. Ít hơn thì chờ thêm.
 5. **Ghi kết quả vào báo cáo:** KPI trước và sau, số người chơi, có giữ thay đổi không.

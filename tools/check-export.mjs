@@ -104,12 +104,13 @@ function flattenTable(node, prefix = '', out = { texts: {}, bad: [] }) {
   return out;
 }
 
-/** GM standard yyyymmddXX: a real date and the build of that day (01..99). */
+/** GM standard yymmddXX (as the 2.x kit): a real date and the build of that day (01..99). */
 function validVersion(v) {
-  const m = /^(\d{4})(\d{2})(\d{2})(\d{2})$/.exec(typeof v === 'string' ? v : '');
+  const m = /^(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(typeof v === 'string' ? v : '');
   if (!m || m[4] === '00') return false;
-  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+  const y = 2000 + +m[1];
+  const d = new Date(Date.UTC(y, +m[2] - 1, +m[3]));
+  return d.getUTCFullYear() === y && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
 }
 
 // --- config.json: the game's values (AI_INSTALL.md step 0) -----------------------------------------------------
@@ -376,7 +377,7 @@ function checkPackage() {
     if (!GAME_CODE.test(m.gameCode ?? '')) err(`game.json gameCode "${m.gameCode}": g<number> is required (the save key azgames.<gameCode>)`);
     else if (TEMP_CODE.test(m.gameCode)) warn(`game.json gameCode ${m.gameCode} is temporary: replace it before release (config.json, or gameCode in index.html after the build)`);
     if (!m.name || typeof m.name !== 'string') err('game.json name is missing');
-    if (!validVersion(m.version)) err(`game.json version "${m.version}": yyyymmddXX is required (date + build of the day, tools/bump-version.mjs)`);
+    if (!validVersion(m.version)) err(`game.json version "${m.version}": yymmddXX is required (date + build of the day, tools/bump-version.mjs)`);
     entry = m.entry ?? 'game.js';
     if (!['any', 'landscape', 'portrait'].includes(m.orientation ?? 'any')) warn(`game.json orientation "${m.orientation}": any | landscape | portrait`);
     languages = Array.isArray(m.languages) ? m.languages : [];

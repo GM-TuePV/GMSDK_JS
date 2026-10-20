@@ -16,7 +16,7 @@ Xác định trước tiên, ghi vào đầu plan:
 ## Cách làm
 
 - **Làm trên nhánh đang checkout**, không tạo nhánh mới, không đổi nhánh.
-- Commit theo từng bước, không push.
+- Commit theo từng bước, không push. Ngoại lệ duy nhất: build xong, hỏi chủ game có commit và đẩy không; đồng ý thì làm theo [EXPORT.md §9](docs/EXPORT.md).
 - **Game có sẵn:** khảo sát code trước, rồi lên plan gồm file bỏ / sửa / thêm và lý do, cùng những gì giữ lại vì là luật riêng của game. **Chờ chủ game duyệt rồi mới sửa code.** Plan có thêm phần rà trải nghiệm theo [UX.md](docs/UX.md): mỗi lớp L1–L5 và bản đồ tính năng, game đã có gì, còn thiếu gì. Phần thiếu chỉ là **đề xuất**: làm khi chủ game chọn.
 - **Game mới:** làm theo [NEW_GAME.md](docs/NEW_GAME.md) (cấu trúc, các màn, lưu, bố cục, hướng dẫn người chơi, quảng cáo). Plan trước, chờ duyệt.
 - Mỗi dòng trong `notes` của `config.json` là một yêu cầu riêng của game này: làm theo, và báo lại từng dòng trong báo cáo.
@@ -48,7 +48,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 
 - **Không có `config.json`, hoặc file báo lỗi:** dừng lại, hỏi chủ game. **Không tự đặt, không suy từ tên game.**
 - **Chủ game chưa có giá trị:** vẫn hỏi trước. Chưa có `gameCode` thì để `null`: lần chạy đầu của `tools/bump-version.mjs` đặt **mã tạm** `g` + năm tháng ngày giờ phút giây (ví dụ `g20261020143205`) và ghi vào `config.json`, cố định từ đó. Có mã thật thì đổi ở `config.json` trước khi build, hoặc sửa `gameCode` trong `index.html` của gói sau khi build. Giá trị khác (`id`…) chưa có thì để placeholder `<!--GAME_ID-->`. Ghi rõ trong báo cáo là còn chờ.
-- **`version`:** quy chuẩn GM `yyyymmddXX` (ngày build + lần build trong ngày), do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2, §4](docs/EXPORT.md)). Không lấy từ `package.json`.
+- **`version`:** quy chuẩn GM `yymmddXX` (ngày build + lần build trong ngày), do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2, §4](docs/EXPORT.md)). Không lấy từ `package.json`.
 - **Giá trị không định danh khác** (`orientation`, `entry`): lấy từ code của game (cấu hình canvas).
 
 ## Bước 1. Chép file
@@ -100,7 +100,8 @@ Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|C
 1. Chạy trang dev (`adsTest: true`) theo [TESTING.md](docs/TESTING.md), kiểm theo [QA.md §3](docs/QA.md) những mục kiểm được trên máy này (quảng cáo, tạm dừng, âm thanh, lưu trữ, ngôn ngữ, bố cục ở cả hai chiều, tracking, gói xuất).
 2. Chạy typecheck / lint / test có sẵn của repo.
 3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
-4. Báo cáo cho chủ game:
+4. Hỏi chủ game: "Đã build xong `<version>`. Commit và đẩy lên git không?" Đồng ý thì commit `Build <version>`, kiểm máy chủ có commit mới chưa (có thì dừng, không đẩy), đẩy, rồi in khối thông tin git ([EXPORT.md §9](docs/EXPORT.md)). Không đồng ý thì bỏ qua.
+5. Báo cáo cho chủ game:
    - những gì đã thay;
    - file đã bỏ khỏi `public/` vì không dùng (gói chỉ chứa thứ game dùng, [EXPORT.md §3](docs/EXPORT.md)), dung lượng gói trước / sau;
    - trường hợp đã làm (game mới / gắn SDK / nâng cấp: các mục CHANGELOG đã làm);

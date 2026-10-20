@@ -67,7 +67,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |
 | `tools/check-export.mjs` | Kiểm `config.json`, `analytics.json`, `licenses.json` (tự tìm cạnh kit) và gói xuất trước khi giao (Node 18+, không cần cài gì) |
-| `tools/bump-version.mjs` | Version `yyyymmddXX`, tăng 1 mỗi lần build |
+| `tools/bump-version.mjs` | Version `yymmddXX`, tăng 1 mỗi lần build |
 | `tools/assemble.mjs` | Ghép trang gm (`index.html` + `preview.html`) vào gói. Trang của từng portal do tool build trên API làm |
 | `tools/check-marketing.mjs` | Kiểm marketing kit `marketing/<id>/` trước khi giao: đủ file, ảnh đúng pixel, nền đặc, brief đủ mục, HTML tự chứa ([HANDOFF.md §7](docs/HANDOFF.md)) |
 | `tools/compress.mjs` | Sau bundler: PNG → WebP, nhạc → MP3 vừa phải, sửa tên file trong code; báo dung lượng trước / sau. Mức nén ở `config.json` `compress` (cần `npm i -D sharp ffmpeg-static`) |

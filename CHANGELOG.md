@@ -1,6 +1,6 @@
 # Thay đổi của kit
 
-[VERSION](VERSION) là phiên bản của kit, dạng **`MAJOR.MINOR.PATCH`** (semver). Phiên bản của **game** là chuyện khác: `yyyymmddXX` trong `game.json`, do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2](docs/EXPORT.md)). Game **không** ghi phiên bản kit nào: AI nhìn vào repo để biết còn thiếu gì.
+[VERSION](VERSION) là phiên bản của kit, dạng **`MAJOR.MINOR.PATCH`** (semver). Phiên bản của **game** là chuyện khác: `yymmddXX` trong `game.json`, do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2](docs/EXPORT.md)). Game **không** ghi phiên bản kit nào: AI nhìn vào repo để biết còn thiếu gì.
 
 | Tăng | Khi |
 | --- | --- |
@@ -34,7 +34,9 @@ Thay đổi chỉ ở tài liệu thì không cần mục.
 - **Màn loading mặc định** (`loading/`, [docs/LOADING.md](docs/LOADING.md)): GM Loader v1 của kit 2.x, giữ nguyên giao diện; dựng bởi `game.js` ở dòng đầu (gói không có trang riêng); key art `public/assets/loading/loading.webp`; không logo publisher trên trang GD / CrazyGames / Poki. `check-export` kiểm ảnh.
 - **Dòng bản quyền mặc định `© 2026 Azgames.io`** (`sdk/copyright.js`, `copyrightText(sdk)`): server đổi thì theo server, tắt thì không hiện. `check-export` chỉ chấp nhận chữ bản quyền của file này.
 - **Quy chuẩn repo game** ([INTEGRATION.md §1](docs/INTEGRATION.md)): game ở gốc (`src/` + `public/`), không `web/`; tài liệu `docs/gdd/` (thiết kế, có bản đồ tính năng), `docs/plan/` (kế hoạch, spec), `docs/qa/<version>.md` (báo cáo QA), kit `docs/GMSDK_JS/`, marketing `marketing/<id>/`. AI ghi đúng chỗ kể cả khi công cụ quen ghi `docs/superpowers/`. `check-export` cảnh báo khi thiếu `docs/gdd/README.md`, `docs/plan/README.md` hoặc còn `docs/superpowers/`.
-- Số phiên bản đánh lại từ `1.0.0`; các số cũ (`1.x`, `2.0.0`, `yyyymmddXX` trước 20/10/2026) không còn dùng.
+- **Sau khi build: hỏi rồi mới commit và đẩy git** ([EXPORT.md §9](docs/EXPORT.md)): đồng ý thì commit `Build <version>` (chỉ thứ thuộc bản build), `fetch` kiểm máy chủ có commit mới chưa (có thì dừng), đẩy, in khối thông tin git (tên game — Build, Git, Nhánh, Commit) như kit 2.x; không đồng ý thì thôi.
+- Số phiên bản đánh lại từ `1.0.0`; các số cũ (`1.x`, `2.0.0`, số dạng ngày trước 20/10/2026) không còn dùng.
+- **Phiên bản game `yymmddXX`** (8 số, như kit 2.x, ví dụ `26102001`), do `bump-version` tăng mỗi lần build; `check-export` kiểm.
 
 **Dấu hiệu:** game chưa có `docs/GMSDK_JS/` hoặc `src/sdk/gmsdkjs-shim.js`; còn `JS_GMSDK/`, `JS_SDK_*/`, `gmsdkv2.js`, `AZ_SETTINGS`, `Language/`; hoặc game có bảng xếp hạng mà `config.json` chưa có `leaderboardId` / còn `JS_GMSDK/Leaderboard`.
 

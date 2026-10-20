@@ -2,7 +2,7 @@
 /**
  * The first step of every build (docs/EXPORT.md §4). config.json (next to the kit) is the one source of the
  * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId,
- * portals.gd.gameKey) and the dev page (gameId, gameCode; language from defaultLanguage while it is a placeholder). Then the next version, GM standard yyyymmddXX
+ * portals.gd.gameKey) and the dev page (gameId, gameCode; language from defaultLanguage while it is a placeholder). Then the next version, GM standard yymmddXX
  * (EXPORT.md §2): today's date (this machine's local time) and the build of the day, 01, 02, … Plain Node 18+.
  *
  *   node docs/GMSDK_JS/tools/bump-version.mjs [public/game.json] [--page index.html]
@@ -54,10 +54,14 @@ export function tempGameCode(now = new Date()) {
 /** g + 14 digits: the temporary code of tempGameCode(). */
 export const isTempGameCode = (code) => /^g\d{14}$/.test(String(code ?? ''));
 
-/** yyyymmddXX after `prev` on `now`'s day: XX + 1 on the same day, else 01. Throws after build 99 of a day. */
+/**
+ * yymmddXX after `prev` on `now`'s day (GM standard, as the 2.x kit: 26102001): XX + 1 on the same day, else 01.
+ * A yymmddXX version of an older build counts as its day. Throws after build 99 of a day.
+ */
 export function nextVersion(prev, now = new Date()) {
-  const day = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-  const m = /^(\d{8})(\d{2})$/.exec(String(prev ?? ''));
+  const p = (n) => String(n).padStart(2, '0');
+  const day = `${p(now.getFullYear() % 100)}${p(now.getMonth() + 1)}${p(now.getDate())}`;
+  const m = /^(?:\d{2})?(\d{6})(\d{2})$/.exec(String(prev ?? ''));
   const build = m && m[1] === day ? Number(m[2]) + 1 : 1;
   if (build > 99) throw new Error(`version ${prev}: 99 builds today already`);
   return `${day}${String(build).padStart(2, '0')}`;
