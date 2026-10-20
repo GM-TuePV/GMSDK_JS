@@ -9,9 +9,10 @@
  *   t('game.score');  t('x_wins', name);  t('hi', { name });   // "{0}", "{1}" by position, "{name}" by name
  *   await setLang('zh-TW');           // the player picked a language: the only call that saves it
  *
- * Start language: the player's saved choice (storage area 'settings', field 'language') -> ?lang=<tag> in the
- * URL -> the browser's languages (navigator.languages; exact tag, then its language, then any tag of that
- * language) -> defaultLanguage. A key missing in the language in use falls back to its language (zh-TW -> zh),
+ * Start language: the player's saved choice (storage area 'settings', field 'language') -> the page's language
+ * (GMSDKJS_OPTIONS.language of index.html, set per portal: the operator changes it there without a new build) ->
+ * defaultLanguage of game.json. Not the browser's language: the page decides, the player switches in the game.
+ * A tag the game does not list matches its language (zh -> zh-TW) or is skipped. A key missing in the language in use falls back to its language (zh-TW -> zh),
  * then to defaultLanguage, then to the key itself. The default language failing to load throws, so the boot
  * code can show a "Try again" popup; any other language failing silently keeps the default.
  */
@@ -109,43 +110,30 @@ async function apply(code) {
   }
 }
 
-/** The browser's preferred languages, best first. */
-function browserLanguages() {
+/** The page's default language: GMSDKJS_OPTIONS.language of index.html ('' when not set or still a placeholder). */
+function pageLanguage() {
   try {
-    const nav = globalThis.navigator;
-    return [...(nav?.languages ?? []), nav?.language].filter(Boolean);
+    const v = globalThis.GMSDKJS_OPTIONS?.language;
+    return typeof v === 'string' && !v.includes('<!--') ? v.trim() : '';
   } catch {
-    return [];
-  }
-}
-
-function urlLanguage(search) {
-  try {
-    return new URLSearchParams(search ?? globalThis.location?.search ?? '').get('lang');
-  } catch {
-    return null;
+    return '';
   }
 }
 
 /**
  * Loads the default language, then the language to start in. `languages` and `defaultLanguage` come from
- * game.json; `storage` is the SDK's storage (sdk.storage), where the player's choice is kept. `preferred`
- * (the browser's languages) and `search` (the URL query) are read from the page when not given. Returns the
- * language in use.
+ * game.json; `storage` is the SDK's storage (sdk.storage), where the player's choice is kept. `pageLanguage`
+ * is read from GMSDKJS_OPTIONS.language when not given. Returns the language in use.
  */
-export async function initI18n({ languages, defaultLanguage, storage = null, preferred, search } = {}) {
+export async function initI18n({ languages, defaultLanguage, storage = null, pageLanguage: page } = {}) {
   available = (languages?.length ? languages : [defaultLanguage ?? 'en']).map(normalizeTag);
   fallback = matchLanguage(defaultLanguage ?? available[0], available) ?? available[0];
   store = storage;
   if (!(await ensure(fallback))) throw new Error(`${I18N_DIR}${fallback}.json failed to load`);
   const saved = store?.get('settings', {})?.language;
   const savedTag = saved && available.includes(normalizeTag(saved)) ? normalizeTag(saved) : null;
-  const fromUrl = urlLanguage(search);
-  const wanted =
-    savedTag ??
-    (fromUrl && matchLanguage(fromUrl, available)) ??
-    (preferred ?? browserLanguages()).map((l) => matchLanguage(l, available)).find(Boolean) ??
-    fallback;
+  const fromPage = page ?? pageLanguage();
+  const wanted = savedTag ?? (fromPage && matchLanguage(fromPage, available)) ?? fallback;
   await apply(wanted);
   return current;
 }

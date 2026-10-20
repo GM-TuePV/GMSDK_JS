@@ -120,7 +120,7 @@ Chuẩn chung (như i18next, LayaAir `i18n/`): **`i18n/<thẻ>.json`** ở gốc
 - **File của `defaultLanguage` bắt buộc và đủ mọi key.** Phải có ít nhất một tiếng Anh (`en` hoặc `en-XX`).
 - **Thiếu chữ:** ngôn ngữ đang dùng → ngôn ngữ gốc của nó (`zh-TW` → `zh`, nếu game có) → `defaultLanguage` → hiện key.
 - `game.json` liệt kê `languages` (các thẻ) và `defaultLanguage`; truyền vào `initI18n()` (§2).
-- **Lúc mở game:** lựa chọn đã lưu của người chơi → `?lang=<thẻ>` trên URL → ngôn ngữ trình duyệt (`navigator.languages`: đúng thẻ, rồi ngôn ngữ gốc, rồi thẻ khác cùng ngôn ngữ: `pt-PT` → `pt-BR`) → `defaultLanguage`. Lựa chọn lưu ở `settings.language` qua `sdk.storage` (lưu nguyên thẻ, ví dụ `zh-TW`).
+- **Lúc mở game:** lựa chọn đã lưu của người chơi → **ngôn ngữ của trang** (`GMSDKJS_OPTIONS.language` trong `index.html`, đặt theo từng portal: bên vận hành sửa ở trang, không cần build lại) → `defaultLanguage` của `game.json`. **Không** tự chọn theo ngôn ngữ trình duyệt, không đọc `?lang=`: trang quyết định, người chơi đổi trong game. Thẻ của trang không có trong `languages` thì lấy thẻ cùng ngôn ngữ (`zh` → `zh-TW`), không có thì bỏ qua. Lựa chọn lưu ở `settings.language` qua `sdk.storage` (lưu nguyên thẻ, ví dụ `zh-TW`).
 - **Viết từ phải sang trái** (`ar`, `he`, `fa`, `ur`): `i18n.js` đặt `<html dir="rtl">`; game tự lật bố cục nếu cần.
 - **Menu ngôn ngữ:** `languageList()` trả `[{ code, name }]`, `name` viết bằng chính ngôn ngữ đó (`繁體中文`, `한국어`). `setLang(code)` đổi và lưu; `onLangChange(fn)` để vẽ lại giao diện. `matchLanguage(tag, languages)` tìm thẻ gần nhất.
 - Chữ trên màn loading (trước khi có bảng dịch) viết cứng tiếng Anh.

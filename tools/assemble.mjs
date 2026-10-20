@@ -43,6 +43,8 @@ export function fill(template, game, portal) {
     GAME_CODE: game.gameCode,
     GAME_VERSION: game.version,
     GD_GAME_KEY: game.portals?.gd?.gameKey,
+    // The page's default language (GMSDKJS_OPTIONS.language): game.json defaultLanguage.
+    LANGUAGE: game.defaultLanguage,
   };
   const html = template.replace(/<!--([A-Z_]+)-->/g, (m, key) => {
     if (!(key in values)) throw new Error(`${portal}: unknown placeholder ${m}`);

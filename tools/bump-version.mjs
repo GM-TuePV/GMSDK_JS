@@ -2,7 +2,7 @@
 /**
  * The first step of every build (docs/EXPORT.md §4). config.json (next to the kit) is the one source of the
  * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId,
- * portals.gd.gameKey) and the dev page (gameId, gameCode). Then the next version, GM standard yyyymmddXX
+ * portals.gd.gameKey) and the dev page (gameId, gameCode; language from defaultLanguage while it is a placeholder). Then the next version, GM standard yyyymmddXX
  * (EXPORT.md §2): today's date (this machine's local time) and the build of the day, 01, 02, … Plain Node 18+.
  *
  *   node docs/GMSDK_JS/tools/bump-version.mjs [public/game.json] [--page index.html]
@@ -78,6 +78,8 @@ function main() {
     if (config) {
       set('gameId', config.id);
       set('gameCode', config.gameCode);
+      // The page's default language: filled once from defaultLanguage; a tag the developer set stays.
+      if (/\blanguage:\s*(['"])<!--LANGUAGE-->\1/.test(html)) set('language', config.defaultLanguage);
     }
     writeFileSync(page, html);
   }

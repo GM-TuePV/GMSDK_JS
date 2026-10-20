@@ -321,6 +321,10 @@ function assembledPages(dir, entry, m) {
   const template = /id="gmsoft-jssdk"/.test(html) && /GMSDKJS_OPTIONS\s*=/.test(html) && new RegExp(`<script[^>]*\\bsrc="${entry.replace(/\./g, '\\.')}"`).test(html);
   if (!template) return { error: 'index.html is not the platform template: the package has no page of its own (tools/assemble.mjs makes the gm page)' };
   if (/<!--[A-Z_]+-->/.test(html)) return { error: 'index.html still has <!--…--> placeholders: run tools/assemble.mjs again' };
+  // The page's default language (docs/INTEGRATION.md §7): one the game ships.
+  const lang = /\blanguage:\s*["']([^"']*)["']/.exec(html)?.[1];
+  const ships = (tag) => (m?.languages ?? []).some((l) => l.toLowerCase() === tag.toLowerCase() || l.toLowerCase().startsWith(`${tag.toLowerCase()}-`));
+  if (lang && Array.isArray(m?.languages) && !ships(lang)) return { error: `index.html language "${lang}" is not one of game.json languages [${m.languages}]` };
   for (const key of ['gameId', 'gameCode', 'version']) {
     const want = key === 'gameId' ? m?.id : m?.[key];
     const got = new RegExp(`\\b${key}:\\s*["']([^"']*)["']`).exec(html)?.[1];
