@@ -98,10 +98,25 @@ export default {
 - **Script build chuẩn**, đúng thứ tự:
 
   ```json
-  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src && node docs/GMSDK_JS/tools/zip.mjs"
+  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/compress.mjs && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src && node docs/GMSDK_JS/tools/zip.mjs"
   ```
 
-  `<id>-<version>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck, nén asset) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
+  `<id>-<version>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
+- **Nén (`tools/compress.mjs`)**, ngay sau bundler, trên gói xuất (ảnh / nhạc gốc trong `public/` để nguyên). Cần `npm i -D sharp ffmpeg-static`.
+  - Ảnh: PNG → WebP. Nhạc (`mp3`, `wav`, `ogg`, `m4a`, `flac`) → MP3; dài hơn 20 giây là nhạc nền, ngắn hơn là hiệu ứng. Không dùng Opus: Safari / iPhone cũ không phát được.
+  - Chỉ thay khi file mới nhỏ hơn; MP3 đã ở mức đích thì để nguyên; file lỗi giữ nguyên (cảnh báo, không hỏng build).
+  - Tên file đổi (`.png` → `.webp`, `.wav` / `.ogg` → `.mp3`) được sửa trong `game.js` và các file chữ của gói (JSON, CSS, atlas…). Hai file trùng tên ở hai thư mục mà một file giữ nguyên thì chỉ sửa theo đường dẫn đầy đủ. Đường dẫn ghép lúc chạy (`'img/' + name + '.png'`) không sửa được: dùng `keep` hoặc tự đổi trong code. `check-export` cảnh báo khi `game.js` gọi file `assets/…` không có trong gói.
+  - In bảng: số file, dung lượng trước / sau, các file lớn nhất, cách nén thêm.
+
+  | `config.json` `compress` | Ảnh | Nhạc nền / hiệu ứng |
+  | --- | --- | --- |
+  | `normal` (mặc định) | WebP chất lượng 90, giữ nguyên kênh trong suốt: thường nhỏ hơn PNG 50–70%, mắt thường khó thấy khác | MP3 128 / 96 kbps |
+  | `more` | WebP chất lượng 80 | MP3 96 / 64 kbps |
+  | `lossless` (chỉ ảnh) | WebP không mất chất lượng (pixel art, ảnh code đọc từng điểm) | – |
+  | `off` | Giữ PNG | Giữ nguyên |
+  | `keep: ["assets/maps/**"]` | Không đụng các file khớp (`*` trong thư mục, `**` qua thư mục) | |
+
+  Nén thêm khi truyền (`.br` / `.gz`) là việc của server (§6); không xung đột, nhưng với ảnh / nhạc đã nén thì gần như không nhỏ thêm.
 - `public/` chứa `game.json`, `i18n/`, `assets/`: Vite chép nguyên vào gói.
 - `npx vite` (dev) dùng `index.html` ở gốc repo (trang dev, [TESTING.md](TESTING.md)); `npx vite build` không đụng tới nó.
 - Game đã có cấu hình Vite riêng (plugin, alias…): giữ phần của game, chỉ đổi `base`, `build.outDir` và `build.rollupOptions` như trên.

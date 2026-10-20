@@ -6,6 +6,7 @@
   "languages": ["en"],
   "defaultLanguage": "en",
   "leaderboardId": null,
+  "compress": { "images": "normal", "audio": "normal", "keep": [] },
   "gdKey": null,
   "brief": null,
   "notes": []

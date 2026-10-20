@@ -31,6 +31,7 @@ Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay 
 | `gameCode`: `g<số>` | `g131` | `game.json`, trang dev, `getSDK({ gameCode })` |
 | `name`: tên hiển thị | `Wheelie Spooky` | `game.json` |
 | `languages`, `defaultLanguage` | `["en", "es", "zh-TW"]` / `en` (thẻ BCP 47) | `game.json`, `i18n/` |
+| `compress` | `{ "images": "normal", "audio": "normal", "keep": [] }` | Mức nén ảnh / nhạc khi build (`tools/compress.mjs`, [EXPORT.md §4](docs/EXPORT.md)). **Hỏi chủ game một lần:** "Nén ảnh (PNG → WebP) và nhạc (MP3) theo mức kit khuyến nghị không?" Mặc định có (`normal`); không thì `off`; ảnh code đọc từng điểm ảnh thì liệt kê ở `keep` |
 | `gdKey`: Game ID GameDistribution | 32 ký tự hex, ghi thẳng vào đây; `null` = chưa lên GD. **Không dùng file `.env`** | `game.json` → `portals.gd.gameKey` |
 | `leaderboardId` | `leaderboard-topscore` hoặc `null` | Id bảng xếp hạng trên GMA ([LEADERBOARD.md](docs/LEADERBOARD.md)); `null` = game không có bảng |
 | `brief` | `"Đua xe một bánh, giữ thăng bằng, Phaser"` hoặc `null` | Mô tả game mới; game có sẵn để `null` |
@@ -96,7 +97,7 @@ Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|C
 
 1. Chạy trang dev (`adsTest: true`) theo [TESTING.md](docs/TESTING.md), kiểm theo [QA.md §3](docs/QA.md) những mục kiểm được trên máy này (quảng cáo, tạm dừng, âm thanh, lưu trữ, ngôn ngữ, bố cục ở cả hai chiều, tracking, gói xuất).
 2. Chạy typecheck / lint / test có sẵn của repo.
-3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
+3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
 4. Báo cáo cho chủ game:
    - những gì đã thay;
    - trường hợp đã làm (game mới / gắn SDK / nâng cấp: các mục CHANGELOG đã làm);

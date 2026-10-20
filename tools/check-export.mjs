@@ -111,7 +111,7 @@ function validVersion(v) {
 }
 
 // --- config.json: the game's values (AI_INSTALL.md step 0) -----------------------------------------------------
-const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'gdKey', 'notes', 'brief']);
+const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'compress', 'gdKey', 'notes', 'brief']);
 /** Keys of the kit before 1.0.0: not read any more. */
 const GONE_KEYS = new Set(['branch', 'kitVersion']);
 /** A GMA board id (docs/LEADERBOARD.md), e.g. leaderboard-topscore. */
@@ -143,6 +143,16 @@ if (configPath) {
     checkLanguages('config.json', Array.isArray(config.languages) ? config.languages : [], config.defaultLanguage);
     if (config.leaderboardId === undefined) warn('config.json leaderboardId is missing: the board id the owner gives (docs/LEADERBOARD.md), or null when the game has no leaderboard');
     else if (config.leaderboardId !== null && (typeof config.leaderboardId !== 'string' || !BOARD_ID.test(config.leaderboardId) || PLACEHOLDER_BOARDS.has(config.leaderboardId.toLowerCase()))) err(`config.json leaderboardId "${config.leaderboardId}": the board id the owner gives (e.g. leaderboard-topscore), or null`);
+    // compress (tools/compress.mjs): the level chosen once with the owner; none = normal.
+    if (config.compress !== undefined) {
+      const c = config.compress;
+      if (!c || typeof c !== 'object' || Array.isArray(c)) err('config.json compress: { images, audio, keep } (tools/compress.mjs)');
+      else {
+        if (c.images !== undefined && !['normal', 'more', 'lossless', 'off'].includes(c.images)) err(`config.json compress.images "${c.images}": normal | more | lossless | off`);
+        if (c.audio !== undefined && !['normal', 'more', 'off'].includes(c.audio)) err(`config.json compress.audio "${c.audio}": normal | more | off`);
+        if (c.keep !== undefined && (!Array.isArray(c.keep) || c.keep.some((k) => typeof k !== 'string'))) err('config.json compress.keep: a list of package paths (globs)');
+      }
+    }
     configGdKey = resolveGdKey(config.gdKey);
     if (typeof configGdKey === 'string' && !GD_KEY.test(configGdKey)) err(`config.json gdKey "${configGdKey}": the GameDistribution game id is 32 hex characters`);
     if (configGdKey === null) console.log('note: config.json gdKey is null: the game does not go to GameDistribution yet');
@@ -406,6 +416,9 @@ function checkPackage() {
     if (/import\(\s*["'`]https?:/.test(js)) err(`${entry} imports a module from a URL: no outside script may be loaded`);
     if (/["'`]\/(assets|i18n|Language)\//.test(js)) err(`${entry} uses an absolute path ("/assets/…" or "/i18n/…"): every path must be relative`);
     if (!/getSDK|GMSDKJS/.test(js)) warn(`${entry} never mentions getSDK / GMSDKJS: is the SDK wired in?`);
+    // Literal asset paths whose file is not in the package (a renamed file of tools/compress.mjs missed, a typo).
+    const missingAssets = [...new Set((js.match(/["'`](assets\/[^"'`?#\s]+\.(?:png|webp|jpe?g|mp3|ogg|wav|m4a|json))["'`?#]/gi) ?? []).map((m) => m.slice(1, -1)))].filter((p) => !existsSync(join(dir, p)));
+    if (missingAssets.length) warn(`${entry} names files that are not in the package: ${missingAssets.slice(0, 6).join(', ')}`);
     // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
     if (/gmlb-panel/.test(js)) {
