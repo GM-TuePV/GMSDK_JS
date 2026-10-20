@@ -60,7 +60,9 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`marketing/<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
-| `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js` (+ `.d.ts`), `i18n.js`, `net.js`. JS thuần, không cần build |
+| [docs/LOADING.md](docs/LOADING.md) | Màn loading mặc định (GM Loader v1 của kit 2.x) và dòng bản quyền mặc định `© 2026 Azgames.io` |
+| `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js` (+ `.d.ts`), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
+| `loading/` | Màn loading mặc định: `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `assets/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/assets/loading/`, thay `loading.webp` bằng key art của game |
 | `leaderboard/` | Game có bảng xếp hạng: `leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`) chép vào `src/sdk/leaderboard/`; `flags/`, `countries.json` chép vào `public/assets/leaderboard/` |
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |

@@ -23,14 +23,14 @@ Luồng tối thiểu. Người mới phải vào được gameplay sau **tối 
 
 | Màn | Bắt buộc có | SDK |
 | --- | --- | --- |
-| Loading | Thanh tiến độ của game; logo publisher (`sdk.brand.loadLogo()`); màn "Try again" khi tải lỗi | `loadingProgress(p)`, `ready()` |
+| Loading | Màn mặc định `loading/loading.js` (GM Loader v1, [LOADING.md](LOADING.md)) với key art của game; hoặc màn riêng có thanh tiến độ, logo publisher (`sdk.brand.loadLogo()`), "Try again" khi tải lỗi | `createLoader()`, `loader.progress(p)`, `ready()` |
 | Menu (hoặc vào chơi luôn) | Nút chơi to nhất màn; Settings; chỗ vào các tính năng ([UX.md](UX.md) §5) | `loadingDone()` khi menu hiện, rồi `preroll()` |
 | Gameplay | HUD; nút pause (và phím ESC / P); lớp điều khiển cho người mới | `gameplayStart()` ở input đầu tiên |
 | Pause | Tiếp tục, chơi lại, về menu | `gameplayStop()` |
 | Thua / thắng | Kết quả, lý do thua + mẹo, Retry 1 cú bấm, nút thưởng (nếu có); hạng vừa đạt (nếu có bảng xếp hạng) | `gameplayStop()`, `rewarded()` trong click, `board.submit(score)` |
 | Bảng xếp hạng (nếu có `leaderboardId`) | Mở từ menu và màn kết quả; 4 kỳ, hạng của người chơi, đổi tên + cờ ([LEADERBOARD.md](LEADERBOARD.md)) | `openLeaderboard()` hoặc màn tự vẽ |
 | Về menu sau ván | Chỗ nghỉ tự nhiên | `interstitial()` theo luật của game |
-| Settings | Âm lượng nhạc / hiệu ứng, ngôn ngữ, Show tutorial, More Games, `V<version>`, trademark | `setMuted()`, `moreGamesUrl()`, `brand.trademark()` |
+| Settings | Âm lượng nhạc / hiệu ứng, ngôn ngữ, Show tutorial, More Games, `V<version>`, dòng bản quyền | `setMuted()`, `moreGamesUrl()`, `copyrightText(sdk)` |
 
 Thứ tự gọi SDK: [INTEGRATION.md](INTEGRATION.md) §2–§5, §9.
 

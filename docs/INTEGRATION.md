@@ -27,8 +27,10 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 import { getSDK } from './sdk/gmsdkjs-shim.js';
 import { initI18n } from './sdk/i18n.js';
 import { loadJSON } from './sdk/net.js';
+import { createLoader } from './sdk/loading/loading.js';
 
 const sdk = getSDK({ gameCode: 'g131' });          // 1. SDK trước tiên
+const loader = createLoader({ sdk });              //    màn loading mặc định ngay sau (LOADING.md)
 sdk.onPause(pauseGame);                            // 2. tạm dừng / chạy lại, trước mọi quảng cáo
 sdk.onResume(resumeGame);
 
@@ -36,18 +38,20 @@ async function boot() {
   const manifest = await loadJSON('game.json');    // 3. manifest + tiếng Anh: lỗi thì "Try again"
   await initI18n({ languages: manifest.languages, defaultLanguage: manifest.defaultLanguage, storage: sdk.storage });
   sdk.storage.migrate({ 'mygame.save': 'profile' }); // 4. key cũ (nếu game từng lưu kiểu khác)
-  await loadAssets((p) => sdk.loadingProgress(p)); // 5. tải tài nguyên, báo tiến độ 0..1
+  loader.setTitle(manifest.name);
+  await loadAssets((p) => loader.progress(p));     // 5. tải tài nguyên, tiến độ 0..1 (gọi luôn sdk.loadingProgress)
   await sdk.ready();                               // 6. licence + cấu hình quảng cáo (≤ 5 s)
   showMenu();
+  loader.hide();
   sdk.loadingDone();                               // 7. menu đã hiện: gửi loaded_game
   await sdk.preroll();                             // 8. preroll nếu API bật (≤ 15 s), rồi cho chơi
 }
-boot().catch(showTryAgain);
+boot().catch(() => loader.error());              // "Connection problem. Tap to retry."
 ```
 
 - `sdk.ready()` có thể chạy song song với bước tải tài nguyên. Chỉ cần xong trước khi hiện menu.
 - Không chờ quảng cáo trước khi hiện menu; preroll chạy khi menu đã hiện, game đã dừng nhờ `onPause`.
-- Màn loading là của game: vẽ thanh tiến độ, có thể thêm logo publisher bằng `sdk.brand.loadLogo()` (trả `null` thì bỏ qua).
+- Màn loading mặc định: `loading/loading.js` (GM Loader v1 của kit 2.x, [LOADING.md](LOADING.md)). Game muốn màn riêng thì tự vẽ thanh tiến độ, gọi `sdk.loadingProgress(p)`, có màn "Try again"; logo publisher lấy bằng `sdk.brand.loadLogo()` (trả `null` thì bỏ qua).
 
 ## 3. Tạm dừng khi có quảng cáo
 
@@ -138,14 +142,14 @@ Chuẩn chung (như i18next, LayaAir `i18n/`): **`i18n/<thẻ>.json`** ở gốc
 const url = sdk.moreGamesUrl();
 moreButton.hidden = !url;                                   // null: không có nút
 moreButton.onclick = () => window.open(url, '_blank', 'noopener');
-trademarkLabel.textContent = sdk.brand.trademark();         // '' = không hiện gì
+copyrightLabel.textContent = copyrightText(sdk);           // "© 2026 Azgames.io" trừ khi server đổi; '' = không hiện gì
 versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 ```
 
-- Đọc `moreGamesUrl()` và `trademark()` **sau `ready()`**: giá trị đến từ API.
+- Đọc `moreGamesUrl()` và `copyrightText(sdk)` **sau `ready()`**: giá trị đến từ API.
 - More Games mở tab mới, không bao giờ `location.href` (người chơi mất ván).
 - Trademark và phiên bản thường đặt ở góc màn hình menu hoặc bảng Settings.
-- **Chữ bản quyền chỉ lấy từ `sdk.brand.trademark()`.** Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… trong code hay `i18n/*.json`: API quyết hiện gì (`0` không hiện, `1` tên miền `azgames.io`, `2` tên `AZ Games`), mặc định `1`. `check-export` cảnh báo khi thấy chữ viết cứng. Thêm chữ trang trí (ví dụ `©` đứng trước) thì ghép trong code và bỏ khi `trademark()` là `''`.
+- **Chữ bản quyền chỉ lấy từ `copyrightText(sdk)`** (`sdk/copyright.js`, [LOADING.md §2](LOADING.md)): mặc định `© 2026 Azgames.io`; server đổi (`gameinfo.trademark`: tên miền / tên khác) thì theo server; `0` và trang GD / CrazyGames / Poki thì `''`, không hiện gì. Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… ở chỗ khác trong code hay `i18n/*.json`: `check-export` cảnh báo.
 
 ## 10. Bảng xếp hạng
 

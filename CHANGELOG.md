@@ -31,6 +31,8 @@ Thay đổi chỉ ở tài liệu thì không cần mục.
 - **Mã game tạm:** chủ game chưa có `gameCode` thì `config.json` để `null`; `bump-version` đặt `g` + năm tháng ngày giờ phút giây và ghi vào `config.json` một lần. `check-export` cảnh báo mã tạm. Đổi mã thật ở `config.json`, hoặc `gameCode` trong `index.html` của gói.
 - **Nén khi build (`tools/compress.mjs`):** sau bundler, PNG → WebP và nhạc → MP3 ở mức vừa phải, sửa tên file trong code, in bảng dung lượng. Mức ở `config.json` `compress` (`normal` mặc định, `more`, `lossless`, `off`, `keep`), hỏi chủ game một lần lúc cài. Cần `sharp`, `ffmpeg-static`.
 - **Gói chỉ chứa thứ game dùng:** game tự rà `public/`, bỏ asset không dùng và báo lại (EXPORT.md §3, AI_INSTALL.md Bước 5, QA 6.7); `check-export` cảnh báo file chắc chắn không phải tài nguyên (thiết kế, tạm, hệ thống, ghi chú).
+- **Màn loading mặc định** (`loading/`, [docs/LOADING.md](docs/LOADING.md)): GM Loader v1 của kit 2.x, giữ nguyên giao diện; dựng bởi `game.js` ở dòng đầu (gói không có trang riêng); key art `public/assets/loading/loading.webp`; không logo publisher trên trang GD / CrazyGames / Poki. `check-export` kiểm ảnh.
+- **Dòng bản quyền mặc định `© 2026 Azgames.io`** (`sdk/copyright.js`, `copyrightText(sdk)`): server đổi thì theo server, tắt thì không hiện. `check-export` chỉ chấp nhận chữ bản quyền của file này.
 - Số phiên bản đánh lại từ `1.0.0`; các số cũ (`1.x`, `2.0.0`, `yyyymmddXX` trước 20/10/2026) không còn dùng.
 
 **Dấu hiệu:** game chưa có `docs/GMSDK_JS/` hoặc `src/sdk/gmsdkjs-shim.js`; còn `JS_GMSDK/`, `JS_SDK_*/`, `gmsdkv2.js`, `AZ_SETTINGS`, `Language/`; hoặc game có bảng xếp hạng mà `config.json` chưa có `leaderboardId` / còn `JS_GMSDK/Leaderboard`.

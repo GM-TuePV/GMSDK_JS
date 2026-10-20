@@ -47,8 +47,10 @@ const warn = (m) => warnings.push(m);
 // header says "copyright" a thousand times). The trademark text comes from sdk.brand.trademark().
 // "AZ Games" / "AZGames" in its own case only: the storage key azgames.<gameCode> is not the owner's name.
 const OWNER_TEXT = { test: (s) => /(azgames\.io|1games\.io|gamesforfree\.io|ofree\.io|©)/i.test(s) || /\bAZ ?Games\b/.test(s) };
-const ownerInStrings = (text) => (text.match(/(["'`])(?:(?!\1)[^\\\n]|\\.)*\1/g) || []).find((lit) => OWNER_TEXT.test(lit));
-const OWNER_HINT = 'the copyright / trademark text must come from sdk.brand.trademark() (gameinfo.trademark 0 off, 1 domain, 2 name; docs/INTEGRATION.md §9)';
+// sdk/copyright.js ("© 2026 Azgames.io", "© 2026 ${owner}") is the one place allowed to name the owner.
+const KIT_COPYRIGHT = /^(["'`])(© \d{4} ?|© \d{4} Azgames\.io|Azgames\.io|© \d{4} \$\{[^`]*\})\1$/;
+const ownerInStrings = (text) => (text.match(/(["'`])(?:(?!\1)[^\\\n]|\\.)*\1/g) || []).find((lit) => OWNER_TEXT.test(lit) && !KIT_COPYRIGHT.test(lit));
+const OWNER_HINT = 'the copyright line must come from copyrightText(sdk) of sdk/copyright.js (default "© 2026 Azgames.io", the server can change or hide it; docs/INTEGRATION.md §9)';
 
 function walk(d) {
   return readdirSync(d).flatMap((name) => {
@@ -421,6 +423,15 @@ function checkPackage() {
     if (missingAssets.length) warn(`${entry} names files that are not in the package: ${missingAssets.slice(0, 6).join(', ')}`);
     // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
+    // The default loading screen (loading/loading.js): the game's key art and the logo in the package.
+    if (/gmLoaderFill/.test(js)) {
+      const art = join(dir, 'assets/loading/loading.webp');
+      for (const need of ['assets/loading/loading.webp', 'assets/loading/logo.webp']) {
+        if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/loading/assets/ to public/assets/loading/ and put the game's key art in loading.webp (docs/LOADING.md)`);
+      }
+      const sample = join(KIT, 'loading/assets/loading.webp');
+      if (existsSync(art) && existsSync(sample) && readFileSync(art).equals(readFileSync(sample))) warn('assets/loading/loading.webp is still the kit sample: replace it with the game\'s key art (docs/LOADING.md)');
+    }
     if (/gmlb-panel/.test(js)) {
       for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags/GLOBE.png']) {
         if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/leaderboard/flags/ and countries.json to public/assets/leaderboard/ (docs/LEADERBOARD.md §2)`);

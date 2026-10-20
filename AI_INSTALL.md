@@ -54,7 +54,8 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 
 | Từ kit | Vào game | Ghi chú |
 | --- | --- | --- |
-| `sdk/gmsdkjs-shim.js`, `sdk/gmsdkjs-shim.d.ts`, `sdk/i18n.js`, `sdk/net.js`, `sdk/net.d.ts` | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
+| `loading/loading.js` (+ `loading.d.ts`); `loading/assets/` | `src/sdk/loading/`; `public/assets/loading/` | Màn loading mặc định ([LOADING.md](docs/LOADING.md)). Thay `loading.webp` bằng key art của game; game có màn loading riêng đạt yêu cầu thì giữ của game |
+| `sdk/gmsdkjs-shim.js`, `sdk/gmsdkjs-shim.d.ts`, `sdk/i18n.js`, `sdk/net.js`, `sdk/net.d.ts`, `sdk/copyright.js`, `sdk/copyright.d.ts` | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
 | `template/index.html` | `index.html` ở gốc | Game đã có `index.html`: chỉ thêm khối `GMSDKJS_OPTIONS`, thẻ `gmsoft-jssdk` vào `<head>` và `<div id="game">`. Bỏ mọi thẻ `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
 | `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags/`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
