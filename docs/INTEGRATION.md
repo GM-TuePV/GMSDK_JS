@@ -4,8 +4,17 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 
 ## 1. Cấu trúc trong repo game
 
+**Quy chuẩn, mọi game theo kit đều phải theo.** Game ở gốc repo (`src/` + `public/`), không thư mục `web/`: mọi công cụ của kit chạy theo bố cục này không cần tham số.
+
 ```
 <game>/
+├── docs/
+│   ├── GMSDK_JS/         kit (thay cả thư mục khi nâng cấp) + config.json, analytics.json, licenses.json của game
+│   ├── gdd/              thiết kế game: game làm gì (README.md bắt buộc)
+│   ├── plan/             kế hoạch: làm thế nào, tới đâu (README.md bắt buộc)
+│   └── qa/               báo cáo QA, mỗi bản build một file <version>.md
+├── marketing/<id>/       marketing kit (HANDOFF.md §3)
+├── export/               gói xuất, không commit
 ├── index.html            trang dev = template/index.html (KHÔNG nằm trong gói xuất)
 ├── vite.config.mjs       = template/vite.config.mjs (nếu dùng Vite)
 ├── public/
@@ -17,6 +26,16 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
     └── sdk/              chép từ kit: gmsdkjs-shim.js, i18n.js, net.js (+ gmsdkjs-shim.d.ts, net.d.ts nếu dùng TypeScript)
         └── leaderboard/  chép từ kit khi game có bảng xếp hạng (LEADERBOARD.md §2); cờ ở public/assets/leaderboard/
 ```
+
+| Thư mục | Chứa | File chính |
+| --- | --- | --- |
+| `docs/gdd/` | **Game làm gì:** tổng quan, cách chơi, luật, màn chơi, kinh tế (xu, vật phẩm), UI và luồng màn hình, **bản đồ tính năng** ([UX.md §5](UX.md)), âm thanh, hình. Game port: đối chiếu bản gốc, những gì chủ game cho bỏ / chấp nhận khác | `README.md`: trang chính, mục lục, trạng thái từng phần |
+| `docs/plan/` | **Làm thế nào, tới đâu:** kế hoạch theo bước, thiết kế kỹ thuật (spec), tiến độ, quyết định kỹ thuật | `README.md`: đang ở bước nào, việc tiếp theo |
+| `docs/qa/` | Báo cáo QA theo mẫu [QA.md §6](QA.md), mỗi bản build một file | `<version>.md` (ví dụ `2026102001.md`) |
+
+- Tên file: tiếng Việt không dấu, chữ thường, gạch nối (`docs/gdd/kinh-te.md`); kế hoạch / spec có ngày thì ngày đứng đầu (`docs/plan/2026-10-20-leaderboard.md`). Một chủ đề một file; cần thì để link, không chép nội dung sang nơi khác.
+- **Công cụ AI có thói quen ghi chỗ khác** (ví dụ plugin superpowers của Claude ghi `docs/superpowers/plans/`, `docs/superpowers/specs/`): theo kit thì kế hoạch và spec vào `docs/plan/`, thiết kế game vào `docs/gdd/`. `check-export` cảnh báo khi thiếu `docs/gdd/README.md`, `docs/plan/README.md`, hoặc còn tài liệu ở `docs/superpowers/`.
+- Thư mục làm việc khác ở gốc (`Apk/`, `_work/`, `tools/` của game port…) được phép: không vào gói vì bundler chỉ lấy `public/` và những gì `src/` dùng tới.
 
 - Các file trong `src/sdk/` **chép nguyên**, không sửa. Cập nhật thì chép lại từ kit (hoặc tải `https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs-shim.js` và `.d.ts`).
 - Không dùng Vite thì giữ đúng bố cục gói xuất ([EXPORT.md](EXPORT.md)) bằng bundler của game.

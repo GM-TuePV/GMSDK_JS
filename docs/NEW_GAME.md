@@ -12,7 +12,7 @@ Mỗi bước ghi: **làm gì**, **xong khi nào**, **tài liệu chi tiết**.
 ## Bước 1. Engine và khung repo
 
 - Chọn engine (JS thuần, Phaser, PixiJS, Three.js…) và bundler (khuyên dùng Vite). Phần khác nhau theo engine: [ENGINES.md](ENGINES.md).
-- Dựng đúng cấu trúc [INTEGRATION.md §1](INTEGRATION.md): `index.html` (trang dev, từ `template/`), `vite.config` (từ `template/`), `public/game.json`, `public/i18n/en.json`, `src/sdk/` (chép từ kit), `src/main`.
+- Dựng đúng cấu trúc [INTEGRATION.md §1](INTEGRATION.md): `index.html` (trang dev, từ `template/`), `vite.config` (từ `template/`), `public/game.json`, `public/i18n/en.json`, `src/sdk/` (chép từ kit), `src/main`; tài liệu `docs/gdd/README.md` (thiết kế từ `brief`), `docs/plan/README.md` (kế hoạch các bước), `docs/qa/`.
 - Mọi lời gọi SDK đi qua một module của game (ví dụ `src/platform/sdk.ts`), lưu trữ qua một module (ví dụ `src/save/Save.ts`).
 - Script build: `bump-version` → build → `compress` → `assemble` → `check-export` → `zip` ([EXPORT.md](EXPORT.md) §4, §7, §8). `npm i -D sharp ffmpeg-static` cho bước nén.
 - Xong khi: `npm run dev` mở được trang dev; `npm run build` ra gói, báo `OK` và ra file zip.

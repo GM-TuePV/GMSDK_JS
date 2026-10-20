@@ -80,7 +80,7 @@ Lớp 1, 2 là **hướng dẫn** (tắt được bằng Settings → Show tutor
 
 ## 5. Không bỏ sót tính năng: bản đồ tính năng
 
-Mỗi game giữ một bảng (trong tài liệu thiết kế của game hoặc `docs/` của repo), một dòng cho mỗi tính năng người chơi có thể bỏ lỡ:
+Mỗi game giữ một bảng trong `docs/gdd/` (tài liệu thiết kế, [INTEGRATION.md §1](INTEGRATION.md)), một dòng cho mỗi tính năng người chơi có thể bỏ lỡ:
 
 | Tính năng | Mở khi | Chỗ vào | Người chơi biết bằng | Lớp | Sự kiện |
 | --- | --- | --- | --- | --- | --- |

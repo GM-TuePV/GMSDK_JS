@@ -10,3 +10,7 @@ Kit 1.0.0 chạy đủ bảng xếp hạng **không cần sửa `gmsdkjs.js`**: 
 | 4 | Template của trang (`templates/gamesforfree-<portal>.html`) không có ngôn ngữ | Thêm `language: "<!--LANGUAGE-->"` vào `GMSDKJS_OPTIONS` (tool build điền `defaultLanguage` của `game.json`, hoặc ngôn ngữ chọn ở form game của portal) | Ngôn ngữ mặc định đặt theo từng trang như kit cũ (`AZ_SETTINGS.language`); `sdk/i18n.js` đọc nó. Chưa có thì game dùng `defaultLanguage` |
 
 Khi có (2), `leaderboard.js` đổi chỗ lấy `GMGameSDK` sang `sdk.gma()`; game không phải sửa gì (cùng `createLeaderboard`).
+
+## Hai bản gmsdkjs
+
+`gmsdkjs.js` có hai bản: `https://games.1games.io/lib/1games/gmsdkjs/` (trang 1games) và `https://api.azgame.io/static/lib/azgames/gmsdkjs/` (trang az). Ngày 20/10/2026 hai bản giống hệt (bản `_dev` và shim chỉ khác kiểu xuống dòng). **Sửa gmsdkjs thì cập nhật cả hai chỗ cùng lúc**, kể cả `gmsdkjs-shim.js` và `gmsdkjs_dev.js`, nếu không game trên az và 1games chạy khác nhau. Kit chỉ kiểm thẻ `id="gmsoft-jssdk"`, không kiểm link, nên trang nạp bản nào cũng qua `check-export`.

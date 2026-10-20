@@ -163,6 +163,16 @@ if (configPath) {
   }
 }
 
+// --- the repo's docs (docs/INTEGRATION.md §1): gdd, plan, qa next to the kit --------------------------------------
+// Run from the repo root (as every build step is): docs/GMSDK_JS sits there, so docs/ is the kit's parent.
+if (config) {
+  const docs = dirname(KIT);
+  for (const [need, what] of [['gdd/README.md', 'the game design'], ['plan/README.md', 'the plan']]) {
+    if (!existsSync(join(docs, need))) warn(`no docs/${need}: ${what} lives in docs/${need.split('/')[0]}/ (docs/INTEGRATION.md §1)`);
+  }
+  if (existsSync(join(docs, 'superpowers'))) warn('docs/superpowers/ holds documents: plans and specs go to docs/plan/, game design to docs/gdd/ (docs/INTEGRATION.md §1)');
+}
+
 // --- analytics.json: the game's event dictionary (docs/ANALYTICS.md §6) ----------------------------------------
 const ID = /^[a-z][a-z0-9_]*$/;
 const KPIS = new Set(['onboarding_complete', 'level_1_win', 'depth', 'level_quit', 'session_minutes', 'return_rate', 'feature_use', 'rewarded_take', 'error_rate']);

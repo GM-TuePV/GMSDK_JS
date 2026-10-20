@@ -20,6 +20,7 @@ Xác định trước tiên, ghi vào đầu plan:
 - **Game có sẵn:** khảo sát code trước, rồi lên plan gồm file bỏ / sửa / thêm và lý do, cùng những gì giữ lại vì là luật riêng của game. **Chờ chủ game duyệt rồi mới sửa code.** Plan có thêm phần rà trải nghiệm theo [UX.md](docs/UX.md): mỗi lớp L1–L5 và bản đồ tính năng, game đã có gì, còn thiếu gì. Phần thiếu chỉ là **đề xuất**: làm khi chủ game chọn.
 - **Game mới:** làm theo [NEW_GAME.md](docs/NEW_GAME.md) (cấu trúc, các màn, lưu, bố cục, hướng dẫn người chơi, quảng cáo). Plan trước, chờ duyệt.
 - Mỗi dòng trong `notes` của `config.json` là một yêu cầu riêng của game này: làm theo, và báo lại từng dòng trong báo cáo.
+- **Cấu trúc repo và tài liệu theo quy chuẩn** [INTEGRATION.md §1](docs/INTEGRATION.md): game ở `src/` + `public/`; thiết kế game ghi vào `docs/gdd/`, kế hoạch và spec vào `docs/plan/`, báo cáo QA vào `docs/qa/<version>.md`. Kể cả khi công cụ AI quen ghi chỗ khác (`docs/superpowers/…`). Game có sẵn mà tài liệu đang ở chỗ khác: plan gồm cả việc chuyển về đúng chỗ.
 
 ## Bước 0. Giá trị của game: `config.json`, không đoán
 

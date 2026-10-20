@@ -192,7 +192,7 @@ Nhưng canvas quá lớn so với màn hình (mục 6.3) vẫn là việc của 
 
 ## 6. Mẫu báo cáo QA
 
-Chép vào báo cáo của bản build (AI dùng mẫu này ở [AI_INSTALL.md](../AI_INSTALL.md) Bước 5):
+Chép vào báo cáo của bản build, lưu ở **`docs/qa/<version>.md`** (ví dụ `docs/qa/2026102001.md`; AI dùng mẫu này ở [AI_INSTALL.md](../AI_INSTALL.md) Bước 5):
 
 ```markdown
 # QA <name> <version>: <portal>
