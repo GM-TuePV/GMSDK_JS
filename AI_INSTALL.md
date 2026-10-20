@@ -1,0 +1,106 @@
+# Gắn GMSDK JS vào một game: các bước
+
+Cho người hoặc AI làm theo, từ trên xuống: game mới, game có sẵn, hay nâng cấp kit. Lệnh giao cho AI: kéo [PROMPT.md](PROMPT.md) vào khung chat. Đọc trước [docs/INTEGRATION.md](docs/INTEGRATION.md), [docs/API.md](docs/API.md) và mẫu chạy được [example/main.js](example/main.js).
+
+## Trường hợp
+
+Xác định trước tiên, ghi vào đầu plan:
+
+| Repo có | Trường hợp | Làm |
+| --- | --- | --- |
+| Chưa có code game | **Game mới** | [NEW_GAME.md](docs/NEW_GAME.md), mô tả game lấy từ `brief` của `config.json`. `brief` trống thì hỏi chủ game: thể loại, cách chơi, engine |
+| Có code, chưa gọi `getSDK` (chưa có `src/sdk/gmsdkjs-shim.js`) | **Gắn SDK** | Bước 0 → 5 bên dưới |
+| Đã gắn, còn **dấu hiệu** của một mục trong [CHANGELOG.md](CHANGELOG.md) | **Nâng cấp** | Phần "Game cần làm" của mọi mục còn dấu hiệu, từ cũ tới mới; chép lại `sdk/` nếu kit có bản mới; rồi Bước 5 |
+| Đã gắn, không còn dấu hiệu nào | **Chỉ kiểm** | Bước 5 (build, `check-export`, QA), báo cáo; không sửa code nếu không được yêu cầu |
+
+## Cách làm
+
+- **Làm trên nhánh đang checkout**, không tạo nhánh mới, không đổi nhánh.
+- Commit theo từng bước, không push.
+- **Game có sẵn:** khảo sát code trước, rồi lên plan gồm file bỏ / sửa / thêm và lý do, cùng những gì giữ lại vì là luật riêng của game. **Chờ chủ game duyệt rồi mới sửa code.** Plan có thêm phần rà trải nghiệm theo [UX.md](docs/UX.md): mỗi lớp L1–L5 và bản đồ tính năng, game đã có gì, còn thiếu gì. Phần thiếu chỉ là **đề xuất**: làm khi chủ game chọn.
+- **Game mới:** làm theo [NEW_GAME.md](docs/NEW_GAME.md) (cấu trúc, các màn, lưu, bố cục, hướng dẫn người chơi, quảng cáo). Plan trước, chờ duyệt.
+- Mỗi dòng trong `notes` của `config.json` là một yêu cầu riêng của game này: làm theo, và báo lại từng dòng trong báo cáo.
+
+## Bước 0. Giá trị của game: `config.json`, không đoán
+
+Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay trong folder kit: chép kit sang dự án khác là mang theo cấu hình. Chủ game chép từ [config.example.json](config.example.json) rồi điền. File này không vào gói xuất, và bản gốc của kit không có nó (nâng cấp kit là chép đè folder mà vẫn giữ `config.json`, `analytics.json` và `licenses.json`).
+
+| Khoá | Ví dụ | Dùng ở |
+| --- | --- | --- |
+| `id`: slug của game trên portal | `wheelie-spooky` | `game.json`, trang dev |
+| `gameCode`: `g<số>` | `g131` | `game.json`, trang dev, `getSDK({ gameCode })` |
+| `name`: tên hiển thị | `Wheelie Spooky` | `game.json` |
+| `languages`, `defaultLanguage` | `["en", "es", "zh-TW"]` / `en` (thẻ BCP 47) | `game.json`, `i18n/` |
+| `gdKey`: Game ID GameDistribution | 32 ký tự hex, ghi thẳng vào đây; `null` = chưa lên GD. **Không dùng file `.env`** | `game.json` → `portals.gd.gameKey` |
+| `brief` | `"Đua xe một bánh, giữ thăng bằng, Phaser"` hoặc `null` | Mô tả game mới; game có sẵn để `null` |
+| `notes` | `["Save cũ ở azgames.g0: chuyển sang azgames.g475"]` | Luật riêng của game |
+
+Cạnh `config.json` còn có **`analytics.json`**: từ điển sự kiện của game (level, màn, item, tính năng…) để phân tích trên GMA. **Không ai viết tay:** AI sinh nó sau khi gắn sự kiện ở Bước 3 ([ANALYTICS.md §6](docs/ANALYTICS.md)).
+
+Và **`licenses.json`**: nguồn và giấy phép của mọi font, âm thanh, ảnh ([ASSETS.md](docs/ASSETS.md)). Game có sẵn: AI rà asset, ghi từng nhóm file. File nào không rõ nguồn thì ghi `"origin": "unknown"` và hỏi chủ game, **không đoán giấy phép**.
+
+Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export.mjs` phải báo `OK`.
+
+**`config.json` là nguồn duy nhất.** `tools/bump-version.mjs` (bước đầu của mọi lần build) chép `id`, `gameCode`, `name`, `languages`, `defaultLanguage`, `gdKey` sang `public/game.json` và trang dev `index.html`. Đổi giá trị thì chỉ sửa `config.json`; không sửa tay `game.json`, không dùng `.env`.
+
+- **Không có `config.json`, hoặc file báo lỗi:** dừng lại, hỏi chủ game. **Không tự đặt, không suy từ tên game.**
+- **Chủ game chưa có giá trị:** để placeholder `<!--GAME_ID-->`, `<!--GAME_CODE-->` và ghi rõ trong báo cáo là còn chờ. Game vẫn chạy được (lưu tạm `azgames.dev`).
+- **`version`:** quy chuẩn GM `yyyymmddXX` (ngày build + lần build trong ngày), do `tools/bump-version.mjs` tăng mỗi lần build ([EXPORT.md §2, §4](docs/EXPORT.md)). Không lấy từ `package.json`.
+- **Giá trị không định danh khác** (`orientation`, `entry`): lấy từ code của game (cấu hình canvas).
+
+## Bước 1. Chép file
+
+| Từ kit | Vào game | Ghi chú |
+| --- | --- | --- |
+| `sdk/gmsdkjs-shim.js`, `sdk/gmsdkjs-shim.d.ts`, `sdk/i18n.js`, `sdk/net.js`, `sdk/net.d.ts` | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
+| `template/index.html` | `index.html` ở gốc | Game đã có `index.html`: chỉ thêm khối `GMSDKJS_OPTIONS`, thẻ `gmsoft-jssdk` vào `<head>` và `<div id="game">`. Bỏ mọi thẻ `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
+| `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
+
+## Bước 2. Manifest và bảng dịch
+
+- Tạo `public/game.json` theo [EXPORT.md §2](docs/EXPORT.md).
+- Chuyển mọi chữ hiển thị vào `public/i18n/<defaultLanguage>.json` (key `snake_case`, nhóm được); thêm file cho từng ngôn ngữ, tên theo thẻ BCP 47 ([INTEGRATION.md §7](docs/INTEGRATION.md)). Thêm `load_failed`, `try_again` cho màn lỗi tải.
+
+## Bước 3. Nối SDK vào game
+
+Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng của engine (tạm dừng, tắt tiếng, input, tiến độ tải, `#game`): [ENGINES.md](docs/ENGINES.md).
+1. `const sdk = getSDK({ gameCode })` đầu tiên; `onPause` / `onResume` ngay sau đó (§3).
+2. Khởi động: `game.json` → `initI18n` → `migrate` (nếu có save cũ) → tải tài nguyên với `loadingProgress` → `ready()` → hiện menu → `loadingDone()` → `preroll()` (§2).
+3. `gameplayStart` / `gameplayStop` quanh lúc chơi thật (§4).
+4. Xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5).
+5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
+6. More Games, trademark, `V<version>` (§9).
+7. Tracking để phân tích game: làm theo quy trình [ANALYTICS.md §6](docs/ANALYTICS.md), không chờ ai viết sẵn.
+   - đọc code, gắn bộ chuẩn §3 và bộ phân tích §4 qua một module tracking của game;
+   - rồi **sinh** `docs/GMSDK_JS/analytics.json` từ chính những gì đã gắn.
+
+## Bước 4. Game cũ: bỏ những gì SDK đã làm
+
+| Cũ | Mới |
+| --- | --- |
+| `gmsdkv2.js`, `GMSOFT_SDKTYPE`, `GMSOFT_SIGNED`, `GMSOFT_ADS_INFO`, `GMSOFT_GAME_INFO` | Bỏ hết. Template mới không còn global `GMSOFT_*` |
+| Gọi thẳng `PokiSDK`, `CrazyGames.SDK`, `gdsdk`, `adsbygoogle`, WeeGoo | `sdk.interstitial` / `rewarded` / `preroll` / `gameplayStart`… |
+| Tự giãn cách quảng cáo theo thời gian, tự đếm tạm dừng lồng nhau | Bỏ: SDK làm. Giữ luật theo nhịp game (không quảng cáo sau ván đầu…) |
+| Tự khoá domain, tự chuyển hướng (`isDiffHost`, danh sách host) | Bỏ: licence của API và tool build làm |
+| Firebase, `firebaseLogEvent`, `gmEvent`, `gmStartGame`, `GMGameSDK` tự nạp | `sdk.track`. Bỏ `loaded_game`, `start_game`, `SessionTime`, `LiveTime`, `ad_*` tự gửi: SDK đã gửi |
+| `localStorage` trực tiếp, nhiều key | `sdk.storage` một key; key cũ chuyển bằng `migrate` |
+| `AZ_SETTINGS.gameCode`, `AZ_SETTINGS.language` | `game.json` (`gameCode`, `defaultLanguage`) |
+| Build riêng cho từng portal (`dist-gd`, `dist-poki`, `dist-crazygames`, `.env.<portal>`, `VITE_PORTAL`, obfuscate riêng cho GD) | **Một** gói xuất ([EXPORT.md §2](docs/EXPORT.md)). Key GD vào `config.json` → `gdKey` (build chép sang `game.json`); preset từng portal nằm trong template của tool build. Bỏ mọi `if (portal === …)` trong code |
+
+Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|CrazyGames|gdsdk|adsbygoogle|firebase|GMGameSDK" src`. Chỉ `src/sdk/gmsdkjs-shim.js` được phép còn `localStorage`.
+
+## Bước 5. Thử và giao
+
+1. Chạy trang dev (`adsTest: true`) theo [TESTING.md](docs/TESTING.md), kiểm theo [QA.md §3](docs/QA.md) những mục kiểm được trên máy này (quảng cáo, tạm dừng, âm thanh, lưu trữ, ngôn ngữ, bố cục ở cả hai chiều, tracking, gói xuất).
+2. Chạy typecheck / lint / test có sẵn của repo.
+3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
+4. Báo cáo cho chủ game:
+   - những gì đã thay;
+   - trường hợp đã làm (game mới / gắn SDK / nâng cấp: các mục CHANGELOG đã làm);
+   - sự kiện đã gắn và `analytics.json` đã sinh (mục nào của ANALYTICS §4 game không có, vì sao);
+   - `licenses.json`: asset nào còn `unknown`, giấy phép nào cần ghi công, cần chủ game xác nhận gì;
+   - giá trị còn chờ (Bước 0);
+   - từng dòng `notes` đã làm thế nào;
+   - kết quả QA theo mẫu [QA.md §6](docs/QA.md), kể cả §3.9 trải nghiệm: mỗi mục Pass / Major / Minor / N/A; mục cần máy thật (iPhone, Android, Chromebook) hoặc portal thật thì ghi "chưa kiểm được" kèm lý do, không ghi Pass;
+   - phần trải nghiệm ([UX.md](docs/UX.md)) còn thiếu, kèm đề xuất;
+   - marketing kit: kết quả `node docs/GMSDK_JS/tools/check-marketing.mjs`; chưa đạt thì ghi rõ, và nhắc chủ game kéo [PROMPT_MARKETING.md](PROMPT_MARKETING.md) ([HANDOFF.md](docs/HANDOFF.md)). Không tự dựng kit nếu không được yêu cầu.

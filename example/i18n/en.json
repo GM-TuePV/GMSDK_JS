@@ -1,0 +1,14 @@
+{
+  "play": "Play",
+  "tap": "Tap!",
+  "score": "Score: {0}",
+  "best_score": "Best: {0}",
+  "game_over": "Time's up",
+  "double_score": "Watch an ad: double score",
+  "menu": "Menu",
+  "more_games": "More games",
+  "sound_on": "Sound: on",
+  "sound_off": "Sound: off",
+  "load_failed": "Couldn't load the game. Please check your internet connection and try again.",
+  "try_again": "Try again"
+}
