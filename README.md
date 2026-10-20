@@ -62,7 +62,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
 | [docs/LOADING.md](docs/LOADING.md) | Màn loading mặc định (GM Loader v1 của kit 2.x) và dòng bản quyền mặc định `© 2026 Azgames.io` |
 | `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js` (+ `.d.ts`), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
-| `loading/` | Màn loading mặc định: `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `assets/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/assets/loading/`, thay `loading.webp` bằng key art của game |
+| `loading/` | Màn loading mặc định: `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `Icons/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/Icons/` (thư mục riêng, tên cố định để dễ tìm, dễ thay), thay `loading.webp` bằng key art của game |
 | `leaderboard/` | Game có bảng xếp hạng: `leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`) chép vào `src/sdk/leaderboard/`; `flags/`, `countries.json` chép vào `public/assets/leaderboard/` |
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |

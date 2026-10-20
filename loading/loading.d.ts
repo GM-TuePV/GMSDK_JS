@@ -16,7 +16,7 @@ export function createLoader(o?: {
   sdk?: { loadingProgress?(p: number): void };
   /** Default: the page <title>. */
   title?: string;
-  /** Folder of loading.webp and logo.webp, default 'assets/loading/'. */
+  /** Folder of loading.webp and logo.webp, default 'Icons/'. */
   assets?: string;
   /** Corner text, default GMSDKJS_OPTIONS.version. */
   version?: string;

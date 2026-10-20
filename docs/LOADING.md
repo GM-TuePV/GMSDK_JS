@@ -9,8 +9,9 @@
 | Từ kit | Vào game |
 | --- | --- |
 | `loading/loading.js` (+ `loading.d.ts` nếu dùng TypeScript) | `src/sdk/loading/` |
-| `loading/assets/loading.webp`, `logo.webp` | `public/assets/loading/` |
+| `loading/Icons/loading.webp`, `logo.webp` | `public/Icons/` (trong gói: `Icons/` ở gốc) |
 
+- **Ảnh của màn loading nằm riêng trong `Icons/`, tên file cố định**, để sau này dễ tìm, dễ thay: thay ảnh là chép đè `public/Icons/loading.webp` rồi build lại (hoặc chép đè `Icons/loading.webp` trong gói đã build rồi đóng lại zip, [EXPORT.md §8](EXPORT.md)). Không để ảnh loading ở chỗ khác, không đổi tên.
 - **`loading.webp` là key art của game** (16:9 hoặc vuông, cạnh dài ≥ 1024): thay ảnh mẫu của kit. `check-export` cảnh báo khi còn ảnh mẫu, báo lỗi khi thiếu file.
 - **`logo.webp`** là logo AZGAMES của kit 2.x, dùng chung mọi game: không sửa. Trên trang GameDistribution / CrazyGames / Poki (`sdkType` `gd` / `crazy` / `poki`, hoặc `trademark: false`) màn tự bỏ logo (không thương hiệu publisher ở đó, [QA.md](QA.md) 7.4).
 - Chữ trên màn (`Loading...`, `Almost there...`, `Connection problem. Tap to retry.`) **tiếng Anh cứng**: hiện trước khi `i18n/` tải xong.
@@ -37,7 +38,7 @@ boot().catch(() => loader.error());              // "Connection problem. Tap to 
 
 | Hàm | Làm gì |
 | --- | --- |
-| `createLoader({ sdk?, title?, assets?, version? })` | Dựng màn ngay. `assets` mặc định `assets/loading/`; `version` mặc định `GMSDKJS_OPTIONS.version` |
+| `createLoader({ sdk?, title?, assets?, version? })` | Dựng màn ngay. `assets` mặc định `Icons/`; `version` mặc định `GMSDKJS_OPTIONS.version` |
 | `loader.progress(f)` | Thanh tiến độ (0..1): vòng xoay tới khi có số đầu tiên, rồi %, "Almost there..." từ 99%. Gọi luôn `sdk.loadingProgress(f)` |
 | `loader.setTitle(name)` | Tên game (sau khi đọc `game.json`) |
 | `loader.error(onRetry?)` | Tải lỗi: dòng "Connection problem. Tap to retry.", bấm thì `onRetry` (mặc định tải lại trang) |

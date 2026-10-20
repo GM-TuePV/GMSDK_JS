@@ -400,7 +400,7 @@ function checkPackage() {
   }
 
   // files at the root
-  const ALLOWED_ROOT = new Set(['game.json', entry, 'i18n', 'assets']);
+  const ALLOWED_ROOT = new Set(['game.json', entry, 'i18n', 'Icons', 'assets']);
   if (existsSync(join(dir, 'Language'))) {
     ALLOWED_ROOT.add('Language'); // reported here, not again below
     err('Language/ is not read: move each file to i18n/<tag>.json (BCP 47 tags, docs/INTEGRATION.md §7)');
@@ -417,7 +417,7 @@ function checkPackage() {
   for (const name of readdirSync(dir)) {
     if (ALLOWED_ROOT.has(name)) continue;
     if (name === 'index.html' || name === 'preview.html') continue; // reported above
-    warn(`unexpected at the root: ${name} (only game.json, ${entry}, i18n/, assets/)`);
+    warn(`unexpected at the root: ${name} (only game.json, ${entry}, i18n/, Icons/, assets/)`);
   }
 
   // the entry script
@@ -427,7 +427,7 @@ function checkPackage() {
     const js = readFileSync(entryPath, 'utf8');
     if (/createElement\(\s*["'`]script["'`]\s*\)/.test(js)) warn(`${entry} creates <script> tags: no outside script may be loaded (the SDK loads what it needs)`);
     if (/import\(\s*["'`]https?:/.test(js)) err(`${entry} imports a module from a URL: no outside script may be loaded`);
-    if (/["'`]\/(assets|i18n|Language)\//.test(js)) err(`${entry} uses an absolute path ("/assets/…" or "/i18n/…"): every path must be relative`);
+    if (/["'`]\/(assets|i18n|Icons|Language)\//.test(js)) err(`${entry} uses an absolute path ("/assets/…" or "/i18n/…"): every path must be relative`);
     if (!/getSDK|GMSDKJS/.test(js)) warn(`${entry} never mentions getSDK / GMSDKJS: is the SDK wired in?`);
     // Literal asset paths whose file is not in the package (a renamed file of tools/compress.mjs missed, a typo).
     const missingAssets = [...new Set((js.match(/["'`](assets\/[^"'`?#\s]+\.(?:png|webp|jpe?g|mp3|ogg|wav|m4a|json))["'`?#]/gi) ?? []).map((m) => m.slice(1, -1)))].filter((p) => !existsSync(join(dir, p)));
@@ -436,12 +436,14 @@ function checkPackage() {
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
     // The default loading screen (loading/loading.js): the game's key art and the logo in the package.
     if (/gmLoaderFill/.test(js)) {
-      const art = join(dir, 'assets/loading/loading.webp');
-      for (const need of ['assets/loading/loading.webp', 'assets/loading/logo.webp']) {
-        if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/loading/assets/ to public/assets/loading/ and put the game's key art in loading.webp (docs/LOADING.md)`);
+      // Icons/ at the root of the package, fixed names: easy to find and to swap later (docs/LOADING.md).
+      const art = join(dir, 'Icons/loading.webp');
+      for (const need of ['Icons/loading.webp', 'Icons/logo.webp']) {
+        if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/loading/Icons/ to public/Icons/ and put the game's key art in loading.webp (docs/LOADING.md)`);
       }
-      const sample = join(KIT, 'loading/assets/loading.webp');
-      if (existsSync(art) && existsSync(sample) && readFileSync(art).equals(readFileSync(sample))) warn('assets/loading/loading.webp is still the kit sample: replace it with the game\'s key art (docs/LOADING.md)');
+      if (existsSync(join(dir, 'assets/loading'))) err('assets/loading/ is the old place of the loading images: move them to public/Icons/ (docs/LOADING.md)');
+      const sample = join(KIT, 'loading/Icons/loading.webp');
+      if (existsSync(art) && existsSync(sample) && readFileSync(art).equals(readFileSync(sample))) warn('Icons/loading.webp is still the kit sample: replace it with the game\'s key art (docs/LOADING.md)');
     }
     if (/gmlb-panel/.test(js)) {
       for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags/GLOBE.png']) {

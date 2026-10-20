@@ -1,5 +1,5 @@
 // Default loading screen (docs/LOADING.md): GM Loader v1 of azgames (sdk10/azgames_v1), the screen the 2.x kit shipped,
-// unchanged in look. Plain JS, no build step: copy the folder to src/sdk/loading/, its assets/ to public/assets/loading/.
+// unchanged in look. Plain JS, no build step: copy the folder to src/sdk/loading/, its Icons/ to public/Icons/.
 //
 // The export package has no page of its own (the platform template is the page, docs/EXPORT.md §1), so the screen is
 // built by game.js itself: call createLoader() on the first line of the entry module, before anything heavy, so it is
@@ -129,10 +129,10 @@ const el = (tag, cls) => {
  * @param {object} [o]
  * @param {object} [o.sdk]       getSDK(): progress is forwarded to sdk.loadingProgress
  * @param {string} [o.title]     game name; default the page <title> (the template's PRODUCT_NAME)
- * @param {string} [o.assets]    folder of loading.webp (the game's key art) and logo.webp, default assets/loading/
+ * @param {string} [o.assets]    folder of loading.webp (the game's key art) and logo.webp, default Icons/
  * @param {string} [o.version]   corner text; default GMSDKJS_OPTIONS.version (game.json version)
  */
-export function createLoader({ sdk, title, assets = 'assets/loading/', version } = {}) {
+export function createLoader({ sdk, title, assets = 'Icons/', version } = {}) {
   let root = document.getElementById('gmLoader');
   if (root) root.remove(); // one screen per page
   if (!document.getElementById('gmLoaderStyle')) {

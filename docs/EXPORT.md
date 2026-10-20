@@ -9,6 +9,7 @@ Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTI
 ├── game.json        manifest
 ├── game.js          toàn bộ code game: 1 file, ES2017+, đã minify, KHÔNG obfuscate
 ├── i18n/<thẻ>.json  mỗi ngôn ngữ một file, thẻ BCP 47: en.json, en-US.json, zh-TW.json (INTEGRATION.md §7)
+├── Icons/           ảnh màn loading: loading.webp, logo.webp (tên cố định, LOADING.md)
 ├── assets/…         ảnh, âm thanh, font, dữ liệu (giữ nguyên cấu trúc thư mục)
 ├── index.html       (sau bước ghép §7) trang gm: template của platform, đã điền
 ├── preview.html     (sau bước ghép §7) giống hệt index.html

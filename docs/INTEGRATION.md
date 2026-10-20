@@ -20,10 +20,12 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 ├── public/
 │   ├── game.json         manifest (EXPORT.md §2)
 │   ├── i18n/en.json      (+ mỗi ngôn ngữ một file, tên theo thẻ BCP 47: en-US.json, zh-TW.json…)
+│   ├── Icons/            ảnh màn loading, tên cố định: loading.webp (key art), logo.webp (LOADING.md)
 │   └── assets/…
 └── src/
     ├── main.js           entry của game
     └── sdk/              chép từ kit: gmsdkjs-shim.js, i18n.js, net.js (+ gmsdkjs-shim.d.ts, net.d.ts nếu dùng TypeScript)
+        ├── loading/      chép từ kit: màn loading mặc định (LOADING.md)
         └── leaderboard/  chép từ kit khi game có bảng xếp hạng (LEADERBOARD.md §2); cờ ở public/assets/leaderboard/
 ```
 

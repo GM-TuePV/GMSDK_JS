@@ -11,7 +11,7 @@ import { openLeaderboard } from '../leaderboard/ui.js';
 // 1. The SDK first, with the game's own code: used for the save key if the page has no options block.
 const sdk = getSDK({ gameCode: 'g0' });
 // 1b. The loading screen (GM Loader v1), on screen as soon as this script runs (docs/LOADING.md).
-const loader = createLoader({ sdk, assets: '../loading/assets/' });
+const loader = createLoader({ sdk, assets: '../loading/Icons/' });
 
 const root = document.getElementById('game');
 const log = (text) => {
