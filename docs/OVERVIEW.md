@@ -98,6 +98,9 @@ File: `gmsdkjs-server/gmsdkjs_dev.js` (bàn giao cho server). Chi tiết và th�
 | `assemble` | Template phải nạp `game.js` | Template phải nạp `loader.js`; template cũ → báo lỗi |
 | Trang dev | Thẻ `gmsdkjs.js` + `<script type="module" src="src/main.js">` | `<script src="loader.js" data-entry="src/main.js" data-module>` |
 | QA | 1.4: chặn gmsdkjs vẫn chơi được | 1.4: chặn gmsdkjs → màn Reload sau 3 lần; 1.6: màn loading hiện ngay; 5.1: save không đọc được; 5.6 mới: sửa tay save → bỏ |
+| QA 8 cỡ màn hình | Không có | §2.1: 8 cỡ (4 máy tính, 3 điện thoại, 1 iPad); `tools/screens.mjs` chụp menu, AI chụp lúc chơi; ảnh ở `export/qa-<version>/`, không commit; bảng kết quả trong báo cáo QA |
+| Marketing | Cover / banner vẽ theo mô tả + art của game | Bắt buộc 3–5 ảnh gameplay thật (`export/marketing-ref/`) đính kèm mọi prompt; ảnh phải sát gameplay, không thêm thứ game không có, không UI; duyệt cạnh ảnh gameplay |
+| Code game | | **Không `await` ở cấp ngoài cùng của file** (gói IIFE): mọi `await` trong `boot()`; `check-export --src` cảnh báo |
 
 Việc game phải làm để lên 1.0.1: [CHANGELOG.md](../CHANGELOG.md) mục 1.0.1.
 

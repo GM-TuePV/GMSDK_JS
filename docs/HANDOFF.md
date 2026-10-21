@@ -126,6 +126,11 @@ Mục 10 viết đúng dạng sau ở cả ba file, để `check-marketing` đ�
 
 Ảnh được vẽ bằng **Codex** (công cụ gen ảnh): mỗi phiên dán prompt chung trước, rồi dán từng prompt ảnh, kèm ảnh tham chiếu. AI (qua [PROMPT_MARKETING.md](../PROMPT_MARKETING.md)) viết các prompt này **từ art thật của game**: màu, nét, nhân vật, logo. Không viết prompt chung chung.
 
+**Ảnh gameplay thật làm tham chiếu (bắt buộc):** cover và banner phải **sát với gameplay**: người xem ảnh rồi vào game phải thấy đúng game đó (đúng nhân vật, đúng màn, đúng màu, đúng cảm giác chơi), không phải một game "đẹp hơn" do Codex tưởng tượng.
+- Trước khi viết prompt, chụp **3–5 ảnh lúc chơi thật** từ bản build: hành động chính của game, nhân vật / vật chính rõ nét, màn đặc trưng nhất, một khoảnh khắc gay cấn. Lấy luôn ảnh chụp lúc chơi của QA ([QA.md §2.1](QA.md)) ở cỡ 1920×1080 và 390×844; thiếu thì chụp thêm. Ảnh không có UI che (nếu game có chế độ ẩn HUD) thì tốt hơn.
+- Lưu ở `export/marketing-ref/<tên>.jpg` (không commit, như ảnh QA) và **liệt kê trong mục "Attach these images" của mọi prompt**, kể cả cover.
+- Prompt nêu rõ phải giữ gì từ ảnh gameplay: nhân vật, màn / bối cảnh, màu, góc nhìn, hành động. Được bố cục lại cho vừa khung và làm đẹp ánh sáng; **không thêm** nhân vật, vật, hiệu ứng, cảnh mà game không có; **không đưa UI của game** (HUD, nút, điểm) vào ảnh.
+
 **Thứ tự:**
 1. Vẽ cover `<id>-1920x1080` trước. Chủ game duyệt rồi chép vào `art/store/`.
 2. Mọi cỡ khác **kèm cover đã duyệt** làm tham chiếu: cùng nhân vật, cùng xe / vật chính, logo chép từ cover.
@@ -150,6 +155,7 @@ Keep the game's existing style exactly (reference images from the game are attac
 - Fills: <flat colours only / soft shading / …>; <what is never used: gradients, textures, glow…>.
 - Palette: <hex colours of the hero, the main objects, the backgrounds, the UI accent>.
 - Hero: <the main character / vehicle exactly as in the game: clothes, colours, proportions>. Never a generic replacement.
+- Every image must look like the game's real gameplay (screenshots attached): same scenes, same colours, same action. Nothing the game does not have; no game UI (HUD, buttons, score).
 - Logo: copy the attached logo exactly (lettering, colours, outline, stroke). Never retype it.
 - No text anywhere except the logo. No watermark, signature, © mark, publisher name or web address.
 - Opaque background (no transparency), sRGB.
@@ -173,12 +179,13 @@ Then for each image: open `art/prompts/store/<file>.md`, attach the listed image
 - <the logo file of the game>
 - <the hero's sprites: character, vehicle>
 - <the background / level the scene is set in>
+- export/marketing-ref/<gameplay shots>.jpg (real gameplay of this build: the scene, the hero, the colours to match)
 - art/store/<id>-1920x1080.png (the approved cover; not for the cover itself)
 
 ## Prompt
 
 ```
-<Use> for "<Game name>" (shown at <w>x<h> px): <the hero doing the core action of the game> in <the setting>, <the layout of this size from the table in docs/GMSDK_JS/docs/HANDOFF.md §4>. <The safe area of this size>. Match the attached cover: the same hero as in the game, the same <vehicle / main object>, the logo copied from the cover exactly, not retyped. No other text. Opaque.
+<Use> for "<Game name>" (shown at <w>x<h> px): <the hero doing the core action of the game> in <the setting>, <the layout of this size from the table in docs/GMSDK_JS/docs/HANDOFF.md §4>. <The safe area of this size>. It must look like the attached gameplay screenshots: the same hero, the same level / setting, the same colours, the same action; recompose and light it for this frame, but add nothing the game does not have, and no game UI (HUD, buttons, score). Match the attached cover: the same hero as in the game, the same <vehicle / main object>, the logo copied from the cover exactly, not retyped. No other text. Opaque.
 
 Style: match the attached game art exactly: <the outline and fill rules of MASTER.md in one sentence>. Output exactly <w>x<h> pixels.
 ```
@@ -210,3 +217,4 @@ Phần máy không kiểm được thì người tự soát:
 - [ ] Ba file cùng 10 mục, cùng số liệu.
 - [ ] Mở bản HTML: hero hiện trọn logo, Image kit đủ thẻ, đọc được trên điện thoại.
 - [ ] Xem từng ảnh ở đúng cỡ: logo đọc được (trừ 200×120), không chữ lạ, nhân vật giống trong game, bố cục đúng bảng §4.
+- [ ] **Đặt cover và từng banner cạnh ảnh gameplay** (`export/marketing-ref/`): một người chưa chơi nhìn hai ảnh phải nhận ra là cùng một game. Không có nhân vật, vật, cảnh hay hiệu ứng mà game không có; không có UI của game.

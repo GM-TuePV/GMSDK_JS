@@ -56,4 +56,4 @@ Ví dụ trong kit: chạy `npx --yes http-server <kit> -p 8080` rồi mở `htt
 
 ## 4. Kiểm trước khi giao gói
 
-Checklist, mức lỗi và mẫu báo cáo: [QA.md](QA.md). Trên trang dev kiểm được phần quảng cáo, tạm dừng, chịu lỗi, lưu trữ, ngôn ngữ, tracking và gói xuất. Phần xoay máy, âm thanh trên iOS / Android và hiệu năng cần máy thật (QA.md §2).
+Checklist, mức lỗi và mẫu báo cáo: [QA.md](QA.md). 8 cỡ màn hình chụp bằng `node docs/GMSDK_JS/tools/screens.mjs` trên gói đã ghép ([QA.md §2.1](QA.md)). Trên trang dev kiểm được phần quảng cáo, tạm dừng, chịu lỗi, lưu trữ, ngôn ngữ, tracking và gói xuất. Phần xoay máy, âm thanh trên iOS / Android và hiệu năng cần máy thật (QA.md §2).

@@ -26,8 +26,9 @@ Chờ trả lời rồi mới viết.
 
 ## Bước 3. Ảnh
 
+0. **Ảnh gameplay thật (bắt buộc, trước mọi prompt):** chụp 3–5 ảnh lúc chơi thật từ bản build (lấy ảnh lúc chơi của QA 8 cỡ, [QA.md §2.1](docs/GMSDK_JS/docs/QA.md), thiếu thì chụp thêm) vào `export/marketing-ref/` (không commit). Cover và banner phải sát gameplay: HANDOFF.md §6.
 1. **Ảnh còn thiếu:** viết `art/prompts/MASTER.md` và một `art/prompts/store/<id>-<w>x<h>.md` cho mỗi cỡ thiếu, theo mẫu HANDOFF.md §6.
-   - Màu, nét, nhân vật, logo lấy từ **art thật** của game. Mỗi file ghi rõ những ảnh của game cần đính kèm.
+   - Màu, nét, nhân vật, logo lấy từ **art thật** của game; cảnh, màu, hành động lấy từ **ảnh gameplay thật** ở bước 0. Mỗi file ghi rõ những ảnh cần đính kèm, luôn gồm ảnh gameplay.
    - Cover `1920x1080` đi trước, mọi cỡ khác đính kèm cover đã duyệt.
    - Dừng ở đây và báo chủ game: chạy prompt trong Codex, duyệt, chép ảnh vào `art/store/`.
 2. **Ảnh đã có:** xuất vào `marketing/<id>/images/` (PNG, bản chính) và `images/jpg/` (JPG), đúng tên, đúng pixel, nền đặc.
@@ -43,6 +44,7 @@ Viết `marketing/<id>/<id>-content-brief.md` (tiếng Việt), `.en.md` và `.e
 - `node docs/GMSDK_JS/tools/check-marketing.mjs` phải báo `OK`. Đọc cả các cảnh báo.
 - Grep chữ của ba file với danh sách tên cấm ở Bước 2, cộng các tính năng chưa mở: phải ra 0 kết quả.
 - Mở bản HTML trong trình duyệt, chụp màn hình phần hero và Image kit để soát.
+- Đặt cover và từng banner cạnh ảnh gameplay ở `export/marketing-ref/`: phải nhận ra cùng một game, không có thứ game không có, không UI của game. Ảnh nào lệch thì sửa prompt và vẽ lại.
 - Báo cáo:
   - đường dẫn kit;
   - ảnh đã có, ảnh còn thiếu kèm đường dẫn file prompt Codex của từng ảnh;

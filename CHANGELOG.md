@@ -34,19 +34,25 @@ Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); tha
 - gmsdkjs 1.0.1 (server) không còn lưu dữ liệu game, chỉ giữ tên GMA ở `gma_<gameCode>.name`, và bỏ `sdk.storage`.
 - Template của portal 1.0.1: bỏ thẻ `gmsdkjs.js` và `game.js`, chỉ nạp `loader.js`; thêm `sdkUrl` và `language: "<!--LANGUAGE-->"`.
 - Tool: `check-export` đòi `loader.js` (bằng bản của kit, khác thì cảnh báo) và `Icons/` trong mọi gói, báo lỗi template cũ / màn loading tự dựng trong `game.js`, cho phép `src/sdk/storage.js` dùng `localStorage`; `assemble` báo lỗi template cũ. `template/index.html` nạp `loader.js` với `data-entry="src/main.js" data-module`. QA 1.4, 1.6, 5.1 viết lại, thêm 5.6.
+- **Không `await` ở cấp ngoài cùng của file**: gói IIFE không build được (Vite: "iife does not support top-level await"). Mọi `await` trong `async function boot()`; `check-export --src` cảnh báo dòng nghi là top-level await ([EXPORT.md §3](docs/EXPORT.md)).
+- **QA 8 cỡ màn hình** ([QA.md §2.1](docs/QA.md)): 1920×1080, 1366×768, 1536×864, 1280×720, 390×844, 360×800, 844×390, 1024×768. Tool mới `tools/screens.mjs` (Playwright) chụp màn menu ở cả 8 cỡ vào `export/qa-<version>/` + bảng `screens.md`; AI chụp thêm lúc chơi, xem từng ảnh, ghi bảng "Màn hình" trong `docs/qa/<version>.md`. Ảnh không commit.
+- **Marketing sát gameplay** ([HANDOFF.md §6](docs/HANDOFF.md), [PROMPT_MARKETING.md](PROMPT_MARKETING.md)): chụp 3–5 ảnh gameplay thật vào `export/marketing-ref/` trước khi viết prompt; mọi prompt cover / banner đính kèm và phải giống gameplay (không thêm thứ game không có, không UI của game); bước duyệt đặt ảnh cạnh gameplay.
 
 **Dấu hiệu** (còn một trong các điều này là phải làm)
 - Không có `public/loader.js`, hoặc nó khác `docs/GMSDK_JS/loading/loader.js`.
 - `index.html` (trang dev) còn thẻ `gmsoft-jssdk` / `gmsdkjs.js`, hoặc nạp entry trực tiếp thay vì qua `loader.js`.
 - Code gọi `getSDK(` ở đầu entry mà không có `loadSDK(`; gọi `createLoader({ sdk` (tham số cũ); gọi `sdk.loadingDone()` cạnh `loader.hide()`.
 - Không có `src/sdk/storage.js`, hoặc `src/sdk/gmsdkjs-shim.js` còn chứa `createStorage({ key, getLs`.
+- Code có `await` ở cấp ngoài cùng của file (`check-export --src` cảnh báo).
+- `docs/qa/<version>.md` của bản build gần nhất chưa có bảng "Màn hình" 8 cỡ.
 
 **Game cần làm**
 1. Chép `loading/loader.js` → `public/loader.js`; chép lại `loading/loading.js` (+ `.d.ts`) và `sdk/` (thêm `storage.js` + `.d.ts`) vào `src/sdk/`.
 2. Trang dev `index.html`: bỏ thẻ `gmsdkjs.js`; thay thẻ entry bằng `<script src="loader.js" data-entry="src/main.js" data-module></script>` (như `template/index.html`).
 3. Entry: `sdk = await loadSDK({ gameCode })` là việc đầu tiên trong hàm khởi động (không `await` cấp cao nhất: gói IIFE), thay `getSDK(...)`; `const loader = createLoader()`; bỏ `sdk.loadingDone()` sau `loader.hide()`. Game có màn loading riêng thì bỏ, dùng màn của `loader.js` ([LOADING.md](docs/LOADING.md)).
 4. Save: không phải sửa code (`sdk.storage` giữ nguyên hàm). Rà luật lưu gọn ở [INTEGRATION.md §6](docs/INTEGRATION.md). Save dạng JSON cũ của `azgames.<gameCode>` không đọc được nữa (chưa có người chơi thật nên không chuyển).
-5. Build, `check-export` → `OK`; thử QA 1.4 (chặn `gmsdkjs.js` trên gói xuất → màn Reload), 1.6, 5.1, 5.6.
+5. Chuyển mọi `await` ở cấp ngoài cùng vào trong `boot()`.
+6. Build, `check-export` → `OK`; chụp 8 cỡ màn hình (`tools/screens.mjs` + ảnh lúc chơi) vào báo cáo QA; thử QA 1.4 (chặn `gmsdkjs.js` trên gói xuất → màn Reload), 1.6, 5.1, 5.6.
 
 ## 1.0.0 — 2026-10-20
 

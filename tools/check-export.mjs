@@ -551,6 +551,11 @@ if (srcDir) {
         if (/\b(localStorage|sessionStorage)\b/.test(line) && !/^\s*(\/\/|\/?\*)/.test(line)) {
           err(`${relative(process.cwd(), f)}:${i + 1} uses ${line.match(/localStorage|sessionStorage/)[0]} directly: save through sdk.storage`);
         }
+        // Top-level await (an unindented line with await): the export package is an iife, which cannot have it
+        // (Vite: "iife does not support top-level await"). Await inside boot() (docs/EXPORT.md §3).
+        if (/^[^\s/*][^]*\bawait\b/.test(line) && !/^\s*(\/\/|\/?\*)/.test(line) && !/^(export\s+)?(async\s+)?function\b|=>/.test(line)) {
+          warn(`${relative(process.cwd(), f)}:${i + 1} looks like a top-level await: put it inside an async function (boot()), the export package is an iife (docs/EXPORT.md §3)`);
+        }
       });
     }
   }

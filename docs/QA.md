@@ -43,6 +43,27 @@ Bộ máy tối thiểu, gồm bộ GD dùng cộng thêm máy yếu:
 | Máy yếu: Chromebook 4 GB RAM, hoặc DevTools → Performance → CPU chậm 6 lần | CrazyGames tắt game không mượt trên Chromebook 4 GB [CG] |
 | Game trong iframe nhỏ (khoảng 800×450) | Portal nào cũng nhúng game vào iframe |
 
+### 2.1 Tám cỡ màn hình (bắt buộc mỗi bản build)
+
+Mỗi bản build chụp màn game ở **8 cỡ** dưới đây, xem từng ảnh, ghi kết quả vào báo cáo (§6). Cỡ tính theo CSS px; điện thoại và máy tính bảng giả lập có cảm ứng và đúng tỉ lệ điểm ảnh (DPR).
+
+| # | Cỡ | DPR | Đại diện |
+| --- | --- | --- | --- |
+| 1 | 1920×1080 | 1 | Máy tính Full HD |
+| 2 | 1366×768 | 1 | Laptop phổ thông |
+| 3 | 1536×864 | 1,25 | Laptop Windows phóng 125 % |
+| 4 | 1280×720 | 1 | Khung game 16:9 trên portal |
+| 5 | 390×844 | 3 | iPhone dọc |
+| 6 | 360×800 | 3 | Android dọc |
+| 7 | 844×390 | 3 | Điện thoại ngang |
+| 8 | 1024×768 | 2 | iPad ngang |
+
+- **Chụp màn đầu (menu):** `node docs/GMSDK_JS/tools/screens.mjs` trên gói đã ghép trang gm (sau `assemble`). Tool mở gói ở từng cỡ, chờ `loader.js` ẩn màn loading, chụp, ghi `export/qa-<version>/<rộng>x<cao>.jpg` và bảng `export/qa-<version>/screens.md`. Cần Playwright trong repo game: `npm i -D playwright` rồi `npx playwright install chromium`, hoặc thêm `--channel msedge` / `chrome` để dùng trình duyệt có sẵn.
+- **Chụp lúc chơi:** AI tự vào chơi ở **mỗi cỡ** (Playwright, hoặc công cụ chơi thử của app) và chụp ít nhất một khung gameplay + màn kết quả, lưu cạnh ảnh menu (`<rộng>x<cao>-play.jpg`, `<rộng>x<cao>-result.jpg`).
+- **Xem từng ảnh**, mỗi cỡ một dòng Đạt / Lỗi: chữ bị cắt hoặc quá nhỏ để đọc, nút chồng nhau hoặc ra ngoài màn, viền đen / khoảng trống (game phải phủ kín, §3.2), nút quá nhỏ để bấm trên điện thoại (dưới khoảng 44 CSS px), HUD che vùng chơi.
+- **Ảnh không commit** và không vào gói: `export/` không commit, `export/qa-<version>/` nằm ngoài thư mục gói nên không vào zip. Báo cáo chỉ ghi kết quả.
+- Ảnh chụp lúc chơi cũng là ảnh tham chiếu cho marketing kit ([HANDOFF.md §6](HANDOFF.md)).
+
 ## 3. Checklist nghiệm thu
 
 ### 3.1 Khởi chạy và ổn định
@@ -202,6 +223,16 @@ Chép vào báo cáo của bản build, lưu ở **`docs/qa/<version>.md`** (ví
 - URL test: <URL>
 - Máy: Windows + Chrome …, Android …, iPhone …, CPU 6×
 - Kết luận: GIAO / KHÔNG GIAO (Major: <n>, Minor: <n>)
+
+## Màn hình (§2.1): ảnh ở export/qa-<version>/
+
+| Cỡ | Menu | Lúc chơi | Kết quả | Ghi chú |
+| --- | --- | --- | --- | --- |
+| 1920×1080 | Đạt | Đạt | Pass | |
+| 390×844 | Đạt | Lỗi | Minor | Nút pause chồng lên điểm |
+| … (đủ 8 cỡ) | | | | |
+
+## Checklist (§3)
 
 | # | Kết quả | Ghi chú / video |
 | --- | --- | --- |

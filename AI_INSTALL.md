@@ -72,6 +72,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng của engine (tạm dừng, tắt tiếng, input, tiến độ tải, `#game`): [ENGINES.md](docs/ENGINES.md).
 1. `sdk = await loadSDK({ gameCode })` là việc đầu tiên trong hàm khởi động (chờ `loader.js` có gmsdkjs; không `await` cấp cao nhất vì gói là IIFE); `const loader = createLoader()`; `onPause` / `onResume` ngay sau đó (§2, §3).
 2. Khởi động: `game.json` → `initI18n` → `migrate` (nếu game từng tự lưu key khác) → tải tài nguyên với `loader.progress` → `ready()` → hiện menu → `loader.hide()` (đã gồm `loadingDone()`) → `preroll()` (§2).
+   **Không `await` ở cấp ngoài cùng của file** (gói IIFE không build được): mọi `await` nằm trong `async function boot()` ([EXPORT.md §3](docs/EXPORT.md)).
 3. `gameplayStart` / `gameplayStop` quanh lúc chơi thật (§4).
 4. Xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5).
 5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
@@ -101,8 +102,9 @@ Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|C
 1. Chạy trang dev (`adsTest: true`) theo [TESTING.md](docs/TESTING.md), kiểm theo [QA.md §3](docs/QA.md) những mục kiểm được trên máy này (quảng cáo, tạm dừng, âm thanh, lưu trữ, ngôn ngữ, bố cục ở cả hai chiều, tracking, gói xuất).
 2. Chạy typecheck / lint / test có sẵn của repo.
 3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/<id>-<version>/` và `export/<id>-<version>/<id>-<version>.zip`.
-4. Hỏi chủ game: "Đã build xong `<version>`. Commit và đẩy lên git không?" Đồng ý thì commit `Build <version>`, kiểm máy chủ có commit mới chưa (có thì dừng, không đẩy), đẩy, rồi in khối thông tin git ([EXPORT.md §9](docs/EXPORT.md)). Không đồng ý thì bỏ qua.
-5. Báo cáo cho chủ game:
+4. Chụp **8 cỡ màn hình** ([QA.md §2.1](docs/QA.md)): `node docs/GMSDK_JS/tools/screens.mjs` (màn menu), rồi tự vào chơi ở từng cỡ, chụp lúc chơi và màn kết quả; xem từng ảnh, ghi bảng "Màn hình" vào `docs/qa/<version>.md`. Ảnh để ở `export/qa-<version>/`, không commit.
+5. Hỏi chủ game: "Đã build xong `<version>`. Commit và đẩy lên git không?" Đồng ý thì commit `Build <version>`, kiểm máy chủ có commit mới chưa (có thì dừng, không đẩy), đẩy, rồi in khối thông tin git ([EXPORT.md §9](docs/EXPORT.md)). Không đồng ý thì bỏ qua.
+6. Báo cáo cho chủ game:
    - những gì đã thay;
    - file đã bỏ khỏi `public/` vì không dùng (gói chỉ chứa thứ game dùng, [EXPORT.md §3](docs/EXPORT.md)), dung lượng gói trước / sau;
    - trường hợp đã làm (game mới / gắn SDK / nâng cấp: các mục CHANGELOG đã làm);

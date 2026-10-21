@@ -63,6 +63,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 
 - **Hai file JS**: `loader.js` (kit, trang nạp) và `game.js` (game, `loader.js` nạp song song với `gmsdkjs.js`). Tool build obfuscate cả hai.
 - `game.js` là script thường (không phải module): xuất dạng IIFE hoặc script không có `import` / `export`. Nó có thể chạy **trước** khi `gmsdkjs.js` về, nên dòng đầu entry là `await loadSDK()` ([LOADING.md](LOADING.md)).
+- **Không `await` ở cấp ngoài cùng của file** (top-level await), ví dụ `const sdk = await loadSDK()` nằm ngoài hàm. Gói IIFE không có được: Vite báo lỗi "Module format iife does not support top-level await", esbuild cũng vậy. Mọi `await` nằm trong hàm, thường là `async function boot()` ([LOADING.md](LOADING.md)). `check-export --src` cảnh báo dòng nghi là top-level await.
 - Game vẽ vào phần tử `#game` của template (chiếm toàn trang).
 - Không nạp script ngoài, không `import()` từ URL. `gmsdkjs.js` do `loader.js` lo; SDK quảng cáo và GMA do `gmsdkjs.js` lo.
 - Mọi đường dẫn **tương đối** (`assets/…`, `i18n/…`): gói được đặt dưới một thư mục bất kỳ trên CDN.
