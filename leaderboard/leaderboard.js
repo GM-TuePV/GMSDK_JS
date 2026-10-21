@@ -132,27 +132,34 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
       track('leaderboard_ready', { ok: 0 });
       return false;
     }
-    // gmsdkjs signs a new player in with a random name and the US flag; the name and flag the player chose on this
-    // device win, and the server copy is updated to them (as the Unity build seeds an empty profile).
-    let p = {};
+    // The GMA profile is the player's real name and flag: the one they set in any game that shares this GMA player
+    // shows here too. The copy in this game's save is only a cache, used when the server cannot be read. One case
+    // goes the other way: the server still has gmsdkjs's random first name (playerXXXXXX) and this device has a
+    // name the player chose (a new GMA player on a new site / after cleared data): the chosen one is sent up.
+    let p = null;
     try {
-      p = (await gm.getMyProfile()) ?? {};
+      p = (await gm.getMyProfile()) ?? null;
     } catch (e) {
       console.warn('[leaderboard] profile:', reason(e));
     }
     const mine = saved();
+    const serverName = cleanName(p?.name);
+    const serverCountry = cleanCountry(p?.country);
+    const chosenHere = cleanName(mine.name);
+    const seed = p && chosenHere && (!serverName || DEFAULT_NAME.test(serverName)) && !DEFAULT_NAME.test(chosenHere);
     profile = {
       id: String(gm.getPlayerId() ?? ''),
-      name: cleanName(mine.name) || cleanName(p.name),
-      country: cleanCountry(mine.country) || cleanCountry(p.country),
+      name: seed ? chosenHere : serverName || chosenHere,
+      country: seed ? cleanCountry(mine.country) || serverCountry : serverCountry || cleanCountry(mine.country),
     };
-    if ((mine.name && profile.name !== p.name) || (mine.country && profile.country !== p.country)) {
+    if (seed) {
       try {
         await gm.updateMyProfile({ name: profile.name, country: profile.country });
       } catch (e) {
         console.warn('[leaderboard] profile update:', reason(e));
       }
     }
+    if (p) save(profile); // keep the cache in line with the server
     track('leaderboard_ready', { ok: 1 });
     return true;
   }

@@ -46,7 +46,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 | Hàm | Trả về | Ghi chú |
 | --- | --- | --- |
-| `createLeaderboard({ sdk, boardId, waitMs? })` | `board` | `sdk` = `getSDK()` (lưu tên / cờ đã chọn, gửi sự kiện). `waitMs` mặc định 20 000 |
+| `createLeaderboard({ sdk, boardId, waitMs? })` | `board` | `sdk` = `getSDK()` (bản sao tên / cờ trong save của game, gửi sự kiện). `waitMs` mặc định 20 000. **Tên và cờ lấy từ hồ sơ GMA** (`getMyProfile`): đặt ở game nào cùng người chơi GMA thì game khác cũng thấy. Bản trong save chỉ dùng khi không đọc được GMA; riêng khi GMA còn tên ngẫu nhiên `playerXXXXXX` mà máy có tên người chơi đã chọn thì tên đó được gửi lên |
 | `board.ready()` | `Promise<boolean>` | Đã đăng nhập, dùng được. Lần đầu chờ gmsdkjs tối đa `waitMs`; `false` thì lần gọi sau thử lại |
 | `board.player()` | `{ id, name, country } \| null` | `null` trước khi `ready()`. `country` là mã ISO (`US`, `VN`, `GB-ENG`), `''` = chưa chọn |
 | `board.needsName()` | `boolean` | Người chơi còn tên mặc định `playerXXXXXX` |
