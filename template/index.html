@@ -26,12 +26,11 @@
       debug: true                      // every SDK step in the console
     };
   </script>
-  <!-- The SDK: the one script every platform template loads (docs/API.md). -->
-  <script id="gmsoft-jssdk" src="https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js"></script>
 </head>
 <body>
   <div id="game"></div>
-  <!-- The game's entry: src/main.js while developing; game.js in the export package. -->
-  <script type="module" src="src/main.js"></script>
+  <!-- loader.js (public/loader.js) first, as on every platform page: the loading screen, then gmsdkjs.js and the
+       game side by side (docs/LOADING.md). The entry is src/main.js while developing; game.js in the export package. -->
+  <script src="loader.js" data-entry="src/main.js" data-module></script>
 </body>
 </html>

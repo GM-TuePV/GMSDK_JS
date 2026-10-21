@@ -18,14 +18,15 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 ├── index.html            trang dev = template/index.html (KHÔNG nằm trong gói xuất)
 ├── vite.config.mjs       = template/vite.config.mjs (nếu dùng Vite)
 ├── public/
+│   ├── loader.js         chép nguyên từ kit loading/loader.js: script đầu tiên của mọi trang (LOADING.md)
 │   ├── game.json         manifest (EXPORT.md §2)
 │   ├── i18n/en.json      (+ mỗi ngôn ngữ một file, tên theo thẻ BCP 47: en-US.json, zh-TW.json…)
 │   ├── Icons/            ảnh màn loading, tên cố định: loading.webp (key art), logo.webp (LOADING.md)
 │   └── assets/…
 └── src/
     ├── main.js           entry của game
-    └── sdk/              chép từ kit: gmsdkjs-shim.js, i18n.js, net.js (+ gmsdkjs-shim.d.ts, net.d.ts nếu dùng TypeScript)
-        ├── loading/      chép từ kit: màn loading mặc định (LOADING.md)
+    └── sdk/              chép từ kit: gmsdkjs-shim.js, storage.js, i18n.js, net.js, copyright.js (+ .d.ts nếu dùng TypeScript)
+        ├── loading/      chép từ kit: loading.js, điều khiển màn của loader.js (LOADING.md)
         └── leaderboard/  chép từ kit khi game có bảng xếp hạng (LEADERBOARD.md §2); cờ ở public/assets/leaderboard/
 ```
 
@@ -39,40 +40,43 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 - **Công cụ AI có thói quen ghi chỗ khác** (ví dụ plugin superpowers của Claude ghi `docs/superpowers/plans/`, `docs/superpowers/specs/`): theo kit thì kế hoạch và spec vào `docs/plan/`, thiết kế game vào `docs/gdd/`. `check-export` cảnh báo khi thiếu `docs/gdd/README.md`, `docs/plan/README.md`, hoặc còn tài liệu ở `docs/superpowers/`.
 - Thư mục làm việc khác ở gốc (`Apk/`, `_work/`, `tools/` của game port…) được phép: không vào gói vì bundler chỉ lấy `public/` và những gì `src/` dùng tới.
 
-- Các file trong `src/sdk/` **chép nguyên**, không sửa. Cập nhật thì chép lại từ kit (hoặc tải `https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs-shim.js` và `.d.ts`).
+- Các file trong `src/sdk/` và `public/loader.js` **chép nguyên từ kit**, không sửa. Cập nhật thì chép lại từ kit.
 - Không dùng Vite thì giữ đúng bố cục gói xuất ([EXPORT.md](EXPORT.md)) bằng bundler của game.
 
 ## 2. Thứ tự khởi động
 
+Trang chỉ nạp `loader.js`: màn loading đã hiện, `gmsdkjs.js` và `game.js` được tải song song (LOADING.md §1). Entry của game bắt đầu bằng việc chờ SDK:
+
 ```js
-import { getSDK } from './sdk/gmsdkjs-shim.js';
+import { loadSDK } from './sdk/gmsdkjs-shim.js';
 import { initI18n } from './sdk/i18n.js';
 import { loadJSON } from './sdk/net.js';
 import { createLoader } from './sdk/loading/loading.js';
 
-const sdk = getSDK({ gameCode: 'g131' });          // 1. SDK trước tiên
-const loader = createLoader({ sdk });              //    màn loading mặc định ngay sau (LOADING.md)
-sdk.onPause(pauseGame);                            // 2. tạm dừng / chạy lại, trước mọi quảng cáo
-sdk.onResume(resumeGame);
+const loader = createLoader();                     //    màn của loader.js: phần tải của game (LOADING.md)
+let sdk;
 
 async function boot() {
+  sdk = await loadSDK({ gameCode: 'g131' });       // 1. chờ loader.js có gmsdkjs (lỗi thì loader đã báo Reload)
+  sdk.onPause(pauseGame);                          // 2. tạm dừng / chạy lại, trước mọi quảng cáo
+  sdk.onResume(resumeGame);
   const manifest = await loadJSON('game.json');    // 3. manifest + tiếng Anh: lỗi thì "Try again"
   await initI18n({ languages: manifest.languages, defaultLanguage: manifest.defaultLanguage, storage: sdk.storage });
-  sdk.storage.migrate({ 'mygame.save': 'profile' }); // 4. key cũ (nếu game từng lưu kiểu khác)
+  sdk.storage.migrate({ 'mygame.save': 'profile' }); // 4. key cũ của chính game (nếu game từng tự lưu)
   loader.setTitle(manifest.name);
-  await loadAssets((p) => loader.progress(p));     // 5. tải tài nguyên, tiến độ 0..1 (gọi luôn sdk.loadingProgress)
+  await loadAssets((p) => loader.progress(p));     // 5. tải tài nguyên, tiến độ 0..1 → thanh 30 → 100 %
   await sdk.ready();                               // 6. licence + cấu hình quảng cáo (≤ 5 s)
   showMenu();
-  loader.hide();
-  sdk.loadingDone();                               // 7. menu đã hiện: gửi loaded_game
+  loader.hide();                                   // 7. menu đã hiện: ẩn màn + sdk.loadingDone() (loaded_game)
   await sdk.preroll();                             // 8. preroll nếu API bật (≤ 15 s), rồi cho chơi
 }
-boot().catch(() => loader.error());              // "Connection problem. Tap to retry."
+boot().catch(() => loader.error());              // "Connection problem…" + Reload
 ```
 
+- **Không `await` ở cấp cao nhất của module** (`const sdk = await loadSDK()` ngoài hàm): gói xuất là IIFE, Vite báo lỗi. Đặt trong `boot()` như trên.
 - `sdk.ready()` có thể chạy song song với bước tải tài nguyên. Chỉ cần xong trước khi hiện menu.
 - Không chờ quảng cáo trước khi hiện menu; preroll chạy khi menu đã hiện, game đã dừng nhờ `onPause`.
-- Màn loading mặc định: `loading/loading.js` (GM Loader v1 của kit 2.x, [LOADING.md](LOADING.md)). Game muốn màn riêng thì tự vẽ thanh tiến độ, gọi `sdk.loadingProgress(p)`, có màn "Try again"; logo publisher lấy bằng `sdk.brand.loadLogo()` (trả `null` thì bỏ qua).
+- Màn loading là của `loader.js` (GM Loader v1 của kit 2.x, [LOADING.md](LOADING.md)), mọi game dùng chung: game không tự vẽ màn loading riêng, chỉ báo tiến độ và `hide()`.
 
 ## 3. Tạm dừng khi có quảng cáo
 
@@ -130,10 +134,15 @@ sdk.storage.patch('profile', { best: Math.max(profile.best, score) });
 sdk.storage.patch('settings', { muted: true });
 ```
 
-- Vùng `settings` cho cài đặt, `profile` cho tiến trình. Thêm vùng riêng nếu cần (ví dụ `levels`). Không ghi vùng `sdk`.
+- **`sdk.storage` là bộ lưu của game** ([`sdk/storage.js`](../sdk/storage.js), kit), không phải của gmsdkjs: một key `azgames.<gameCode>` (`azgames.dev` khi chưa có mã thật). gmsdkjs chỉ giữ tên GMA ở key riêng `gma_<gameCode>.name`, không đụng save của game.
+- **Giá trị lưu được nén và trộn**: JSON → nén LZ (chuỗi UTF-16, khoảng 15 bit mỗi ký tự; localStorage tính theo ký tự) → trộn theo key → thêm mã kiểm. Save 9 KB JSON còn khoảng 1 KB. Mở DevTools không đọc được; **sửa tay một ký tự là hỏng**: save đó bị bỏ, người chơi chơi lại từ đầu, gửi tracking `save_tampered`. Chống sửa tay, không phải chống người đọc được code.
+- Mọi bước chạy đồng bộ (vài ms với save 40 KB) để lần ghi cuối lúc đóng tab chắc chắn xong.
+- Vùng `settings` cho cài đặt, `profile` cho tiến trình. Thêm vùng riêng nếu cần (ví dụ `levels`).
 - `get` trả bản sao: sửa xong phải `set` / `patch` lại.
-- Không cần tự gọi `flush()`; SDK ghi khi tab ẩn hoặc đóng. Gọi `flush()` ngay sau lúc quan trọng (mua hàng) nếu muốn chắc.
-- Game cũ từng lưu key khác: gọi `migrate()` một lần lúc khởi động (§2).
+- Không cần tự gọi `flush()`: ghi sau 300 ms, và ngay khi tab ẩn hoặc đóng. Gọi `flush()` sau lúc quan trọng (mua hàng) nếu muốn chắc; `false` = chưa ghi được (đầy, bị chặn), dữ liệu vẫn giữ trong bộ nhớ và được ghi lại lần sau, có tracking `save_failed`.
+- Debug: `sdk.storage.dump()` trả cả save dạng rõ (DevTools chỉ thấy chuỗi mã hoá); trang dev có sẵn `gmSave.dump()` ở console.
+- **Lưu gọn, vì save của mọi game cùng domain chia chung khoảng 5 MB trên máy người chơi**: không lưu thứ tính lại được (tổng sao, cấp từ điểm kinh nghiệm…), không lưu giá trị bằng mặc định, số nguyên thay số lẻ dài, danh sách dài thì gom gọn (sao của 100 màn: chuỗi `"3302…"` thay vì 100 object). Không đổi tên khoá thành a / b / c: nén đã lo phần lặp tên khoá. Save quá 128 K ký tự: tracking `save_large`.
+- Game từng tự lưu key khác: gọi `migrate()` một lần lúc khởi động (§2).
 
 ## 7. Ngôn ngữ (`sdk/i18n.js`)
 

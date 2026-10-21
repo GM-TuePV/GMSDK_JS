@@ -2,12 +2,14 @@
 
 Bộ chuẩn để gắn **gmsdkjs** vào một game web (JS / TS), hoặc làm game mới theo chuẩn. Cả kit nằm trong một folder, kể cả cấu hình của game (`config.json`): chép folder sang dự án khác là dùng được.
 
-**gmsdkjs** là một file duy nhất do template của platform nạp: `https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js`. Nó lo:
+**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js`, bản az ở `api.azgame.io`). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
 - licence, màn khoá và chuyển hướng theo API;
 - quảng cáo mọi network (AdSense H5, GameDistribution, CrazyGames, Poki, WeeGoo): preroll, xen giữa, thưởng, tạm dừng, giãn cách, chặn quảng cáo;
-- tracking GMA, lưu trữ một key `azgames.<gameCode>`, thương hiệu publisher.
+- tracking GMA (tên người chơi ẩn danh ở key riêng `gma_<gameCode>.name`), thương hiệu publisher.
 
-Game chỉ gọi vài hàm, qua `getSDK()`.
+**Lưu dữ liệu của game là của kit** (`sdk/storage.js`): một key `azgames.<gameCode>`, nén + mã hoá chống sửa tay ([docs/INTEGRATION.md §6](docs/INTEGRATION.md)).
+
+Game chỉ gọi vài hàm, qua `loadSDK()` / `getSDK()`. Tổng quan luồng chạy và ai lo phần nào: [docs/OVERVIEW.md](docs/OVERVIEW.md).
 
 ## Bắt đầu từ đâu
 
@@ -60,9 +62,10 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`marketing/<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
-| [docs/LOADING.md](docs/LOADING.md) | Màn loading mặc định (GM Loader v1 của kit 2.x) và dòng bản quyền mặc định `© 2026 Azgames.io` |
-| `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js` (+ `.d.ts`), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
-| `loading/` | Màn loading mặc định: `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `Icons/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/Icons/` (thư mục riêng, tên cố định để dễ tìm, dễ thay), thay `loading.webp` bằng key art của game |
+| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.1: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
+| [docs/LOADING.md](docs/LOADING.md) | Luồng tải `loader.js` (màn loading GM Loader v1, tải gmsdkjs + game, thử lại 3 lần) và dòng bản quyền mặc định `© 2026 Azgames.io` |
+| `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js`, `storage.js` (lưu của game: nén + mã hoá), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
+| `loading/` | `loader.js` chép vào `public/loader.js` (script đầu tiên của mọi trang); `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `Icons/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/Icons/` (thư mục riêng, tên cố định để dễ tìm, dễ thay), thay `loading.webp` bằng key art của game |
 | `leaderboard/` | Game có bảng xếp hạng: `leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`) chép vào `src/sdk/leaderboard/`; `flags/`, `countries.json` chép vào `public/assets/leaderboard/` |
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |
@@ -78,16 +81,18 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 
 | Phần | Ai lo |
 | --- | --- |
-| Licence, màn khoá, chuyển hướng, SDK quảng cáo, GMA, giãn cách quảng cáo | `gmsdkjs.js` |
+| Màn loading, tải `gmsdkjs.js` + `game.js` (thử lại 3 lần, báo tải lại trang) | `loader.js` của kit ([docs/LOADING.md](docs/LOADING.md)) |
+| Licence, màn khoá, chuyển hướng, SDK quảng cáo, GMA (tên ở `gma_<gameCode>.name`), giãn cách quảng cáo | `gmsdkjs.js` |
+| Lưu dữ liệu của game (`azgames.<gameCode>`, nén + mã hoá) | `sdk/storage.js` của kit, qua `sdk.storage` |
 | Trang HTML theo platform, `GMSDKJS_OPTIONS`, obfuscate, khoá domain, nén, CDN | Trang **Build SDK JS** và khung **SOURCE** của form game trên admin API: xem thử ở `game.1games.io`, phát hành lên CDN `gdn.1games.io` (api.1games.io `GMSDK_JS/docs/GUIDE.md`) |
 | Giá trị theo publisher (1games, azgames, ofree: API, trang chủ, GMA, thương hiệu) và theo portal (GD, CrazyGames, Poki) | `presets.json` của tool build (api.1games.io `lib/1games/gmsdkjs/templates/`). Game không chứa |
 | Bảng xếp hạng: gửi điểm, đọc bảng, tên + cờ (trên GMA, dùng lần đăng nhập của gmsdkjs) | `leaderboard/` của kit, chép vào game ([docs/LEADERBOARD.md](docs/LEADERBOARD.md)) |
-| Gameplay, màn loading, chỗ đặt quảng cáo, tạm dừng khi có quảng cáo, bảng dịch, nút More Games, nút bảng xếp hạng, sự kiện của game, hướng dẫn người chơi | Game, theo kit này |
+| Gameplay, tiến độ tải tài nguyên, chỗ đặt quảng cáo, tạm dừng khi có quảng cáo, bảng dịch, nút More Games, nút bảng xếp hạng, sự kiện của game, hướng dẫn người chơi | Game, theo kit này |
 
 ## Cập nhật
 
-- `gmsdkjs.js` cập nhật trên server, game không phải làm gì.
-- `sdk/gmsdkjs-shim.js` và `.d.ts` hiếm khi đổi. Bản mới nhất ở `https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs-shim.js` (và `.d.ts`); chép lại vào kit và vào game khi API thêm hàm.
+- `gmsdkjs.js` cập nhật trên server, game không phải làm gì (kit 1.0.1 cần gmsdkjs ≥ 1.0.1: bản cũ còn ghi vào `azgames.<gameCode>` và đè save của game).
+- `sdk/gmsdkjs-shim.js` từ 1.0.1 **do kit giữ** (không còn chép từ server): sửa ở kit, chép lại vào game.
 - **Bản gốc của kit: repo api.1games.io, `GMSDK_JS/kit/`** (cùng thư mục `GMSDK_JS/` với tool build `build/` và thiết kế `docs/`). Sửa kit ở đó, rồi chép sang game thành `docs/GMSDK_JS/`; bản trong repo game chỉ là bản chép. Bản gốc **không có `config.json`, `analytics.json`, `licenses.json`**, chỉ có các file mẫu `*.example.json`.
 - **Nâng cấp kit trong một game:** chép đè folder (giữ `config.json`, `analytics.json`, `licenses.json`), rồi kéo `PROMPT.md` vào khung chat. AI xét repo còn dấu hiệu của mục nào trong `CHANGELOG.md` thì làm mục đó.
 - **Sửa kit mà game phải làm theo** (đổi file, đổi bước build, đổi API): tăng `VERSION` (MAJOR / MINOR / PATCH theo bảng đầu `CHANGELOG.md`), thêm mục vào đầu `CHANGELOG.md` với "Thay đổi", "Dấu hiệu" và "Game cần làm".

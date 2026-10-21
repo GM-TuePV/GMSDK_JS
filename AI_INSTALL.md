@@ -29,7 +29,7 @@ Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay 
 | Khoá | Ví dụ | Dùng ở |
 | --- | --- | --- |
 | `id`: slug của game trên portal | `wheelie-spooky` | `game.json`, trang dev |
-| `gameCode`: `g<số>` | `g131` | `game.json`, trang dev, `getSDK({ gameCode })` |
+| `gameCode`: `g<số>` | `g131` | `game.json`, trang dev, `loadSDK({ gameCode })` |
 | `name`: tên hiển thị | `Wheelie Spooky` | `game.json` |
 | `languages`, `defaultLanguage` | `["en", "es", "zh-TW"]` / `en` (thẻ BCP 47) | `game.json`, `i18n/` |
 | `compress` | `{ "images": "normal", "audio": "normal", "keep": [] }` | Mức nén ảnh / nhạc khi build (`tools/compress.mjs`, [EXPORT.md §4](docs/EXPORT.md)). **Hỏi chủ game một lần:** "Nén ảnh (PNG → WebP) và nhạc (MP3) theo mức kit khuyến nghị không?" Mặc định có (`normal`); không thì `off`; ảnh code đọc từng điểm ảnh thì liệt kê ở `keep` |
@@ -55,9 +55,10 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 
 | Từ kit | Vào game | Ghi chú |
 | --- | --- | --- |
-| `loading/loading.js` (+ `loading.d.ts`); `loading/Icons/` | `src/sdk/loading/`; `public/Icons/` | Màn loading mặc định ([LOADING.md](docs/LOADING.md)). Thay `loading.webp` bằng key art của game; game có màn loading riêng đạt yêu cầu thì giữ của game |
-| `sdk/gmsdkjs-shim.js`, `sdk/gmsdkjs-shim.d.ts`, `sdk/i18n.js`, `sdk/net.js`, `sdk/net.d.ts`, `sdk/copyright.js`, `sdk/copyright.d.ts` | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
-| `template/index.html` | `index.html` ở gốc | Game đã có `index.html`: chỉ thêm khối `GMSDKJS_OPTIONS`, thẻ `gmsoft-jssdk` vào `<head>` và `<div id="game">`. Bỏ mọi thẻ `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
+| `loading/loader.js` | `public/loader.js` | **Bắt buộc, chép nguyên.** Script đầu tiên của mọi trang: màn loading, tải `gmsdkjs.js` + `game.js` ([LOADING.md](docs/LOADING.md)) |
+| `loading/loading.js` (+ `loading.d.ts`); `loading/Icons/` | `src/sdk/loading/`; `public/Icons/` | Phần game điều khiển màn của `loader.js`. Thay `loading.webp` bằng key art của game. Màn loading riêng của game (nếu có) bỏ: mọi game dùng màn của `loader.js` |
+| `sdk/gmsdkjs-shim.js`, `sdk/storage.js`, `sdk/i18n.js`, `sdk/net.js`, `sdk/copyright.js` (+ các `.d.ts`) | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` và `storage.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
+| `template/index.html` | `index.html` ở gốc | Trang dev. Game đã có `index.html`: thêm khối `GMSDKJS_OPTIONS` vào `<head>`, `<div id="game">`, và **chỉ một script** `<script src="loader.js" data-entry="src/main.js" data-module>` thay cho thẻ entry. Bỏ mọi thẻ `gmsdkjs.js`, `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
 | `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags/`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
 
@@ -69,8 +70,8 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 ## Bước 3. Nối SDK vào game
 
 Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng của engine (tạm dừng, tắt tiếng, input, tiến độ tải, `#game`): [ENGINES.md](docs/ENGINES.md).
-1. `const sdk = getSDK({ gameCode })` đầu tiên; `onPause` / `onResume` ngay sau đó (§3).
-2. Khởi động: `game.json` → `initI18n` → `migrate` (nếu có save cũ) → tải tài nguyên với `loadingProgress` → `ready()` → hiện menu → `loadingDone()` → `preroll()` (§2).
+1. `sdk = await loadSDK({ gameCode })` là việc đầu tiên trong hàm khởi động (chờ `loader.js` có gmsdkjs; không `await` cấp cao nhất vì gói là IIFE); `const loader = createLoader()`; `onPause` / `onResume` ngay sau đó (§2, §3).
+2. Khởi động: `game.json` → `initI18n` → `migrate` (nếu game từng tự lưu key khác) → tải tài nguyên với `loader.progress` → `ready()` → hiện menu → `loader.hide()` (đã gồm `loadingDone()`) → `preroll()` (§2).
 3. `gameplayStart` / `gameplayStop` quanh lúc chơi thật (§4).
 4. Xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5).
 5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
@@ -93,7 +94,7 @@ Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng c�
 | `AZ_SETTINGS.gameCode`, `AZ_SETTINGS.language` | `game.json` (`gameCode`, `defaultLanguage`) |
 | Build riêng cho từng portal (`dist-gd`, `dist-poki`, `dist-crazygames`, `.env.<portal>`, `VITE_PORTAL`, obfuscate riêng cho GD) | **Một** gói xuất ([EXPORT.md §2](docs/EXPORT.md)). Key GD vào `config.json` → `gdKey` (build chép sang `game.json`); preset từng portal nằm trong template của tool build. Bỏ mọi `if (portal === …)` trong code |
 
-Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|CrazyGames|gdsdk|adsbygoogle|firebase|GMGameSDK" src`. Chỉ `src/sdk/gmsdkjs-shim.js` được phép còn `localStorage`.
+Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|CrazyGames|gdsdk|adsbygoogle|firebase|GMGameSDK" src`. Chỉ `src/sdk/storage.js` được phép còn `localStorage`.
 
 ## Bước 5. Thử và giao
 

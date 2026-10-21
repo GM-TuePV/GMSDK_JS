@@ -13,6 +13,8 @@ Chép `template/index.html` về gốc repo game, điền ba giá trị chủ ga
 
 Chưa điền thì trang vẫn chạy (console báo lỗi tuỳ chọn, lưu tạm vào `azgames.dev`).
 
+Trang dev nạp `loader.js` (chép từ kit vào `public/loader.js`; Vite phục vụ `public/` ở gốc) với `data-entry="src/main.js" data-module`, như trang thật nạp `game.js`. Khác trang thật một điểm: `platform: 'dev'` cho chạy tiếp khi không tải được `gmsdkjs.js` (làm game khi mất mạng), nên **mục QA 1.4 phải thử trên gói xuất**. Gõ `gmSave.dump()` ở console để xem save dạng rõ (chỉ trang dev có `gmSave`).
+
 Các tuỳ chọn hay đổi khi thử:
 
 | Tuỳ chọn | Dùng để |

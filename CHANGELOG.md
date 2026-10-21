@@ -20,6 +20,34 @@ AI xét từng mục, từ cũ (dưới cùng) tới mới. Repo còn **dấu hi
 
 Thay đổi chỉ ở tài liệu thì không cần mục.
 
+## 1.0.1 — 2026-10-21
+
+### `loader.js` đi đầu, gmsdkjs bắt buộc; lưu dữ liệu về kit, nén + mã hoá
+
+Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); thay đổi này game **phải làm theo**. Cần **gmsdkjs ≥ 1.0.1** và **template 1.0.1** trên server ([OVERVIEW.md](docs/OVERVIEW.md) §4): gmsdkjs cũ còn ghi vào `azgames.<gameCode>` và đè save mới.
+
+**Thay đổi**
+- **`loader.js`** (`loading/loader.js` → `public/loader.js`, trong gói ở gốc): script **duy nhất** trang nạp. Hiện màn loading GM Loader v1 ngay (ảnh `Icons/`), tải `gmsdkjs.js` (`GMSDKJS_OPTIONS.sdkUrl`) và `game.js` **song song**, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây). gmsdkjs **bắt buộc**: 3 lần vẫn lỗi thì "Connection problem… reload the page" + nút Reload, game không chạy; chỉ trang dev (`platform: 'dev'`) chạy tiếp không SDK. Hai file chạy thanh 0 → 30 %, game báo phần còn lại ([LOADING.md](docs/LOADING.md)).
+- `loading/loading.js`: chỉ còn điều khiển màn của `loader.js` (`createLoader()` không tham số; `hide()` gọi luôn `sdk.loadingDone()`; `error(text?)` hiện màn Reload).
+- `sdk/gmsdkjs-shim.js`: kit giữ; thêm **`loadSDK({ gameCode })`** (chờ `loader.js` có gmsdkjs); mỗi hàm tìm `window.GMSDKJS` lúc gọi; bỏ bộ lưu chép từ gmsdkjs.
+- **`sdk/storage.js`** (mới): `sdk.storage` là bộ lưu **của game**. Key vẫn `azgames.<gameCode>`; giá trị `gm1` + mã kiểm + JSON nén LZ (UTF-16, lz-string 1.5.0, MIT) trộn theo key: nhỏ khoảng 10 lần, không đọc được, sửa tay một ký tự là save bị bỏ (`save_tampered`). Thêm `dump()`, `tampered`; tracking `save_failed`, `save_large`. Đồng bộ hoàn toàn. Trang dev có `gmSave.dump()` ở console ([INTEGRATION.md §6](docs/INTEGRATION.md)).
+- gmsdkjs 1.0.1 (server) không còn lưu dữ liệu game, chỉ giữ tên GMA ở `gma_<gameCode>.name`, và bỏ `sdk.storage`.
+- Template của portal 1.0.1: bỏ thẻ `gmsdkjs.js` và `game.js`, chỉ nạp `loader.js`; thêm `sdkUrl` và `language: "<!--LANGUAGE-->"`.
+- Tool: `check-export` đòi `loader.js` (bằng bản của kit, khác thì cảnh báo) và `Icons/` trong mọi gói, báo lỗi template cũ / màn loading tự dựng trong `game.js`, cho phép `src/sdk/storage.js` dùng `localStorage`; `assemble` báo lỗi template cũ. `template/index.html` nạp `loader.js` với `data-entry="src/main.js" data-module`. QA 1.4, 1.6, 5.1 viết lại, thêm 5.6.
+
+**Dấu hiệu** (còn một trong các điều này là phải làm)
+- Không có `public/loader.js`, hoặc nó khác `docs/GMSDK_JS/loading/loader.js`.
+- `index.html` (trang dev) còn thẻ `gmsoft-jssdk` / `gmsdkjs.js`, hoặc nạp entry trực tiếp thay vì qua `loader.js`.
+- Code gọi `getSDK(` ở đầu entry mà không có `loadSDK(`; gọi `createLoader({ sdk` (tham số cũ); gọi `sdk.loadingDone()` cạnh `loader.hide()`.
+- Không có `src/sdk/storage.js`, hoặc `src/sdk/gmsdkjs-shim.js` còn chứa `createStorage({ key, getLs`.
+
+**Game cần làm**
+1. Chép `loading/loader.js` → `public/loader.js`; chép lại `loading/loading.js` (+ `.d.ts`) và `sdk/` (thêm `storage.js` + `.d.ts`) vào `src/sdk/`.
+2. Trang dev `index.html`: bỏ thẻ `gmsdkjs.js`; thay thẻ entry bằng `<script src="loader.js" data-entry="src/main.js" data-module></script>` (như `template/index.html`).
+3. Entry: `sdk = await loadSDK({ gameCode })` là việc đầu tiên trong hàm khởi động (không `await` cấp cao nhất: gói IIFE), thay `getSDK(...)`; `const loader = createLoader()`; bỏ `sdk.loadingDone()` sau `loader.hide()`. Game có màn loading riêng thì bỏ, dùng màn của `loader.js` ([LOADING.md](docs/LOADING.md)).
+4. Save: không phải sửa code (`sdk.storage` giữ nguyên hàm). Rà luật lưu gọn ở [INTEGRATION.md §6](docs/INTEGRATION.md). Save dạng JSON cũ của `azgames.<gameCode>` không đọc được nữa (chưa có người chơi thật nên không chuyển).
+5. Build, `check-export` → `OK`; thử QA 1.4 (chặn `gmsdkjs.js` trên gói xuất → màn Reload), 1.6, 5.1, 5.6.
+
 ## 1.0.0 — 2026-10-20
 
 ### Bản đầu: mọi game cài mới theo kit này

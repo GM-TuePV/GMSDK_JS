@@ -51,7 +51,10 @@ export function fill(template, game, portal) {
     if (values[key] === undefined || values[key] === null || values[key] === '') throw new Error(`${portal}: game.json has no value for ${m}`);
     return safe(values[key]);
   });
-  if (!/<script[^>]*\bsrc="game\.js"/.test(html)) throw new Error(`${portal}: the template does not load game.js`);
+  // Kit 1.0.1: the page loads loader.js only; loader.js loads gmsdkjs.js and game.js (docs/LOADING.md).
+  if (/id="gmsoft-jssdk"|<script[^>]*\bsrc="game\.js"/.test(html))
+    throw new Error(`${portal}: the template is from before kit 1.0.1 (it loads gmsdkjs.js / game.js itself): put the 1.0.1 templates on the server, or pass --templates <folder>`);
+  if (!/<script[^>]*\bsrc="loader\.js"/.test(html)) throw new Error(`${portal}: the template does not load loader.js`);
   return html;
 }
 

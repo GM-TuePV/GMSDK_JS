@@ -1,13 +1,14 @@
 # Gói xuất của game
 
-Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTIONS`, `gmsdkjs.js`, nén, obfuscate, khoá domain và đẩy CDN là việc của **tool build trên api.1games.io**, theo từng platform. Cùng một gói chạy trên mọi platform.
+Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTIONS` (kể cả `sdkUrl` của `gmsdkjs.js`), nén, obfuscate, khoá domain và đẩy CDN là việc của **tool build trên api.1games.io**, theo từng platform. Cùng một gói chạy trên mọi platform.
 
 ## 1. Bố cục
 
 ```
 <id>-<version>/
+├── loader.js        của kit (loading/loader.js, chép nguyên): script DUY NHẤT trang nạp; hiện loading, tải gmsdkjs.js + game.js
 ├── game.json        manifest
-├── game.js          toàn bộ code game: 1 file, ES2017+, đã minify, KHÔNG obfuscate
+├── game.js          toàn bộ code game: 1 file, ES2017+, đã minify, KHÔNG obfuscate; loader.js tải nó
 ├── i18n/<thẻ>.json  mỗi ngôn ngữ một file, thẻ BCP 47: en.json, en-US.json, zh-TW.json (INTEGRATION.md §7)
 ├── Icons/           ảnh màn loading: loading.webp, logo.webp (tên cố định, LOADING.md)
 ├── assets/…         ảnh, âm thanh, font, dữ liệu (giữ nguyên cấu trúc thư mục)
@@ -60,12 +61,13 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 
 ## 3. Quy tắc
 
-- `game.js` chạy **sau** `gmsdkjs.js`, bằng thẻ `<script src="game.js">` thường (không phải module): xuất dạng IIFE hoặc script không có `import` / `export`.
+- **Hai file JS**: `loader.js` (kit, trang nạp) và `game.js` (game, `loader.js` nạp song song với `gmsdkjs.js`). Tool build obfuscate cả hai.
+- `game.js` là script thường (không phải module): xuất dạng IIFE hoặc script không có `import` / `export`. Nó có thể chạy **trước** khi `gmsdkjs.js` về, nên dòng đầu entry là `await loadSDK()` ([LOADING.md](LOADING.md)).
 - Game vẽ vào phần tử `#game` của template (chiếm toàn trang).
-- Không nạp script ngoài, không `import()` từ URL. SDK quảng cáo và GMA do `gmsdkjs.js` lo.
+- Không nạp script ngoài, không `import()` từ URL. `gmsdkjs.js` do `loader.js` lo; SDK quảng cáo và GMA do `gmsdkjs.js` lo.
 - Mọi đường dẫn **tương đối** (`assets/…`, `i18n/…`): gói được đặt dưới một thư mục bất kỳ trên CDN.
 - **Gói chỉ chứa thứ game dùng.** Bundler chép nguyên `public/`, nên thứ không dùng phải bỏ **ở `public/`** trước khi build: ảnh / nhạc / font / dữ liệu cũ hoặc thay thế, bản trùng, file thiết kế (`.psd`, `.ai`, `.xcf`, `.kra`, `.blend`, `.fla`), file tạm / sao lưu, file hệ thống (`Thumbs.db`, `.DS_Store`), ghi chú. Kit không đoán file nào thừa (tên ghép lúc chạy như `'level' + n + '.png'` chỉ game biết): game tự rà, bỏ, và ghi trong báo cáo đã bỏ gì (AI_INSTALL.md Bước 5). `check-export` cảnh báo các loại file chắc chắn không phải tài nguyên game.
-- Không gọi `localStorage` / `sessionStorage` trực tiếp: lưu qua `sdk.storage`.
+- Không gọi `localStorage` / `sessionStorage` trực tiếp: lưu qua `sdk.storage` (bộ lưu của kit, `sdk/storage.js`).
 - Không còn comment dev hay tiếng Việt trong `game.js` (minify bỏ comment; chữ hiển thị nằm trong `i18n/`).
 - Chữ hiển thị nằm trong `i18n/`; trong code chỉ có key. Không có thư mục `Language/` (`check-export` báo lỗi).
 
@@ -139,7 +141,7 @@ Chạy ở gốc repo. Tool tự đọc `docs/GMSDK_JS/config.json` (giá trị 
 ## 6. Sau khi giao gói
 
 Giao `export/<id>-<version>/<id>-<version>.zip` (§8) cho người vận hành API. Trên admin API (api.1games.io `GMSDK_JS/docs/GUIDE.md`):
-- **Build SDK JS:** chọn game và template (gm, gd, crazy, poki), thả zip. Tool kiểm gói (`check-export`), ghép template của portal (khối `GMSDKJS_OPTIONS` với `gameId`, `version` của `game.json`; `gameCode`, key GD lấy từ form game trên API, trống thì lấy `game.json`; thẻ `gmsdkjs.js`; `#game`; `<script src="game.js">`), obfuscate và khoá domain, ra một zip của portal đó;
+- **Build SDK JS:** chọn game và template (gm, gd, crazy, poki), thả zip. Tool kiểm gói (`check-export`), ghép template của portal (khối `GMSDKJS_OPTIONS` với `gameId`, `version` của `game.json`; `gameCode`, key GD lấy từ form game trên API, trống thì lấy `game.json`; `sdkUrl`; `#game`; `<script src="loader.js">`, từ kit 1.0.1), obfuscate `loader.js` + `game.js` và khoá domain, ra một zip của portal đó;
 - **zip gm:** form game → khung SOURCE: thả zip, server nén `.br` / `.gz`, ra bản xem thử `game.1games.io/<id>/<version>/`; duyệt xong bấm "Dùng bản này" thì asset lên CDN `gdn.1games.io/game/<id>/<version>/` và người chơi mở `game.1games.io/<id>/`;
 - **zip gd / crazy / poki:** tải về nộp lên portal.
 
@@ -155,6 +157,7 @@ node docs/GMSDK_JS/tools/assemble.mjs
 - Trang của từng publisher × portal (GD, CrazyGames, Poki, azgames, ofree), obfuscate và khoá domain là việc của **tool build trên API**, từ chính gói này: nó thay `index.html` / `preview.html`. Game không build riêng cho portal nào.
 - Chạy `check-export` **sau** bước ghép: nó nhận đúng trang gm này (template, hai file giống nhau, đúng giá trị của `game.json`) và vẫn báo lỗi mọi trang HTML khác.
 - Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/`. Không có mạng thì dùng `--templates <thư mục>`.
+- **Template từ kit 1.0.1** chỉ nạp `<script src="loader.js">` và ghi `sdkUrl` (chỗ của `gmsdkjs.js`) trong `GMSDKJS_OPTIONS`; không còn thẻ `gmsdkjs.js` hay `game.js`. `assemble` và `check-export` báo lỗi khi gặp template cũ.
 - **Chỉ khi phải tự nộp tay lên một portal** mà tool build chưa làm được: `--portal gd` (hoặc `crazy`, `poki`) chép gói ra `export/<id>-<version>-<portal>/` với trang của portal đó (SDK quảng cáo của portal, key GD, tắt More Games / trademark). Không chạy `check-export` trên bản chép này.
 
 ## 8. Zip: một file để upload

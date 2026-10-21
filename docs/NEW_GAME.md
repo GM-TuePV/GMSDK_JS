@@ -23,8 +23,8 @@ Luồng tối thiểu. Người mới phải vào được gameplay sau **tối 
 
 | Màn | Bắt buộc có | SDK |
 | --- | --- | --- |
-| Loading | Màn mặc định `loading/loading.js` (GM Loader v1, [LOADING.md](LOADING.md)) với key art của game; hoặc màn riêng có thanh tiến độ, logo publisher (`sdk.brand.loadLogo()`), "Try again" khi tải lỗi | `createLoader()`, `loader.progress(p)`, `ready()` |
-| Menu (hoặc vào chơi luôn) | Nút chơi to nhất màn; Settings; chỗ vào các tính năng ([UX.md](UX.md) §5) | `loadingDone()` khi menu hiện, rồi `preroll()` |
+| Loading | Màn của `loader.js` (GM Loader v1, [LOADING.md](LOADING.md)) với key art của game ở `public/Icons/loading.webp`; game không tự vẽ màn riêng | `await loadSDK()`, `createLoader()`, `loader.progress(p)`, `ready()` |
+| Menu (hoặc vào chơi luôn) | Nút chơi to nhất màn; Settings; chỗ vào các tính năng ([UX.md](UX.md) §5) | `loader.hide()` khi menu hiện (gồm `loadingDone()`), rồi `preroll()` |
 | Gameplay | HUD; nút pause (và phím ESC / P); lớp điều khiển cho người mới | `gameplayStart()` ở input đầu tiên |
 | Pause | Tiếp tục, chơi lại, về menu | `gameplayStop()` |
 | Thua / thắng | Kết quả, lý do thua + mẹo, Retry 1 cú bấm, nút thưởng (nếu có); hạng vừa đạt (nếu có bảng xếp hạng) | `gameplayStop()`, `rewarded()` trong click, `board.submit(score)` |

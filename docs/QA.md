@@ -52,9 +52,9 @@ Bộ máy tối thiểu, gồm bộ GD dùng cộng thêm máy yếu:
 | 1.1 | Chạy trên Windows, macOS, Android, iOS, ở cả dọc lẫn ngang | Chơi hết một lượt trên từng máy → không thông báo lỗi, không tự tải lại trang | Major | [QA-GD] |
 | 1.2 | Không đứng, không sập trong cả phiên chơi | Chơi 10–15 phút: nhiều lượt, xoay máy, mở popup, xem quảng cáo → menu luôn bấm được, không màn đen | Major | [QA-GD] |
 | 1.3 | Không lỗi console, không request lỗi (≥ 400) | DevTools trên gói xuất → sạch, trừ lỗi của script quảng cáo bên ngoài | Minor | [Nội bộ] |
-| 1.4 | Chạy được khi bị chặn `gmsdkjs.js` | DevTools → Network → Block request URL, tải lại → chơi được, không lỗi đỏ, save vẫn còn sau khi tải lại | Major | [Nội bộ] |
+| 1.4 | Bị chặn `gmsdkjs.js` thì báo tải lại, không treo | Trên gói xuất (không phải trang dev): DevTools → Network → Block request URL `gmsdkjs.js`, tải lại → màn loading hiện ngay, "Connecting again (2/3)…", rồi "Connection problem… reload the page" + nút Reload; game không chạy, không màn đen. Bỏ chặn, bấm Reload → vào game, save còn nguyên | Major | [Nội bộ] |
 | 1.5 | Chạy được khi localStorage bị chặn (ẩn danh, iframe Safari) | Chặn site data rồi mở game → chơi được, save giữ trong phiên | Major | [Poki] [SDK] |
-| 1.6 | Mất mạng lúc đang tải | DevTools → Offline → hiện "Try again", bấm lại được, không đứng ở màn loading | Major | [Nội bộ] |
+| 1.6 | Màn loading hiện ngay, mất mạng lúc đang tải thì báo Reload | Network chậm (Slow 3G): màn loading + thanh % hiện ngay khi trang mở, không màn đen. DevTools → Offline giữa chừng → thông báo + nút Reload, bấm lại được, không đứng ở màn loading | Major | [Nội bộ] |
 | 1.7 | Không có request ra ngoài, trừ SDK | Tab Network → font, ảnh, thư viện nằm trong gói | Major | [Poki] |
 | 1.8 | Bộ nhớ GPU vừa sức điện thoại | Đo texture WebGL ở màn nặng nhất, giả lập DPR 3 → khoảng 250 MB trở xuống (Wheelie Spooky: 964 MB thì sập trên iOS) | Major nếu sập | [QA-GD] [Nội bộ] |
 
@@ -103,7 +103,8 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 
 | # | Tiêu chí | Cách test → đạt khi | Mức | Nguồn |
 | --- | --- | --- | --- | --- |
-| 5.1 | Chỉ **một** key của game | DevTools → Application → Local Storage: `azgames.<gameCode>` dạng `{"v":1,"settings":…,"profile":…}` | Major | [Nội bộ] |
+| 5.1 | Chỉ **một** key của game, không đọc được bằng mắt | DevTools → Application → Local Storage: `azgames.<gameCode>` bắt đầu bằng `gm1`, phần sau là ký tự lạ (đã nén + mã hoá); thêm `gma_<gameCode>.name` của GMA. Không key nào khác của game. `gmSave.dump()` (console trang dev) ra đúng dữ liệu | Major | [Nội bộ] |
+| 5.6 | Sửa tay save thì save bị bỏ | Sửa một ký tự của `azgames.<gameCode>`, tải lại → game như người chơi mới (không chạy với số đã sửa), không lỗi; có sự kiện `save_tampered` | Minor | [Nội bộ] |
 | 5.2 | Save cũ được chuyển sang | Mở bản cũ, chơi, rồi mở bản mới → còn tiến trình | Major | [Nội bộ] |
 | 5.3 | Tiến trình được lưu, hoặc game nói rõ là không lưu | Chơi, tải lại trang | Minor | [Poki] |
 | 5.4 | Đổi ngôn ngữ, tải lại trang: giữ ngôn ngữ đã chọn. Mọi chữ đổi theo, không còn chữ viết cứng | Duyệt mọi màn ở từng ngôn ngữ | Minor | [Nội bộ] |

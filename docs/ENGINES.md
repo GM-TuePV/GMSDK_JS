@@ -48,10 +48,10 @@ Trong scene tải (`BootScene.preload`):
 
 ```js
 this.load.setPath('assets/');                              // đường dẫn tương đối
-this.load.on('progress', (p) => sdk.loadingProgress(p));
+this.load.on('progress', (p) => loader.progress(p));      // loader = createLoader() (LOADING.md): thanh 30 → 100 %
 this.load.once('complete', async () => {
   await sdk.ready();
-  this.scene.start('MenuScene');                           // MenuScene.create() gọi sdk.loadingDone() rồi sdk.preroll()
+  this.scene.start('MenuScene');                           // MenuScene.create() gọi loader.hide() rồi sdk.preroll()
 });
 ```
 

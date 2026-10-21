@@ -345,7 +345,10 @@ function assembledPages(dir, entry, m) {
   if (!has('index.html') || !has('preview.html')) return { error: 'index.html and preview.html come together (tools/assemble.mjs), or not at all' };
   const html = readFileSync(join(dir, 'index.html'), 'utf8');
   if (html !== readFileSync(join(dir, 'preview.html'), 'utf8')) return { error: 'preview.html must be index.html byte for byte (tools/assemble.mjs)' };
-  const template = /id="gmsoft-jssdk"/.test(html) && /GMSDKJS_OPTIONS\s*=/.test(html) && new RegExp(`<script[^>]*\\bsrc="${entry.replace(/\./g, '\\.')}"`).test(html);
+  // Since kit 1.0.1 the page loads loader.js only; loader.js loads gmsdkjs.js and the entry (docs/LOADING.md).
+  if (/id="gmsoft-jssdk"/.test(html) || new RegExp(`<script[^>]*\\bsrc="${entry.replace(/\./g, '\\.')}"`).test(html))
+    return { error: 'index.html is a template from before kit 1.0.1 (it loads gmsdkjs.js / the game itself): the platform templates must load loader.js only (docs/EXPORT.md §7)' };
+  const template = /GMSDKJS_OPTIONS\s*=/.test(html) && /<script[^>]*\bsrc="loader\.js"/.test(html);
   if (!template) return { error: 'index.html is not the platform template: the package has no page of its own (tools/assemble.mjs makes the gm page)' };
   if (/<!--[A-Z_]+-->/.test(html)) return { error: 'index.html still has <!--…--> placeholders: run tools/assemble.mjs again' };
   // The page's default language (docs/INTEGRATION.md §7): one the game ships.
@@ -400,7 +403,7 @@ function checkPackage() {
   }
 
   // files at the root
-  const ALLOWED_ROOT = new Set(['game.json', entry, 'i18n', 'Icons', 'assets']);
+  const ALLOWED_ROOT = new Set(['game.json', 'loader.js', entry, 'i18n', 'Icons', 'assets']);
   if (existsSync(join(dir, 'Language'))) {
     ALLOWED_ROOT.add('Language'); // reported here, not again below
     err('Language/ is not read: move each file to i18n/<tag>.json (BCP 47 tags, docs/INTEGRATION.md §7)');
@@ -417,8 +420,27 @@ function checkPackage() {
   for (const name of readdirSync(dir)) {
     if (ALLOWED_ROOT.has(name)) continue;
     if (name === 'index.html' || name === 'preview.html') continue; // reported above
-    warn(`unexpected at the root: ${name} (only game.json, ${entry}, i18n/, Icons/, assets/)`);
+    warn(`unexpected at the root: ${name} (only game.json, loader.js, ${entry}, i18n/, Icons/, assets/)`);
   }
+
+  // loader.js (docs/LOADING.md): the first script of every page; the kit's file, unchanged.
+  const loaderPath = join(dir, 'loader.js');
+  if (!existsSync(loaderPath)) err('loader.js is missing: copy docs/GMSDK_JS/loading/loader.js to public/loader.js (docs/LOADING.md)');
+  else {
+    const kitLoader = join(KIT, 'loading/loader.js');
+    const mine = readFileSync(loaderPath, 'utf8');
+    if (!/GMLoader/.test(mine)) err('loader.js is not the kit\'s loader: copy docs/GMSDK_JS/loading/loader.js to public/loader.js');
+    else if (existsSync(kitLoader) && mine.replace(/\r\n/g, '\n') !== readFileSync(kitLoader, 'utf8').replace(/\r\n/g, '\n'))
+      warn('loader.js differs from the kit\'s loading/loader.js: copy it again (the kit was updated, or it was edited)');
+  }
+  // The loading screen's images (loader.js): Icons/ at the root, fixed names, easy to find and to swap.
+  for (const need of ['Icons/loading.webp', 'Icons/logo.webp']) {
+    if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/loading/Icons/ to public/Icons/ and put the game's key art in loading.webp (docs/LOADING.md)`);
+  }
+  if (existsSync(join(dir, 'assets/loading'))) err('assets/loading/ is the old place of the loading images: move them to public/Icons/ (docs/LOADING.md)');
+  const sampleArt = join(KIT, 'loading/Icons/loading.webp');
+  if (existsSync(join(dir, 'Icons/loading.webp')) && existsSync(sampleArt) && readFileSync(join(dir, 'Icons/loading.webp')).equals(readFileSync(sampleArt)))
+    warn('Icons/loading.webp is still the kit sample: replace it with the game\'s key art (docs/LOADING.md)');
 
   // the entry script
   const entryPath = join(dir, entry);
@@ -434,17 +456,9 @@ function checkPackage() {
     if (missingAssets.length) warn(`${entry} names files that are not in the package: ${missingAssets.slice(0, 6).join(', ')}`);
     // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
-    // The default loading screen (loading/loading.js): the game's key art and the logo in the package.
-    if (/gmLoaderFill/.test(js)) {
-      // Icons/ at the root of the package, fixed names: easy to find and to swap later (docs/LOADING.md).
-      const art = join(dir, 'Icons/loading.webp');
-      for (const need of ['Icons/loading.webp', 'Icons/logo.webp']) {
-        if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/loading/Icons/ to public/Icons/ and put the game's key art in loading.webp (docs/LOADING.md)`);
-      }
-      if (existsSync(join(dir, 'assets/loading'))) err('assets/loading/ is the old place of the loading images: move them to public/Icons/ (docs/LOADING.md)');
-      const sample = join(KIT, 'loading/Icons/loading.webp');
-      if (existsSync(art) && existsSync(sample) && readFileSync(art).equals(readFileSync(sample))) warn('Icons/loading.webp is still the kit sample: replace it with the game\'s key art (docs/LOADING.md)');
-    }
+    // The game waits for loader.js (loadSDK) and hides its screen (createLoader().hide()): both go through GMLoader.
+    if (!/GMLoader/.test(js)) warn(`${entry} never mentions GMLoader: the game must start with await loadSDK() and end its loading with createLoader().hide() (docs/LOADING.md)`);
+    if (/gmLoaderFill/.test(js)) err(`${entry} builds a loading screen of its own (the loading.js of kit 1.0.0): copy the kit's loading/loading.js again, the screen is loader.js now`);
     if (/gmlb-panel/.test(js)) {
       for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags/GLOBE.png']) {
         if (!existsSync(join(dir, need))) err(`${need} is missing: copy docs/GMSDK_JS/leaderboard/flags/ and countries.json to public/assets/leaderboard/ (docs/LEADERBOARD.md §2)`);
@@ -529,7 +543,7 @@ if (srcDir) {
   if (!existsSync(srcDir)) err(`--src ${srcDir}: not found`);
   else {
     for (const f of walk(srcDir)) {
-      if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim/.test(f)) continue;
+      if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim|[\\/]sdk[\\/]storage\./.test(f)) continue;
       if (/createLeaderboard\(/.test(readFileSync(f, 'utf8')) && config && !config.leaderboardId && !/[\\/]leaderboard[\\/]/.test(f)) err(`${relative(process.cwd(), f)} creates a leaderboard but config.json leaderboardId is null`);
       const lines = readFileSync(f, 'utf8').split('\n');
       lines.forEach((line, i) => {

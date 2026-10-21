@@ -1,4 +1,6 @@
-// Types for window.GMSDKJS and the shim (spec §5). Copy next to gmsdkjs-shim.js in the game.
+// Types for window.GMSDKJS and the shim (docs/API.md). Copy next to gmsdkjs-shim.js in the game.
+
+import type { GameStorage } from './storage';
 
 export interface GmsdkInfo {
   version: string;
@@ -19,16 +21,8 @@ export interface GmsdkInfo {
   gameInfo: Record<string, unknown> | null;
 }
 
-/** One localStorage key azgames.<gameCode>, split into areas (spec §9). */
-export interface GmsdkStorage {
-  readonly key?: string;
-  get<T>(area: string, fallback: T): T;
-  set(area: string, value: unknown): boolean;
-  patch(area: string, part: Record<string, unknown>): boolean;
-  /** { 'old.key': 'area' }: moved once, when azgames.<gameCode> did not exist yet; returns the areas moved. */
-  migrate(legacy: Record<string, string>): string[];
-  flush(): boolean;
-}
+/** The game's own save (sdk/storage.js), not gmsdkjs: one key azgames.<gameCode>, compressed and scrambled. */
+export type GmsdkStorage = GameStorage;
 
 export interface GmsdkBrand {
   name: string;
@@ -69,8 +63,11 @@ export interface Gmsdk {
 }
 
 export declare const METHODS: readonly string[];
-export declare function createFallback(g: object, gameCode?: string): Gmsdk;
+export declare function createFallback(): Omit<Gmsdk, 'storage'>;
+/** The SDK for this page; calls reach window.GMSDKJS as soon as it is there. */
 export declare function getSDK(options?: { gameCode?: string; g?: object }): Gmsdk;
+/** Waits for loader.js to have gmsdkjs.js (window.GMLoader.ready()), then getSDK(). */
+export declare function loadSDK(options?: { gameCode?: string; g?: object }): Promise<Gmsdk>;
 
 declare global {
   interface Window {

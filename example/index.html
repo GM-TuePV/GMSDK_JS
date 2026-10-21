@@ -34,12 +34,12 @@
       debug: true
     };
   </script>
-  <script id="gmsoft-jssdk" src="https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js"></script>
 </head>
 <body>
   <div id="game"></div>
   <ol id="log"></ol>
   <div id="footer"><span id="version"></span><span id="trademark"></span></div>
-  <script type="module" src="main.js"></script>
+  <!-- loader.js first: the loading screen, then gmsdkjs.js and the game (main.js) side by side (docs/LOADING.md). -->
+  <script src="../loading/loader.js" data-entry="main.js" data-module data-icons="../loading/Icons/"></script>
 </body>
 </html>

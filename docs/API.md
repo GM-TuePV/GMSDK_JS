@@ -1,22 +1,26 @@
-# API: `getSDK()` và `window.GMSDKJS`
+# API: `loadSDK()` / `getSDK()` và `window.GMSDKJS`
 
 Tra cứu từng hàm. Cách dùng theo thứ tự trong một game: [INTEGRATION.md](INTEGRATION.md).
 
 ## 1. Lấy SDK
 
 ```js
-import { getSDK } from './sdk/gmsdkjs-shim.js';
-const sdk = getSDK({ gameCode: 'g131' }); // gameCode của game, xem bên dưới
+import { loadSDK, getSDK } from './sdk/gmsdkjs-shim.js';
+async function boot() {
+  const sdk = await loadSDK({ gameCode: 'g131' }); // việc đầu tiên: chờ loader.js có gmsdkjs (LOADING.md)
+  // …
+}
+// chỗ khác trong game: getSDK() trả cùng đối tượng. Không await ở cấp cao nhất (gói xuất là IIFE)
 ```
 
-- `gmsdkjs.js` do template của platform nạp: `<script id="gmsoft-jssdk" src="https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js">`. Nó tạo `window.GMSDKJS` trước khi `game.js` chạy.
-- **Game không gọi thẳng `window.GMSDKJS`**, mà luôn qua `getSDK()` của `sdk/gmsdkjs-shim.js` (JS thuần, không cần build):
-  - Có `window.GMSDKJS` thì `getSDK()` trả nó, mỗi hàm được bọc: thiếu hàm, hàm throw hay promise reject thì dùng bản dự phòng.
-  - Không có (CDN lỗi, adblock chặn, template thiếu thẻ) thì trả **bản dự phòng cùng API**: quảng cáo trả `false`, tracking bỏ qua, **lưu trữ vẫn lưu thật** vào đúng key `azgames.<gameCode>`.
-  - Game vì thế không bao giờ lỗi vì thiếu SDK, và tiến trình không mất.
-- `gameCode`: mã `g<số>` của game (ví dụ `g131`). Thường template đã có trong `GMSDKJS_OPTIONS.gameCode`; tham số này chỉ dùng khi trang không có khối tuỳ chọn. Lấy từ `game.json` của game.
-- Gọi `getSDK()` sau khi `gmsdkjs.js` đã chạy: trong `game.js` (template nạp SDK trước) là đúng. Mỗi trang một SDK; gọi lại trả cùng đối tượng.
-- Khai báo kiểu cho TypeScript: `sdk/gmsdkjs-shim.d.ts` (và `sdk/net.d.ts` cho `net.js`), đặt cạnh file `.js` cùng tên.
+- **`gmsdkjs.js` do `loader.js` tải** (không còn thẻ `<script>` trong template): song song với `game.js`, tối đa 3 lần, URL ở `GMSDKJS_OPTIONS.sdkUrl`. **Bắt buộc**: 3 lần vẫn lỗi thì loader hiện màn "reload the page", game không chạy. Chỉ trang dev (`platform: 'dev'`) chạy tiếp không SDK. Chi tiết: [LOADING.md §1](LOADING.md).
+- `loadSDK()` chờ `window.GMLoader.ready()` rồi trả `getSDK()`. Không có `loader.js` trên trang (test) thì trả ngay.
+- **Game không gọi thẳng `window.GMSDKJS`**, mà luôn qua `sdk/gmsdkjs-shim.js` (JS thuần, không cần build, kit giữ):
+  - Mỗi hàm tìm `window.GMSDKJS` **lúc gọi** và được bọc: thiếu hàm, hàm throw hay promise reject thì trả câu trả lời an toàn (không quảng cáo, không tracking).
+  - **`sdk.storage` là bộ lưu của game** (`sdk/storage.js` của kit, §6), không qua gmsdkjs.
+- `gameCode`: mã `g<số>` của game (ví dụ `g131`). `GMSDKJS_OPTIONS.gameCode` của trang được ưu tiên (tool build ghi mã thật vào đó); tham số chỉ dùng khi trang không có. Lấy từ `game.json`.
+- Mỗi trang một SDK; gọi lại trả cùng đối tượng.
+- Khai báo kiểu cho TypeScript: `sdk/gmsdkjs-shim.d.ts`, `sdk/storage.d.ts` (và `sdk/net.d.ts` cho `net.js`), đặt cạnh file `.js` cùng tên.
 
 **Mọi hàm an toàn khi chưa `ready()`** (chờ bên trong) và **không bao giờ throw ra game**. Mọi lần chờ đều có giới hạn.
 
@@ -25,10 +29,10 @@ const sdk = getSDK({ gameCode: 'g131' }); // gameCode của game, xem bên dư�
 | Hàm | Trả về | Ghi chú |
 | --- | --- | --- |
 | `ready()` | `Promise<Info>` | Chờ API licence **tối đa 5 s**, gộp cấu hình quảng cáo, khởi động network quảng cáo và GMA. Không bao giờ reject. Gọi nhiều lần trả cùng một promise. SDK quảng cáo có thể còn đang khởi động sau đó, nên `info.adblock` và `rewardedAvailable()` có thể đổi về sau |
-| `loadingProgress(p)` | | Tiến độ tải `0..1`. Chuyển cho portal nếu cần |
-| `loadingDone()` | | Gọi **khi menu thật sự hiện ra**. Gửi `loaded_game { load_time_ms }` (một lần) |
+| `loadingProgress(p)` | | Tiến độ tải `0..1`. Chuyển cho portal nếu cần. `loader.js` tự gọi theo thanh % (gồm cả phần tải gmsdkjs + game.js) |
+| `loadingDone()` | | Khi menu thật sự hiện ra. Gửi `loaded_game { load_time_ms }` (một lần). **`createLoader().hide()` đã gọi hàm này**: game không gọi lại |
 | `info` | `Info` | Cấu hình đang dùng (đọc sau `ready()`) |
-| `version` | `string` | Phiên bản gmsdkjs, `'fallback'` khi là bản dự phòng |
+| `version` | `string` | Phiên bản gmsdkjs (`1.0.1`…), `'fallback'` khi không có SDK (trang dev) |
 
 `Info`:
 
@@ -74,19 +78,24 @@ SDK tự gửi các sự kiện chuẩn. Danh sách và quy tắc đặt tên: [
 
 ## 6. Lưu trữ: `sdk.storage`
 
-Một key `localStorage` duy nhất cho mỗi game: **`azgames.<gameCode>`**, giá trị `{ "v": 1, "<vùng>": … }`.
+Bộ lưu **của game** ([`sdk/storage.js`](../sdk/storage.js), kit), không phải của gmsdkjs. Một key `localStorage` cho mỗi game: **`azgames.<gameCode>`** (`azgames.dev` khi chưa có mã thật). Giá trị: `gm1` + 8 ký tự mã kiểm + JSON đã nén LZ (UTF-16) và trộn theo key; cách lưu và luật lưu gọn: [INTEGRATION.md §6](INTEGRATION.md).
 
 | Hàm | Trả về | Ghi chú |
 | --- | --- | --- |
 | `get(area, fallback)` | bản sao giá trị | `fallback` khi vùng chưa có |
 | `set(area, value)` | `boolean` | Ghi cả vùng. `value` phải là dữ liệu JSON. `set(area, undefined)` xoá vùng |
 | `patch(area, part)` | `boolean` | Gộp `part` (object) vào vùng |
-| `migrate({ 'key.cũ': 'vùng' })` | `string[]` | Chuyển key cũ của game sang vùng, **một lần**, chỉ khi `azgames.<gameCode>` chưa có. Xoá key cũ sau khi chuyển |
-| `flush()` | `boolean` | Ghi ngay (bình thường SDK gộp ghi sau 300 ms và ghi ngay khi tab ẩn / đóng) |
+| `migrate({ 'key.cũ': 'vùng' })` | `string[]` | Chuyển key cũ **của chính game** (trước khi dùng kit) sang vùng, **một lần**, chỉ khi chưa có save. Xoá key cũ sau khi chuyển |
+| `flush()` | `boolean` | Ghi ngay (bình thường gộp ghi sau 300 ms và ghi ngay khi tab ẩn / đóng). `false` = chưa ghi được (đầy / bị chặn), giữ trong bộ nhớ, ghi lại lần sau |
+| `dump()` | object | Cả save dạng rõ, để debug |
+| `tampered` | `boolean` | Save đã lưu không giải được (sửa tay / hỏng) nên bị bỏ: người chơi bắt đầu lại |
+| `key` | `string` | `azgames.<gameCode>` |
 
-- Vùng chuẩn: `settings` (âm thanh, ngôn ngữ…), `profile` (tiến trình, điểm, tiền). **`sdk` là của GMA** (tên người chơi ẩn danh): game không ghi vào. `v` là tên dành riêng.
-- `localStorage` bị chặn (iframe sandbox, chặn cookie): SDK lưu trong bộ nhớ suốt phiên, không lỗi.
+- Vùng chuẩn: `settings` (âm thanh, ngôn ngữ…), `profile` (tiến trình, điểm, tiền); `leaderboard` của module bảng xếp hạng (tên, cờ).
+- Tracking tự gửi qua SDK: `save_tampered`, `save_failed` (`{ chars, error }`), `save_large` (save quá 128 K ký tự), mỗi loại một lần mỗi trang.
+- `localStorage` bị chặn (iframe sandbox, chặn cookie): lưu trong bộ nhớ suốt phiên, không lỗi.
 - **Game không gọi `localStorage` trực tiếp.** `tools/check-export.mjs --src` kiểm điều này.
+- gmsdkjs chỉ giữ một thứ: tên người chơi ẩn danh của GMA, ở key riêng `gma_<gameCode>.name`.
 
 ## 7. Thương hiệu: `sdk.brand`
 

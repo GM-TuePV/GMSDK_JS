@@ -1,213 +1,71 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    }
-  return a;
-};
+// The game's only door to gmsdkjs (docs/API.md). Plain JS, no build step: copy to src/sdk/ with storage.js.
+//
+//   async function boot() { const sdk = await loadSDK({ gameCode: 'g131' }); … }   // waits for loader.js (docs/LOADING.md)
+//   (no top-level await: the export package is an iife)
+//   sdk.interstitial('level_end'); sdk.storage.patch('profile', { best });
+//
+// - Every call goes to window.GMSDKJS, looked up at call time; a missing function, a throw or a rejected promise
+//   falls back to a safe answer (no ad, nothing tracked), so the game never breaks on the SDK.
+// - sdk.storage is the game's own save (sdk/storage.js): one key azgames.<gameCode>, compressed and scrambled.
+//   gmsdkjs keeps its own key; nothing of the game's save goes through it.
+// - Without gmsdkjs (only the dev page gets that far, loader.js stops elsewhere) the game runs with no ads.
 
-// lib/1games/gmsdkjs/src/util.js
+import { createStorage } from './storage.js';
+
+export const METHODS = [
+  'ready',
+  'loadingProgress',
+  'loadingDone',
+  'preroll',
+  'gameplayStart',
+  'gameplayStop',
+  'interstitial',
+  'rewardedAvailable',
+  'rewarded',
+  'onPause',
+  'onResume',
+  'track',
+  'moreGamesUrl',
+  'happyTime',
+  'setMuted',
+];
+
+const noop = () => {};
+const no = async () => false;
+
 function attempt(fn, fallback) {
   try {
     return fn();
-  } catch (e) {
+  } catch {
     return fallback;
   }
 }
 
-// lib/1games/gmsdkjs/src/storage.js
-var SCHEMA = 1;
-function storageKey(gameCode) {
-  const code = String(gameCode != null ? gameCode : "").trim().toLowerCase();
-  return /^g\d+$/.test(code) ? `azgames.${code}` : "azgames.dev";
-}
-var isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
-var clone = (v) => v === void 0 ? void 0 : JSON.parse(JSON.stringify(v));
-var validArea = (a) => typeof a === "string" && a !== "" && a !== "v";
-function parse(text) {
-  if (text === null || text === void 0) return void 0;
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    return void 0;
-  }
-}
-function createStorage({ key, getLs, win, doc, delayMs = 300 }) {
-  const memory = /* @__PURE__ */ new Map();
-  function read(k) {
-    try {
-      const ls = getLs();
-      if (ls) return ls.getItem(k);
-    } catch (e) {
-    }
-    return memory.has(k) ? memory.get(k) : null;
-  }
-  function write(k, value) {
-    memory.set(k, value);
-    try {
-      const ls = getLs();
-      if (!ls) return false;
-      ls.setItem(k, value);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-  function remove(k) {
-    var _a;
-    memory.delete(k);
-    try {
-      (_a = getLs()) == null ? void 0 : _a.removeItem(k);
-    } catch (e) {
-    }
-  }
-  let data;
-  let existedAtLoad = false;
-  let migrated = false;
-  const dirty = /* @__PURE__ */ new Set();
-  let timer;
-  function load() {
-    if (data === void 0) {
-      const stored = parse(read(key));
-      existedAtLoad = isObj(stored);
-      data = existedAtLoad ? __spreadValues({}, stored) : {};
-      delete data.v;
-    }
-    return data;
-  }
-  function flushNow() {
-    clearTimeout(timer);
-    timer = void 0;
-    if (!dirty.size) return true;
-    const stored = parse(read(key));
-    const base = isObj(stored) ? stored : {};
-    for (const area of dirty) {
-      if (data[area] === void 0) delete base[area];
-      else base[area] = data[area];
-    }
-    base.v = SCHEMA;
-    if (!write(key, JSON.stringify(base))) return false;
-    dirty.clear();
-    return true;
-  }
-  function schedule() {
-    if (timer === void 0) timer = setTimeout(flushNow, delayMs);
-  }
-  function get(area, fallback) {
-    try {
-      const v = load()[area];
-      return v === void 0 ? fallback : clone(v);
-    } catch (e) {
-      return fallback;
-    }
-  }
-  function set(area, value) {
-    try {
-      if (!validArea(area)) return false;
-      const copy = clone(value);
-      load()[area] = copy;
-      dirty.add(area);
-      schedule();
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-  function patch(area, part) {
-    try {
-      if (!validArea(area) || !isObj(part)) return false;
-      const cur = load()[area];
-      return set(area, __spreadValues(__spreadValues({}, isObj(cur) ? cur : {}), part));
-    } catch (e) {
-      return false;
-    }
-  }
-  function migrate(legacy) {
-    try {
-      load();
-      if (existedAtLoad || migrated || !isObj(legacy)) return [];
-      migrated = true;
-      const moved = [];
-      for (const [old, area] of Object.entries(legacy)) {
-        if (!validArea(area)) continue;
-        const raw = read(old);
-        if (raw === null) continue;
-        const v = parse(raw);
-        data[area] = v === void 0 ? raw : v;
-        dirty.add(area);
-        moved.push(area);
-      }
-      if (moved.length && flushNow()) for (const old of Object.keys(legacy)) remove(old);
-      return moved;
-    } catch (e) {
-      return [];
-    }
-  }
-  function flush() {
-    try {
-      return flushNow();
-    } catch (e) {
-      return false;
-    }
-  }
-  attempt(() => win.addEventListener("pagehide", flush));
-  attempt(
-    () => doc.addEventListener("visibilitychange", () => {
-      if (doc.visibilityState === "hidden") flush();
-    })
-  );
-  return { key, get, set, patch, migrate, flush };
+/** The page's gameCode (GMSDKJS_OPTIONS) wins over the one the game passes: the build tool writes the real one there. */
+function gameCodeOf(g, given) {
+  const code = attempt(() => g.GMSDKJS_OPTIONS?.gameCode, undefined);
+  return typeof code === 'string' && /^g\d+$/i.test(code.trim()) ? code.trim() : given;
 }
 
-// lib/1games/gmsdkjs/shim/shim.js
-var METHODS = [
-  "ready",
-  "loadingProgress",
-  "loadingDone",
-  "preroll",
-  "gameplayStart",
-  "gameplayStop",
-  "interstitial",
-  "rewardedAvailable",
-  "rewarded",
-  "onPause",
-  "onResume",
-  "track",
-  "moreGamesUrl",
-  "happyTime",
-  "setMuted"
-];
-var STORAGE_FNS = ["get", "set", "patch", "migrate", "flush"];
-var noop = () => {
+const FALLBACK_INFO = {
+  version: 'fallback',
+  platform: 'unknown',
+  sdkType: 'gm',
+  gameId: '',
+  adType: 'none',
+  licensed: true,
+  adblock: false,
+  adsTest: false,
+  adsInfo: null,
+  gameInfo: null,
 };
-var no = async () => false;
-function gameCodeOf(g, given) {
-  var _a;
-  try {
-    const code = (_a = g.GMSDKJS_OPTIONS) == null ? void 0 : _a.gameCode;
-    if (typeof code === "string" && /^g\d+$/i.test(code.trim())) return code;
-  } catch (e) {
-  }
-  return given;
-}
-function createFallback(g, gameCode = "") {
-  const info = { version: "fallback", platform: "unknown", sdkType: "gm", gameId: "", adType: "none", licensed: true, adblock: false, adsTest: false, adsInfo: null, gameInfo: null };
-  let storage;
+
+/** No SDK: every call answers safely. */
+export function createFallback() {
   return {
-    version: "fallback",
-    get info() {
-      return info;
-    },
-    ready: async () => info,
+    version: 'fallback',
+    info: FALLBACK_INFO,
+    ready: async () => FALLBACK_INFO,
     loadingProgress: noop,
     loadingDone: noop,
     preroll: no,
@@ -222,64 +80,65 @@ function createFallback(g, gameCode = "") {
     moreGamesUrl: () => null,
     happyTime: noop,
     setMuted: noop,
-    get storage() {
-      storage != null ? storage : storage = createStorage({ key: storageKey(gameCodeOf(g, gameCode)), getLs: () => g.localStorage, win: g, doc: g.document });
-      return storage;
-    },
-    brand: { name: "", logo: "", url: "", loadLogo: async () => null, trademark: () => "" }
+    brand: { name: '', logo: '', url: '', loadLogo: async () => null, trademark: () => '' },
   };
 }
-var cache = /* @__PURE__ */ new WeakMap();
-function getSDK({ gameCode = "", g = globalThis } = {}) {
+
+const cache = new WeakMap();
+
+/** The SDK for this page (one per page). Safe to call any time; calls reach gmsdkjs as soon as it is there. */
+export function getSDK({ gameCode = '', g = globalThis } = {}) {
   if (cache.has(g)) return cache.get(g);
-  const fallback = createFallback(g, gameCode);
-  let real = null;
-  try {
-    real = g.GMSDKJS && typeof g.GMSDKJS === "object" ? g.GMSDKJS : null;
-  } catch (e) {
-    real = null;
-  }
-  let sdk = fallback;
-  if (real) {
-    sdk = {
-      get version() {
-        return typeof real.version === "string" ? real.version : "unknown";
-      },
-      get info() {
-        var _a;
-        try {
-          return (_a = real.info) != null ? _a : fallback.info;
-        } catch (e) {
-          return fallback.info;
-        }
-      },
-      get storage() {
-        const s = real.storage;
-        return s && STORAGE_FNS.every((m) => typeof s[m] === "function") ? s : fallback.storage;
-      },
-      get brand() {
-        const b = real.brand;
-        return b && typeof b.loadLogo === "function" && typeof b.trademark === "function" ? b : fallback.brand;
+  const fallback = createFallback();
+  const real = () => {
+    const s = attempt(() => g.GMSDKJS, null);
+    return s && typeof s === 'object' ? s : null;
+  };
+  const sdk = {
+    get version() {
+      const r = real();
+      return r && typeof r.version === 'string' ? r.version : fallback.version;
+    },
+    get info() {
+      const r = real();
+      return (r && attempt(() => r.info, null)) || fallback.info;
+    },
+    get brand() {
+      const b = attempt(() => real()?.brand, null);
+      return b && typeof b.loadLogo === 'function' && typeof b.trademark === 'function' ? b : fallback.brand;
+    },
+  };
+  for (const m of METHODS) {
+    sdk[m] = (...args) => {
+      const r = real();
+      const f = r?.[m];
+      if (typeof f !== 'function') return fallback[m](...args);
+      try {
+        const out = f.apply(r, args);
+        return out && typeof out.then === 'function' ? Promise.resolve(out).catch(() => fallback[m](...args)) : out;
+      } catch {
+        return fallback[m](...args);
       }
     };
-    for (const m of METHODS) {
-      sdk[m] = (...args) => {
-        const f = real[m];
-        if (typeof f !== "function") return fallback[m](...args);
-        try {
-          const r = f.apply(real, args);
-          return r && typeof r.then === "function" ? Promise.resolve(r).catch(() => fallback[m](...args)) : r;
-        } catch (e) {
-          return fallback[m](...args);
-        }
-      };
-    }
   }
+  // The game's save: reports go to tracking (save_tampered / save_failed / save_large) through the SDK.
+  sdk.storage = createStorage({
+    gameCode: gameCodeOf(g, gameCode),
+    g,
+    onEvent: (kind, info) => sdk.track(`save_${kind}`, { chars: info.chars ?? null, error: info.error ?? null }),
+  });
+  // Dev page only: the save in the console (gmSave.dump()), since DevTools shows it scrambled on purpose.
+  if (attempt(() => g.GMSDKJS_OPTIONS?.platform, '') === 'dev') attempt(() => (g.gmSave = sdk.storage));
   cache.set(g, sdk);
   return sdk;
 }
-export {
-  METHODS,
-  createFallback,
-  getSDK
-};
+
+/**
+ * Wait for loader.js to have gmsdkjs.js (docs/LOADING.md), then the SDK. Use it once at the top of the entry module:
+ * the game's code starts after this. Without loader.js on the page (tests) it answers at once.
+ */
+export async function loadSDK({ gameCode = '', g = globalThis } = {}) {
+  const loader = attempt(() => g.GMLoader, null);
+  if (loader && typeof loader.ready === 'function') await loader.ready();
+  return getSDK({ gameCode, g });
+}
