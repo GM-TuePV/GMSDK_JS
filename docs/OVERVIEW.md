@@ -25,7 +25,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 2. loader.js chạy ngay
    ├─ dựng màn loading: Icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %
    ├─ tải SONG SONG, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây):
-   │    ├─ gmsdkjs.js (sdkUrl)          kiểm thêm: phải có window.GMSDKJS
+   │    ├─ gmsdkjs.js (sdkUrl; mặc định …/gmsdkjs/1.0.1/gmsdkjs.js)   kiểm thêm: phải có window.GMSDKJS
    │    └─ game.js
    │   hai file này chạy thanh 0 → 30 %
    ├─ gmsdkjs 3 lần vẫn lỗi → "Connection problem. Please check your network and reload the page." + nút Reload; DỪNG
@@ -72,17 +72,18 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 
 ## 4. gmsdkjs 1.0.1 đã sửa gì (so với 1.0.0)
 
-File: `gmsdkjs-server/gmsdkjs_dev.js` (bàn giao cho server). Chi tiết và thứ tự đưa lên: [SERVER_NOTES.md](SERVER_NOTES.md).
+Trên server ở **thư mục riêng** `…/gmsdkjs/1.0.1/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`; az: `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`). `gmsdkjs/gmsdkjs.js` ở gốc giữ nguyên **1.0.0** cho game kit 1.0.0 (không nâng game cũ lên). Chi tiết, thứ tự đưa lên, quy ước thư mục theo phiên bản: [SERVER_NOTES.md](SERVER_NOTES.md).
 
 | Trước (1.0.0) | Sau (1.0.1) |
 | --- | --- |
 | Có bộ lưu dữ liệu game (`sdk.storage`): key `azgames.<gameCode>`, JSON rõ, có vùng `sdk` của GMA | **Bỏ.** Lưu dữ liệu game là của kit. gmsdkjs chỉ giữ tên GMA ở key riêng **`gma_<gameCode>.name`** |
 | Template nạp `gmsdkjs.js` bằng thẻ đồng bộ trong `<head>`, rồi `game.js` | `loader.js` của game chèn `gmsdkjs.js` bằng code (đã thử chạy đúng: licence, quảng cáo, GMA) |
-| `VERSION = "1.0.0"` | `"1.0.1"` |
+| — | Chưa có `gma_<gameCode>.name` thì lấy tên GMA mà 1.0.0 để trong vùng `sdk` của `azgames.<gameCode>` (không đụng save `gm1…`) |
+| `VERSION = "1.0.0"`, ở `gmsdkjs/gmsdkjs.js` | `"1.0.1"`, ở `gmsdkjs/1.0.1/gmsdkjs.js` |
 
-**Template 1.0.1** (8 file: 4 portal × 2 host, `gmsdkjs-server/templates/`): bỏ thẻ `gmsdkjs.js` và `game.js`; chỉ còn `<script src="loader.js">`; thêm `sdkUrl` (gmsdkjs của chính host đó) và `language: "<!--LANGUAGE-->"`.
+**Template 1.0.1** (8 file: 4 portal × 2 host, `gmsdkjs-server/templates/`): bỏ thẻ `gmsdkjs.js` và `game.js`; chỉ còn `<script src="loader.js">`; thêm `sdkUrl` (`…/gmsdkjs/1.0.1/gmsdkjs.js` của chính host đó; trên server ở `templates/1.0.1/`) và `language: "<!--LANGUAGE-->"`.
 
-**Tool build** phải nhận gói có 2 file JS (`loader.js`, `game.js`) và obfuscate cả hai.
+**Tool build** nhận cả hai thế hệ: gói có `loader.js` build theo 1.0.1 (2 file JS, obfuscate cả hai), không có thì build theo 1.0.0 như trước. Khi build, logo màn loading (`Icons/logo.webp`) được thay bằng logo brand của publisher.
 
 ## 5. Kit 1.0.1 đã sửa gì (so với 1.0.0)
 

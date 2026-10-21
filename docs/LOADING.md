@@ -28,7 +28,7 @@ Giao diện là GM Loader v1 của azgames (bộ của kit 2.x), giữ nguyên: 
 
 - **Ảnh của màn loading nằm riêng trong `Icons/`, tên file cố định**, để sau này dễ tìm, dễ thay: thay ảnh là chép đè `public/Icons/loading.webp` rồi build lại (hoặc chép đè `Icons/loading.webp` trong gói đã build rồi đóng lại zip, [EXPORT.md §8](EXPORT.md)). Không để ảnh loading ở chỗ khác, không đổi tên.
 - **`loading.webp` là key art của game** (16:9 hoặc vuông, cạnh dài ≥ 1024): thay ảnh mẫu của kit. `check-export` cảnh báo khi còn ảnh mẫu, báo lỗi khi thiếu file.
-- **`logo.webp`** là logo AZGAMES của kit 2.x, dùng chung mọi game: không sửa. Trên trang GameDistribution / CrazyGames / Poki (`sdkType` `gd` / `crazy` / `poki`, hoặc `trademark: false`) màn tự bỏ logo (không thương hiệu publisher ở đó, [QA.md](QA.md) 7.4).
+- **`logo.webp`** là logo AZGAMES của kit 2.x, dùng chung mọi game: không sửa. Khi build, SDK Game Builder thay nó bằng logo brand của publisher (`templates/brand/<publisher>.webp`: 1games là gamesforfree.io, azgames là azgames.io). Trên trang GameDistribution / CrazyGames / Poki (`sdkType` `gd` / `crazy` / `poki`, hoặc `trademark: false`) màn tự bỏ logo (không thương hiệu publisher ở đó, [QA.md](QA.md) 7.4).
 - Chữ trên màn (`Loading...`, `Connecting again (2/3)...`, `Almost there...`, thông báo lỗi, `Reload`) **tiếng Anh cứng**: hiện trước khi `i18n/` tải xong.
 - Font Nunito nạp từ Google Fonts chỉ cho màn này; chưa tải kịp thì dùng font hệ thống.
 - **Trang dev** (`template/index.html`): `<script src="loader.js" data-entry="src/main.js" data-module>`: loader tải entry của Vite thay cho `game.js`. `data-icons` đổi thư mục ảnh (mặc định `Icons/`).

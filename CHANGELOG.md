@@ -24,7 +24,7 @@ Thay đổi chỉ ở tài liệu thì không cần mục.
 
 ### `loader.js` đi đầu, gmsdkjs bắt buộc; lưu dữ liệu về kit, nén + mã hoá
 
-Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); thay đổi này game **phải làm theo**. Cần **gmsdkjs ≥ 1.0.1** và **template 1.0.1** trên server ([OVERVIEW.md](docs/OVERVIEW.md) §4): gmsdkjs cũ còn ghi vào `azgames.<gameCode>` và đè save mới.
+Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); thay đổi này game **phải làm theo**. Cần **gmsdkjs ≥ 1.0.1 ở `…/gmsdkjs/1.0.1/`** (`gmsdkjs/gmsdkjs.js` ở gốc vẫn là 1.0.0, cho game kit 1.0.0) và **template 1.0.1** trên server ([OVERVIEW.md](docs/OVERVIEW.md) §4): gmsdkjs cũ còn ghi vào `azgames.<gameCode>` và đè save mới.
 
 **Thay đổi**
 - **`loader.js`** (`loading/loader.js` → `public/loader.js`, trong gói ở gốc): script **duy nhất** trang nạp. Hiện màn loading GM Loader v1 ngay (ảnh `Icons/`), tải `gmsdkjs.js` (`GMSDKJS_OPTIONS.sdkUrl`) và `game.js` **song song**, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây). gmsdkjs **bắt buộc**: 3 lần vẫn lỗi thì "Connection problem… reload the page" + nút Reload, game không chạy; chỉ trang dev (`platform: 'dev'`) chạy tiếp không SDK. Hai file chạy thanh 0 → 30 %, game báo phần còn lại ([LOADING.md](docs/LOADING.md)).

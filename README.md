@@ -2,7 +2,7 @@
 
 Bộ chuẩn để gắn **gmsdkjs** vào một game web (JS / TS), hoặc làm game mới theo chuẩn. Cả kit nằm trong một folder, kể cả cấu hình của game (`config.json`): chép folder sang dự án khác là dùng được.
 
-**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/gmsdkjs.js`, bản az ở `api.azgame.io`). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
+**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`, bản az ở `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`; `gmsdkjs/gmsdkjs.js` không có `1.0.1/` là bản 1.0.0, chỉ cho game kit 1.0.0). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
 - licence, màn khoá và chuyển hướng theo API;
 - quảng cáo mọi network (AdSense H5, GameDistribution, CrazyGames, Poki, WeeGoo): preroll, xen giữa, thưởng, tạm dừng, giãn cách, chặn quảng cáo;
 - tracking GMA (tên người chơi ẩn danh ở key riêng `gma_<gameCode>.name`), thương hiệu publisher.
