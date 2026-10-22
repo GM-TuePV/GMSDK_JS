@@ -115,6 +115,30 @@ function checkLanguages(label, languages, defaultLanguage) {
   if (!languages.includes(defaultLanguage)) err(`${label} defaultLanguage "${defaultLanguage}" is not in languages`);
 }
 
+// --- the game in an iframe, on many domains (docs/EMBED.md) ------------------------------------------------------
+/** A file the game loads (image, font, data, sound, model, wasm…), by its extension. */
+const LOADED_FILE = '(?:png|jpe?g|webp|gif|avif|svg|ktx2|basis|mp3|ogg|wav|m4a|aac|opus|webm|mp4|json|glb|gltf|bin|fbx|obj|wasm|woff2?|ttf|otf|atlas|fnt|xml|txt|csv)';
+const HTTP_FILE = new RegExp(`["'\`](http://[^"'\`\\s]+\\.${LOADED_FILE})(?:[?#][^"'\`\\s]*)?["'\`]`, 'gi');
+const HTTPS_FILE = new RegExp(`["'\`](https://[^"'\`\\s]+\\.${LOADED_FILE})(?:[?#][^"'\`\\s]*)?["'\`]`, 'gi');
+const HTTPS_IMAGE = /\.(?:png|jpe?g|webp|gif|avif|svg|ktx2|basis)$/i;
+
+/** What breaks only once the page and a file are on different domains: allowed, with the condition that makes it work. */
+function checkEmbed(js, entry) {
+  const list = (re) => [...new Set([...js.matchAll(re)].map((m) => m[1]))];
+  const plain = list(HTTP_FILE);
+  // http:// inside an https page is blocked outright (mixed content): the one thing with no way around.
+  if (plain.length) err(`${entry} loads files over http:// (blocked on https pages): use https: ${plain.slice(0, 4).join(', ')} (docs/EMBED.md)`);
+  const outside = list(HTTPS_FILE);
+  if (outside.length) {
+    warn(`${entry} loads files from other domains: that server must send CORS (Access-Control-Allow-Origin) and the game must load them in CORS mode, or copy them into the package: ${outside.slice(0, 4).join(', ')} (docs/EMBED.md §1)`);
+    if (outside.some((u) => HTTPS_IMAGE.test(u)) && !/crossOrigin|setCrossOrigin/.test(js))
+      warn(`${entry} loads images from other domains but never sets crossOrigin: set img.crossOrigin = 'anonymous' (Three.js: loader.setCrossOrigin('anonymous')) before src, or WebGL / canvas reads fail (docs/EMBED.md §1)`);
+  }
+  if (/new\s+Worker\s*\(\s*["'`]https?:/.test(js)) warn(`${entry} starts a Worker from a URL: a worker must come from the page's own domain: fetch it (CORS) and start it from a blob URL (docs/EMBED.md §4)`);
+  if (/new\s+SharedArrayBuffer\b/.test(js) && !/crossOriginIsolated/.test(js))
+    warn(`${entry} creates a SharedArrayBuffer without checking crossOriginIsolated: in a portal iframe it is usually missing; check it and fall back to one thread (docs/EMBED.md §5)`);
+}
+
 /** A table of i18n/ as { "group.key": text } and the paths that are not texts (numbers, lists…). */
 function flattenTable(node, prefix = '', out = { texts: {}, bad: [] }) {
   for (const [k, v] of Object.entries(node)) {
@@ -523,6 +547,7 @@ function checkPackage() {
     if (/createElement\(\s*["'`]script["'`]\s*\)/.test(js)) warn(`${entry} creates <script> tags: no outside script may be loaded (the SDK loads what it needs)`);
     if (/import\(\s*["'`]https?:/.test(js)) err(`${entry} imports a module from a URL: no outside script may be loaded`);
     if (/["'`]\/(assets|i18n|icons|Language)\//.test(js)) err(`${entry} uses an absolute path ("/assets/…" or "/i18n/…"): every path must be relative`);
+    checkEmbed(js, entry);
     if (!/getSDK|GMSDKJS/.test(js)) warn(`${entry} never mentions getSDK / GMSDKJS: is the SDK wired in?`);
     // Literal asset paths whose file is not in the package (a renamed file of tools/compress.mjs missed, a typo).
     const missingAssets = [...new Set((js.match(/["'`](assets\/[^"'`?#\s]+\.(?:png|webp|jpe?g|mp3|ogg|wav|m4a|json))["'`?#]/gi) ?? []).map((m) => m.slice(1, -1)))].filter((p) => !existsExact(dir, p));

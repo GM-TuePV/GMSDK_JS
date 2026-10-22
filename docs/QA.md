@@ -162,6 +162,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | 7.6 | Game thu dữ liệu cá nhân ngoài sự kiện SDK | Có thông báo Privacy Policy / Terms cho người chơi mới | Major | [CG] [Poki] |
 | 7.7 | Trademark và `V<version>` ở góc (dòng bản quyền từ `copyrightText(sdk)`: mặc định `© 2026 Azgames.io`, server đổi thì theo server, rỗng thì không hiện gì; không chữ viết cứng ở chỗ khác); nút More Games ẩn khi `moreGamesUrl()` là `null`, có URL thì mở tab mới | Nhìn menu | Minor | [Nội bộ] |
 | 7.8 | Mọi font, âm thanh, ảnh có nguồn và giấy phép trong `licenses.json`: không NC, không "personal use", không asset lấy từ game khác; CC-BY có dòng ghi công người chơi thấy được | `check-export` không lỗi, không cảnh báo giấy phép ([ASSETS.md](ASSETS.md)) | Major | [Nội bộ] |
+| 7.9 | Game trong iframe trên tên miền khác chạy đủ: không lỗi CORS / SecurityError / Mixed Content / Worker trong console, có tiếng sau cú chạm đầu, phím game không cuộn trang ngoài | `preview.html?debug` trên portal thật, hoặc trang và file ngoài ở hai cổng khác nhau ([EMBED.md](EMBED.md) §12) | Major | [Nội bộ] |
 
 ### 3.8 Tracking và gói xuất
 

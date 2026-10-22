@@ -196,6 +196,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 - Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`.
 - Nạp script ngoài, đường dẫn tuyệt đối (`/assets/…`), tự kiểm domain hay tự chuyển hướng.
+- Dùng file từ tên miền khác, đọc điểm ảnh, worker, nhiều luồng, âm thanh, toàn màn hình, phím, trang cha mà chưa đủ điều kiện chạy trong iframe nhiều tên miền: luật ở `PROMPT.md`, cách làm từng trường hợp ở [EMBED.md](EMBED.md).
 - Tự đặt giờ giãn cách quảng cáo theo thời gian (SDK làm); chỉ thêm luật theo nhịp game.
 - Đoán `gameId`, `gameCode` hay bất kỳ giá trị định danh nào: chủ game cung cấp.
 - Để comment dev hay tiếng Việt trong code xuất ra (chỉ bảng dịch `i18n/` được có).
