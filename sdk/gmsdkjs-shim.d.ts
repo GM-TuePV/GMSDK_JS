@@ -57,11 +57,14 @@ export interface Gmsdk {
   onPause(fn: () => void): void;
   onResume(fn: () => void): void;
   track(name: string, params?: Record<string, string | number | boolean | null | undefined>): void;
+  /** The API's More Games URL, or null (no button). Dev page (platform 'dev'): never null, DEV_MORE_GAMES at least. */
   moreGamesUrl(): string | null;
   happyTime(): void;
   setMuted(muted: boolean): void;
 }
 
+/** More Games on the dev page, where the server gives none: https://azgames.io. */
+export declare const DEV_MORE_GAMES: string;
 export declare const METHODS: readonly string[];
 export declare function createFallback(): Omit<Gmsdk, 'storage'>;
 /** The SDK for this page; calls reach window.GMSDKJS as soon as it is there. */

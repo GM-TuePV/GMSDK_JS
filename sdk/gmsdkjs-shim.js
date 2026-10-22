@@ -30,6 +30,9 @@ export const METHODS = [
   'setMuted',
 ];
 
+/** More Games on the dev page (platform 'dev'), where the server gives none: the button shows and can be checked. */
+export const DEV_MORE_GAMES = 'https://azgames.io';
+
 const noop = () => {};
 const no = async () => false;
 
@@ -127,8 +130,14 @@ export function getSDK({ gameCode = '', g = globalThis } = {}) {
     g,
     onEvent: (kind, info) => sdk.track(`save_${kind}`, { chars: info.chars ?? null, error: info.error ?? null }),
   });
-  // Dev page only: the save in the console (gmSave.dump()), since DevTools shows it scrambled on purpose.
-  if (attempt(() => g.GMSDKJS_OPTIONS?.platform, '') === 'dev') attempt(() => (g.gmSave = sdk.storage));
+  if (attempt(() => g.GMSDKJS_OPTIONS?.platform, '') === 'dev') {
+    // Dev page only: the save in the console (gmSave.dump()), since DevTools shows it scrambled on purpose.
+    attempt(() => (g.gmSave = sdk.storage));
+    // Dev page only: the server gives no More Games link on localhost, so the button would never show and its place
+    // could not be checked. Here it always has one (the server's when it gives one, else DEV_MORE_GAMES).
+    const serverMoreGames = sdk.moreGamesUrl;
+    sdk.moreGamesUrl = () => serverMoreGames() || DEV_MORE_GAMES;
+  }
   cache.set(g, sdk);
   return sdk;
 }

@@ -169,7 +169,7 @@ Chuẩn chung (như i18next, LayaAir `i18n/`): **`i18n/<thẻ>.json`** ở gốc
 
 ```js
 const url = sdk.moreGamesUrl();
-moreButton.hidden = !url;                                   // null: không có nút
+moreButton.hidden = !url;                                   // null: không có nút (trang dev: luôn có, mặc định azgames.io)
 moreButton.onclick = () => window.open(url, '_blank', 'noopener');
 copyrightLabel.textContent = copyrightText(sdk);           // "© 2026 Azgames.io" trừ khi server đổi; '' = không hiện gì
 versionLabel.textContent = `V${manifest.version}`;          // từ game.json
@@ -177,6 +177,7 @@ versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 
 - Đọc `moreGamesUrl()` và `copyrightText(sdk)` **sau `ready()`**: giá trị đến từ API.
 - More Games mở tab mới, không bao giờ `location.href` (người chơi mất ván).
+- **Luôn làm nút More Games** (theo mẫu trên), kể cả khi lúc làm chưa thấy link: trên portal, server quyết có nút hay không. Trang dev (`platform: 'dev'`) server không trả link, nên shim trả **`https://azgames.io`** (`DEV_MORE_GAMES`): nút luôn hiện trên trang dev để kiểm chỗ đặt, chữ, bấm mở tab mới. Gói build lên portal thì theo server (GD, CrazyGames, Poki: không có nút).
 - Trademark và phiên bản thường đặt ở góc màn hình menu hoặc bảng Settings.
 - **Chữ bản quyền chỉ lấy từ `copyrightText(sdk)`** (`sdk/copyright.js`, [LOADING.md §2](LOADING.md)): mặc định `© 2026 Azgames.io`; server đổi (`gameinfo.trademark`: tên miền / tên khác) thì theo server; `0` và trang GD / CrazyGames / Poki thì `''`, không hiện gì. Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… ở chỗ khác trong code hay `i18n/*.json`: `check-export` cảnh báo.
 

@@ -66,7 +66,7 @@ async function boot() {
 | --- | --- |
 | `gameplayStart()` / `gameplayStop()` | Báo lúc người chơi **đang chơi thật** (không tính menu, màn kết thúc, tạm dừng). Poki / CrazyGames bắt buộc. Gọi trùng thì bỏ qua. `gameplayStart()` đầu tiên của trang gửi `start_game` |
 | `happyTime()` | Khoảnh khắc vui (kỷ lục mới, thắng lớn). Chỉ CrazyGames dùng |
-| `moreGamesUrl()` | URL "More games" của API (chỉ http/https), hoặc `null`: **`null` thì ẩn nút**. Trên GD, CrazyGames, Poki luôn là `null` (template tắt) |
+| `moreGamesUrl()` | URL "More games" của API (chỉ http/https), hoặc `null`: **`null` thì ẩn nút**. Trên GD, CrazyGames, Poki luôn là `null` (template tắt). Trang dev (`platform: 'dev'`): không bao giờ `null`, server không có link thì là `https://azgames.io` (`DEV_MORE_GAMES`), để nút hiện mà kiểm ([INTEGRATION.md §9](INTEGRATION.md)) |
 
 ## 5. Tracking
 

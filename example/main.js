@@ -92,7 +92,7 @@ function showMenu() {
     );
   }
 
-  // More games: the API's URL, or no button.
+  // More games: the API's URL, or no button. On the dev page the shim gives https://azgames.io, so the button shows.
   const url = sdk.moreGamesUrl();
   if (url) root.append(el('button', t('more_games'), () => window.open(url, '_blank', 'noopener')));
 
