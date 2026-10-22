@@ -115,3 +115,21 @@ Không nằm trong `sdk`: module `leaderboard/` của kit, dùng lần đăng nh
 - Chuyển hướng trang mở trực tiếp không qua portal (`force_redirect` của API).
 - API chậm quá 5 s hay lỗi thì game vẫn được chơi; câu trả lời đến muộn không khoá, không chuyển hướng.
 - Nạp SDK của network quảng cáo (AFG, GameDistribution, CrazyGames, Poki, WeeGoo) và GMA.
+
+## 10. Loại thiết bị: `GMGameSDK.getDeviceType()`
+
+Game cần biết đang chạy trên điện thoại hay máy tính (đổi cách điều khiển, cỡ nút, gợi ý xoay màn…) thì hỏi SDK của GMA, không tự đoán theo `userAgent`:
+
+```js
+const type = globalThis.GMGameSDK?.getDeviceType?.() ?? 'desktop';
+const isMobile = type === 'mobile' || type === 'tablet';
+```
+
+| Giá trị | Máy (đã thử trong Edge giả lập) |
+| --- | --- |
+| `'desktop'` | Máy tính |
+| `'mobile'` | Điện thoại: iPhone, Android |
+| `'tablet'` | Máy tính bảng: iPad |
+
+- `GMGameSDK` là SDK của GMA, do gmsdkjs nạp (§9): gọi **sau** `await loadSDK()`, trong `boot()`. Trước đó, trên trang dev không có SDK, hay khi GMA bị chặn thì nó chưa có: `?.` và `?? 'desktop'` giữ cho game không lỗi.
+- Đọc một lần lúc khởi động là đủ. Bố cục theo khung màn (dọc / ngang, cỡ) vẫn đi theo kích thước cửa sổ, không theo loại máy ([UX.md](UX.md)).
