@@ -5,7 +5,7 @@ const game = JSON.parse(readFileSync('public/game.json', 'utf8'));
 export default {
   base: './',
   build: {
-    outDir: `export/${game.id}-${game.version}`,
+    outDir: `export/build/${game.version}-${game.id}`,
     emptyOutDir: true,
     target: 'es2017',
     modulePreload: false,

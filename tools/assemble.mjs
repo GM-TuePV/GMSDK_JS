@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
  * Puts the gm page into the export package (docs/EXPORT.md §7): index.html (the platform template, filled from
- * the package's game.json) + preview.html (the same file, byte for byte), in export/<id>-<version>/ itself.
+ * the package's game.json) + preview.html (the same file, byte for byte), in export/build/<version>-<id>/ itself.
  * Ready to upload or open; check-export accepts exactly these two pages. Every other publisher x portal page is
  * the build tool's (api.1games.io), from this one package. --portal gd|crazy|poki makes a copy
- * export/<id>-<version>-<portal>/ with that portal's page, only for submitting by hand while the build tool is
+ * export/build/<version>-<id>-<portal>/ with that portal's page, only for submitting by hand while the build tool is
  * not there. Plain Node 18+, no packages.
  *
  *   node docs/GMSDK_JS/tools/assemble.mjs [<packageDir>] [--portal gm,gd,crazy,poki] [--templates <dir|url>]
  *
- * <packageDir>: default export/<id>-<version> from public/game.json. --templates: default the CDN copy of
+ * <packageDir>: default export/build/<version>-<id> from public/game.json. --templates: default the CDN copy of
  * api.1games.io lib/1games/gmsdkjs/templates/1.0.1/ (gamesforfree-<portal>.html; templates/ without 1.0.1/ is kit 1.0.0). GD is skipped when game.json has no
  * portals.gd.gameKey.
  */
@@ -73,7 +73,7 @@ async function main() {
   let dir = args.find((a, i) => !a.startsWith('--') && !valueAt.has(i));
   if (!dir) {
     const g = readJson('public/game.json');
-    dir = `export/${g.id}-${g.version}`;
+    dir = `export/build/${g.version}-${g.id}`;
   }
   dir = resolve(dir);
   if (!existsSync(join(dir, 'game.json'))) {

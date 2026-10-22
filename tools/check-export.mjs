@@ -418,8 +418,8 @@ function checkPackage() {
     ALLOWED_ROOT.add('index.html').add('preview.html');
     console.log('note: index.html + preview.html are the assembled gm page (the build tool replaces them)');
   } else if (pages.error) err(pages.error);
-  // tools/zip.mjs writes <id>-<version>.zip next to index.html (EXPORT.md §8).
-  if (m?.id && m?.version) ALLOWED_ROOT.add(`${m.id}-${m.version}.zip`);
+  // tools/zip.mjs writes <version>-<id>.zip next to index.html (EXPORT.md §8).
+  if (m?.id && m?.version) ALLOWED_ROOT.add(`${m.version}-${m.id}.zip`);
   for (const name of readdirSync(dir)) {
     if (ALLOWED_ROOT.has(name)) continue;
     if (name === 'index.html' || name === 'preview.html') continue; // reported above

@@ -100,8 +100,8 @@ Engine tự sinh `index.html` thì vẫn chỉ lấy JS + tài nguyên ra gói (
 | Game dùng | Cách |
 | --- | --- |
 | Vite (kể cả Phaser, Pixi, Three qua npm) | `template/vite.config.mjs` → `npx vite build` |
-| Không bundler, nhiều file module ES | `npx --yes esbuild@0.24.2 src/main.js --bundle --format=iife --minify --target=es2017 --outfile=export/<id>-<version>/game.js`, rồi chép `game.json`, `i18n/`, `assets/` vào cùng thư mục |
+| Không bundler, nhiều file module ES | `npx --yes esbuild@0.24.2 src/main.js --bundle --format=iife --minify --target=es2017 --outfile=export/build/<version>-<id>/game.js`, rồi chép `game.json`, `i18n/`, `assets/` vào cùng thư mục |
 | Webpack / Rollup / Parcel | Cấu hình ra một file IIFE `game.js` và bố cục [EXPORT.md §1](EXPORT.md) |
 | Engine có trình xuất riêng (Cocos, Construct…) | Lấy file JS và tài nguyên của bản xuất, sắp lại theo [EXPORT.md §1](EXPORT.md); nhiều file JS thì gộp bằng esbuild như trên |
 
-Sau cùng luôn chạy `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src`, rồi `node docs/GMSDK_JS/tools/zip.mjs`.
+Sau cùng luôn chạy `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src`, rồi `node docs/GMSDK_JS/tools/zip.mjs`.

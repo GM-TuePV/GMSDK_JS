@@ -60,7 +60,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/UX.md](docs/UX.md) | Trải nghiệm người chơi: vào chơi ngay, hướng dẫn người mới từng bước, gợi ý đúng lúc, lý do thua, chấm đỏ, tính năng mới, bản đồ tính năng |
 | [docs/QA.md](docs/QA.md) | Tiêu chuẩn QA đạt / không đạt trước khi giao portal (GD, CrazyGames, Poki): thiết bị, checklist, trải nghiệm người mới, hiệu năng, lỗi hay gặp, mẫu báo cáo |
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
-| [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`marketing/<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
+| [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`export/marketing/<version>-<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.1: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
 | [docs/LOADING.md](docs/LOADING.md) | Luồng tải `loader.js` (màn loading GM Loader v1, tải gmsdkjs + game, thử lại 3 lần) và dòng bản quyền mặc định `© 2026 Azgames.io` |
@@ -72,10 +72,10 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | `tools/check-export.mjs` | Kiểm `config.json`, `analytics.json`, `licenses.json` (tự tìm cạnh kit) và gói xuất trước khi giao (Node 18+, không cần cài gì) |
 | `tools/bump-version.mjs` | Version `yymmddXX`, tăng 1 mỗi lần build |
 | `tools/assemble.mjs` | Ghép trang gm (`index.html` + `preview.html`) vào gói. Trang của từng portal do tool build trên API làm |
-| `tools/check-marketing.mjs` | Kiểm marketing kit `marketing/<id>/` trước khi giao: đủ file, ảnh đúng pixel, nền đặc, brief đủ mục, HTML tự chứa ([HANDOFF.md §7](docs/HANDOFF.md)) |
+| `tools/check-marketing.mjs` | Kiểm marketing kit `export/marketing/<version>-<id>/` trước khi giao: đủ file, ảnh đúng pixel, nền đặc, brief đủ mục, HTML tự chứa ([HANDOFF.md §7](docs/HANDOFF.md)) |
 | `tools/compress.mjs` | Sau bundler: PNG → WebP, nhạc → MP3 vừa phải, sửa tên file trong code; báo dung lượng trước / sau. Mức nén ở `config.json` `compress` (cần `npm i -D sharp ffmpeg-static`) |
-| `tools/screens.mjs` | QA 8 cỡ màn hình: mở gói ở từng cỡ, chờ vào menu, chụp vào `export/qa-<version>/` + bảng kết quả ([QA.md §2.1](docs/QA.md)). Cần Playwright |
-| `tools/zip.mjs` | Bước cuối của build: đóng gói thành `export/<id>-<version>/<id>-<version>.zip` để upload lên tool build trên API |
+| `tools/screens.mjs` | QA 8 cỡ màn hình: mở gói ở từng cỡ, chờ vào menu, chụp vào `export/qa/<version>-<id>/` + bảng kết quả ([QA.md §2.1](docs/QA.md)). Cần Playwright |
+| `tools/zip.mjs` | Bước cuối của build: đóng gói thành `export/build/<version>-<id>/<version>-<id>.zip` để upload lên tool build trên API |
 | `example/` | Game mẫu chạy được |
 
 ## Ai lo phần nào

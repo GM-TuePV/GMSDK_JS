@@ -28,7 +28,7 @@ Mỗi tiêu chí ghi rõ nguồn. Tiêu chí ghi **[Nội bộ]** hoặc "cần 
 
 ## 2. Bản build và thiết bị
 
-**Luôn test trên gói xuất thật** (`export/<id>-<version>`), không test trên dev server.
+**Luôn test trên gói xuất thật** (`export/build/<version>-<id>`), không test trên dev server.
 - Khi tool build đã ghép template: test trên URL thật của từng portal.
 - Khi chưa có: dùng trang dev đặt đúng preset của portal ([TESTING.md §1](TESTING.md)), `adsTest: false`. Riêng phần quảng cáo vẫn phải xem lại trên portal.
 
@@ -43,9 +43,14 @@ Bộ máy tối thiểu, gồm bộ GD dùng cộng thêm máy yếu:
 | Máy yếu: Chromebook 4 GB RAM, hoặc DevTools → Performance → CPU chậm 6 lần | CrazyGames tắt game không mượt trên Chromebook 4 GB [CG] |
 | Game trong iframe nhỏ (khoảng 800×450) | Portal nào cũng nhúng game vào iframe |
 
-### 2.1 Tám cỡ màn hình (bắt buộc mỗi bản build)
+### 2.1 Tám cỡ màn hình (một lần mỗi game)
 
-Mỗi bản build chụp màn game ở **8 cỡ** dưới đây, xem từng ảnh, ghi kết quả vào báo cáo (§6). Cỡ tính theo CSS px; điện thoại và máy tính bảng giả lập có cảm ứng và đúng tỉ lệ điểm ảnh (DPR).
+Chụp màn game ở **8 cỡ** dưới đây, xem từng ảnh, ghi kết quả vào báo cáo (§6). **Chỉ chụp một lần**, khi chủ game đồng ý:
+- Build xong mà `export/qa/` chưa có thư mục nào thì AI hỏi: "Đã build xong `<version>`. Chụp ảnh QA 8 cỡ màn hình không? Ảnh để hỗ trợ làm Banner cho chuẩn nên cần đồ họa bản cuối cùng."
+- Không đồng ý thì bỏ qua, lần build sau hỏi lại. Đã có thư mục thì không hỏi nữa; chủ game muốn chụp lại thì tự yêu cầu.
+- Các mục kiểm khác của QA (check-export, §3, §5) vẫn làm mỗi bản build; chỉ phần chụp ảnh là một lần.
+
+Cỡ tính theo CSS px Cỡ tính theo CSS px; điện thoại và máy tính bảng giả lập có cảm ứng và đúng tỉ lệ điểm ảnh (DPR).
 
 | # | Cỡ | DPR | Đại diện |
 | --- | --- | --- | --- |
@@ -58,11 +63,11 @@ Mỗi bản build chụp màn game ở **8 cỡ** dưới đây, xem từng ản
 | 7 | 844×390 | 3 | Điện thoại ngang |
 | 8 | 1024×768 | 2 | iPad ngang |
 
-- **Chụp màn đầu (menu):** `node docs/GMSDK_JS/tools/screens.mjs` trên gói đã ghép trang gm (sau `assemble`). Tool mở gói ở từng cỡ, chờ `loader.js` ẩn màn loading, chụp, ghi `export/qa-<version>/<rộng>x<cao>.jpg` và bảng `export/qa-<version>/screens.md`. Cần Playwright trong repo game: `npm i -D playwright` rồi `npx playwright install chromium`, hoặc thêm `--channel msedge` / `chrome` để dùng trình duyệt có sẵn.
+- **Chụp màn đầu (menu):** `node docs/GMSDK_JS/tools/screens.mjs` trên gói đã ghép trang gm (sau `assemble`). Tool mở gói ở từng cỡ, chờ `loader.js` ẩn màn loading, chụp, ghi `export/qa/<version>-<id>/<rộng>x<cao>.jpg` và bảng `export/qa/<version>-<id>/screens.md`. Cần Playwright trong repo game: `npm i -D playwright` rồi `npx playwright install chromium`, hoặc thêm `--channel msedge` / `chrome` để dùng trình duyệt có sẵn.
 - **Chụp lúc chơi:** AI tự vào chơi ở **mỗi cỡ** (Playwright, hoặc công cụ chơi thử của app) và chụp ít nhất một khung gameplay + màn kết quả, lưu cạnh ảnh menu (`<rộng>x<cao>-play.jpg`, `<rộng>x<cao>-result.jpg`).
 - **Xem từng ảnh**, mỗi cỡ một dòng Đạt / Lỗi: chữ bị cắt hoặc quá nhỏ để đọc, nút chồng nhau hoặc ra ngoài màn, viền đen / khoảng trống (game phải phủ kín, §3.2), nút quá nhỏ để bấm trên điện thoại (dưới khoảng 44 CSS px), HUD che vùng chơi.
-- **Ảnh không commit** và không vào gói: `export/` không commit, `export/qa-<version>/` nằm ngoài thư mục gói nên không vào zip. Báo cáo chỉ ghi kết quả.
-- Ảnh chụp lúc chơi cũng là ảnh tham chiếu cho marketing kit ([HANDOFF.md §6](HANDOFF.md)).
+- **Ảnh không commit** và không vào gói: `export/` không commit, `export/qa/` nằm ngoài thư mục gói nên không vào zip. Báo cáo chỉ ghi kết quả.
+- Ảnh chụp lúc chơi là ảnh tham chiếu cho marketing kit ([HANDOFF.md §6](HANDOFF.md)): đó là lý do chụp trên đồ hoạ bản cuối cùng.
 
 ## 3. Checklist nghiệm thu
 
@@ -164,7 +169,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | --- | --- | --- | --- | --- |
 | 8.1 | Sự kiện SDK tự gửi | Log `?debug` có `loaded_game`, `start_game`… | Minor | [SDK] |
 | 8.2 | Sự kiện của game | Bộ chuẩn (`PlayGame`, `EndGame`…) và bộ phân tích bắt buộc đúng lúc, đủ tham số chung; chơi theo kịch bản [ANALYTICS.md §9](ANALYTICS.md); `analytics.json` khớp game (level, màn, item, tính năng) | Major | [Nội bộ] |
-| 8.3 | Gói đúng chuẩn | `node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src` báo `OK`; `tools/zip.mjs` ra `export/<id>-<version>/<id>-<version>.zip` và báo `read back OK`. `index.html` / `preview.html` chỉ là trang gm do `assemble` ghép; không source map; mọi đường dẫn tương đối | Major | [Nội bộ] [CG] |
+| 8.3 | Gói đúng chuẩn | `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src` báo `OK`; `tools/zip.mjs` ra `export/build/<version>-<id>/<version>-<id>.zip` và báo `read back OK`. `index.html` / `preview.html` chỉ là trang gm do `assemble` ghép; không source map; mọi đường dẫn tương đối | Major | [Nội bộ] [CG] |
 
 ### 3.9 Trải nghiệm người chơi mới và tính năng
 
@@ -191,7 +196,7 @@ Chuẩn và cách làm: [UX.md](UX.md). Test với một save mới (xoá `azgam
 | GD: bật cờ Rewarded Ads trên dashboard. Kích hoạt SDK: mở game trên portal, tắt adblock, xem **trọn** một preroll. Wiki ghi bước này có thể mất tới hai tuần | Người vận hành |
 | Zip gd có key GD: ô GD key ở form game trên API, hoặc `config.json` → `gdKey` (mặc định) | Dev |
 | Báo cáo QA (mục 6) có 0 Major | QA |
-| Marketing kit (`marketing/<id>/`: brief, icon, cover, thumbnail của portal) qua `check-marketing` ([HANDOFF.md](HANDOFF.md)) | Dev / marketing |
+| Marketing kit (`export/marketing/<version>-<id>/`: brief, icon, cover, thumbnail của portal) qua `check-marketing` ([HANDOFF.md](HANDOFF.md)) | Dev / marketing |
 
 ## 5. Lỗi đã gặp và cách phòng
 
@@ -219,12 +224,12 @@ Chép vào báo cáo của bản build, lưu ở **`docs/qa/<version>.md`** (ví
 ```markdown
 # QA <name> <version>: <portal>
 
-- Gói: export/<id>-<version> (check-export: OK), export/<id>-<version>/<id>-<version>.zip
+- Gói: export/build/<version>-<id> (check-export: OK), export/build/<version>-<id>/<version>-<id>.zip
 - URL test: <URL>
 - Máy: Windows + Chrome …, Android …, iPhone …, CPU 6×
 - Kết luận: GIAO / KHÔNG GIAO (Major: <n>, Minor: <n>)
 
-## Màn hình (§2.1): ảnh ở export/qa-<version>/
+## Màn hình (§2.1): ảnh ở export/qa/<version>-<id>/ (bản này không chụp thì ghi "đã chụp ở <thư mục>" hoặc "chưa chụp")
 
 | Cỡ | Menu | Lúc chơi | Kết quả | Ghi chú |
 | --- | --- | --- | --- | --- |

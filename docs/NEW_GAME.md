@@ -75,14 +75,14 @@ Thiết kế **cùng lúc với gameplay**, không để cuối:
 ## Bước 9. Thử, QA, giao
 
 - Trang dev với `adsTest` ([TESTING.md](TESTING.md)), rồi gói xuất thật; checklist [QA.md §3](QA.md), kể cả §3.9 trải nghiệm.
-- `npm run build`: ra `export/<id>-<version>/` (gói + trang gm `index.html` + `preview.html`), qua `check-export`, và `export/<id>-<version>/<id>-<version>.zip` để upload. Trang của từng portal do tool build trên API làm ([EXPORT.md §7, §8](EXPORT.md)).
+- `npm run build`: ra `export/build/<version>-<id>/` (gói + trang gm `index.html` + `preview.html`), qua `check-export`, và `export/build/<version>-<id>/<version>-<id>.zip` để upload. Trang của từng portal do tool build trên API làm ([EXPORT.md §7, §8](EXPORT.md)).
 - Trước khi build bản giao: rà `public/`, bỏ asset không dùng ([EXPORT.md §3](EXPORT.md)).
 - Báo cáo theo [QA.md §6](QA.md).
 - Marketing kit và ghi chú bàn giao theo [HANDOFF.md](HANDOFF.md): kéo [PROMPT_MARKETING.md](../PROMPT_MARKETING.md) vào khung chat.
 
 ## Xong khi
 
-- [ ] `check-export … --src src`: `OK`; có `export/<id>-<version>/<id>-<version>.zip`
+- [ ] `check-export … --src src`: `OK`; có `export/build/<version>-<id>/<version>-<id>.zip`
 - [ ] Vào gameplay ≤ 1 cú bấm; thời gian tới lúc chơi được ≤ 10 s
 - [ ] Đủ màn của Bước 2, chạy ngang và dọc, cảm ứng và bàn phím
 - [ ] Save qua `sdk.storage`, có `sanitize`, có test

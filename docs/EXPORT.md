@@ -5,7 +5,7 @@ Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTI
 ## 1. Bố cục
 
 ```
-<id>-<version>/
+<version>-<id>/
 ├── loader.js        của kit (loading/loader.js, chép nguyên): script DUY NHẤT trang nạp; hiện loading, tải gmsdkjs.js + game.js
 ├── game.json        manifest
 ├── game.js          toàn bộ code game: 1 file, ES2017+, đã minify, KHÔNG obfuscate; loader.js tải nó
@@ -14,7 +14,7 @@ Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTI
 ├── assets/…         ảnh, âm thanh, font, dữ liệu (giữ nguyên cấu trúc thư mục)
 ├── index.html       (sau bước ghép §7) trang gm: template của platform, đã điền
 ├── preview.html     (sau bước ghép §7) giống hệt index.html
-└── <id>-<version>.zip  (bước cuối §8) cả thư mục này trong một file zip, để upload
+└── <version>-<id>.zip  (bước cuối §8) cả thư mục này trong một file zip, để upload
 ```
 
 Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.html` chỉ được là trang gm do `tools/assemble.mjs` ghép (§7); game không có trang HTML riêng.
@@ -74,7 +74,7 @@ Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.h
 
 ## 4. Xuất bằng Vite
 
-`template/vite.config.mjs` (chép về gốc repo game) đọc `public/game.json` và xuất thẳng ra `export/<id>-<version>/`:
+`template/vite.config.mjs` (chép về gốc repo game) đọc `public/game.json` và xuất thẳng ra `export/build/<version>-<id>/`:
 
 ```js
 import { readFileSync } from 'node:fs';
@@ -84,7 +84,7 @@ const game = JSON.parse(readFileSync('public/game.json', 'utf8'));
 export default {
   base: './',
   build: {
-    outDir: `export/${game.id}-${game.version}`,
+    outDir: `export/build/${game.version}-${game.id}`,
     emptyOutDir: true,
     target: 'es2017',
     modulePreload: false,
@@ -103,10 +103,10 @@ export default {
 - **Script build chuẩn**, đúng thứ tự:
 
   ```json
-  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/compress.mjs && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src && node docs/GMSDK_JS/tools/zip.mjs"
+  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/compress.mjs && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src && node docs/GMSDK_JS/tools/zip.mjs"
   ```
 
-  `<id>-<version>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
+  `<version>-<id>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
 - **Nén (`tools/compress.mjs`)**, ngay sau bundler, trên gói xuất (ảnh / nhạc gốc trong `public/` để nguyên). Cần `npm i -D sharp ffmpeg-static`.
   - Ảnh: PNG → WebP. Nhạc (`mp3`, `wav`, `ogg`, `m4a`, `flac`) → MP3; dài hơn 20 giây là nhạc nền, ngắn hơn là hiệu ứng. Không dùng Opus: Safari / iPhone cũ không phát được.
   - Chỉ thay khi file mới nhỏ hơn; MP3 đã ở mức đích thì để nguyên; file lỗi giữ nguyên (cảnh báo, không hỏng build).
@@ -130,7 +130,7 @@ export default {
 ## 5. Kiểm gói
 
 ```bash
-node docs/GMSDK_JS/tools/check-export.mjs export/<id>-<version> --src src
+node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src
 ```
 
 Chạy ở gốc repo. Tool tự đọc `docs/GMSDK_JS/config.json` (giá trị của game) để so với `game.json`; `--config <file>` nếu muốn trỏ chỗ khác.
@@ -141,7 +141,7 @@ Chạy ở gốc repo. Tool tự đọc `docs/GMSDK_JS/config.json` (giá trị 
 
 ## 6. Sau khi giao gói
 
-Giao `export/<id>-<version>/<id>-<version>.zip` (§8) cho người vận hành API. Trên admin API (api.1games.io `GMSDK_JS/docs/GUIDE.md`):
+Giao `export/build/<version>-<id>/<version>-<id>.zip` (§8) cho người vận hành API. Trên admin API (api.1games.io `GMSDK_JS/docs/GUIDE.md`):
 - **Build SDK JS:** chọn game và template (gm, gd, crazy, poki), thả zip. Tool kiểm gói (`check-export`), ghép template của portal (khối `GMSDKJS_OPTIONS` với `gameId`, `version` của `game.json`; `gameCode`, key GD lấy từ form game trên API, trống thì lấy `game.json`; `sdkUrl`; `#game`; `<script src="loader.js">`, từ kit 1.0.1), obfuscate `loader.js` + `game.js` và khoá domain, ra một zip của portal đó;
 - **zip gm:** form game → khung SOURCE: thả zip, server nén `.br` / `.gz`, ra bản xem thử `game.1games.io/<id>/<version>/`; duyệt xong bấm "Dùng bản này" thì asset lên CDN `gdn.1games.io/game/<id>/<version>/` và người chơi mở `game.1games.io/<id>/`;
 - **zip gd / crazy / poki:** tải về nộp lên portal.
@@ -154,12 +154,12 @@ Game không cần biết bước này.
 node docs/GMSDK_JS/tools/assemble.mjs
 ```
 
-- Game build ra **một** bản: `export/<id>-<version>/` = gói + trang gm. `index.html` là template `gamesforfree-gm.html`, điền `name`, `id`, `gameCode`, `version` từ `game.json`; `preview.html` **giống hệt** `index.html` từng byte. Mở `preview.html?debug` để thử với API licence, GMA và quảng cáo thật.
+- Game build ra **một** bản: `export/build/<version>-<id>/` = gói + trang gm. `index.html` là template `gamesforfree-gm.html`, điền `name`, `id`, `gameCode`, `version` từ `game.json`; `preview.html` **giống hệt** `index.html` từng byte. Mở `preview.html?debug` để thử với API licence, GMA và quảng cáo thật.
 - Trang của từng publisher × portal (GD, CrazyGames, Poki, azgames, ofree), obfuscate và khoá domain là việc của **tool build trên API**, từ chính gói này: nó thay `index.html` / `preview.html`. Game không build riêng cho portal nào.
 - Chạy `check-export` **sau** bước ghép: nó nhận đúng trang gm này (template, hai file giống nhau, đúng giá trị của `game.json`) và vẫn báo lỗi mọi trang HTML khác.
 - Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/1.0.1/`. `templates/` không có `1.0.1/` là template của kit 1.0.0, chỉ cho game kit 1.0.0. Không có mạng thì dùng `--templates <thư mục>`.
 - **Template từ kit 1.0.1** chỉ nạp `<script src="loader.js">` và ghi `sdkUrl` (chỗ của `gmsdkjs.js`) trong `GMSDKJS_OPTIONS`; không còn thẻ `gmsdkjs.js` hay `game.js`. `assemble` và `check-export` báo lỗi khi gặp template cũ.
-- **Chỉ khi phải tự nộp tay lên một portal** mà tool build chưa làm được: `--portal gd` (hoặc `crazy`, `poki`) chép gói ra `export/<id>-<version>-<portal>/` với trang của portal đó (SDK quảng cáo của portal, key GD, tắt More Games / trademark). Không chạy `check-export` trên bản chép này.
+- **Chỉ khi phải tự nộp tay lên một portal** mà tool build chưa làm được: `--portal gd` (hoặc `crazy`, `poki`) chép gói ra `export/build/<version>-<id>-<portal>/` với trang của portal đó (SDK quảng cáo của portal, key GD, tắt More Games / trademark). Không chạy `check-export` trên bản chép này.
 
 ## 8. Zip: một file để upload
 
@@ -167,9 +167,9 @@ node docs/GMSDK_JS/tools/assemble.mjs
 node docs/GMSDK_JS/tools/zip.mjs
 ```
 
-- Bước **cuối** của build, sau `check-export`: đóng `export/<id>-<version>/` thành **`export/<id>-<version>/<id>-<version>.zip`**, nằm ngay trong thư mục gói, cạnh `index.html`.
+- Bước **cuối** của build, sau `check-export`: đóng `export/build/<version>-<id>/` thành **`export/build/<version>-<id>/<version>-<id>.zip`**, nằm ngay trong thư mục gói, cạnh `index.html`.
 - Trong zip là mọi file của thư mục, `index.html` ở **gốc** zip (không có thư mục bọc ngoài). File `.zip` ở gốc thư mục (chính nó, bản cũ) không được đóng vào.
-- `check-export` chấp nhận đúng file `<id>-<version>.zip` này ở gốc gói; `assemble --portal` không chép nó sang thư mục `-<portal>`.
+- `check-export` chấp nhận đúng file `<version>-<id>.zip` này ở gốc gói; `assemble --portal` không chép nó sang thư mục `-<portal>`.
 - Đây là file giao đi: upload lên trang Build SDK JS trên API (ghép trang theo publisher × portal, obfuscate, khoá domain; §6), hoặc gửi cho người test.
 - **Tất định:** file xếp theo tên, ngày giờ mọi file là ngày của version. Cùng một thư mục thì ra cùng một zip từng byte.
 - Ảnh, âm thanh, video, font, file đã nén: để nguyên (store). Còn lại nén deflate mức 9.

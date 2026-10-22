@@ -5,7 +5,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 ## 1. Gói game
 
 ```
-<id>-<version>/
+<version>-<id>/
 ├── index.html      template của portal (tool build ghép; kit ghép trang gm bằng assemble)
 ├── loader.js       của kit (loading/loader.js, chép nguyên): script DUY NHẤT trang nạp
 ├── game.js         code game + các module của kit, Vite bundle thành 1 file
@@ -99,8 +99,8 @@ Trên server ở **thư mục riêng** `…/gmsdkjs/1.0.1/` (`https://games.1gam
 | `assemble` | Template phải nạp `game.js` | Template phải nạp `loader.js`; template cũ → báo lỗi |
 | Trang dev | Thẻ `gmsdkjs.js` + `<script type="module" src="src/main.js">` | `<script src="loader.js" data-entry="src/main.js" data-module>` |
 | QA | 1.4: chặn gmsdkjs vẫn chơi được | 1.4: chặn gmsdkjs → màn Reload sau 3 lần; 1.6: màn loading hiện ngay; 5.1: save không đọc được; 5.6 mới: sửa tay save → bỏ |
-| QA 8 cỡ màn hình | Không có | §2.1: 8 cỡ (4 máy tính, 3 điện thoại, 1 iPad); `tools/screens.mjs` chụp menu, AI chụp lúc chơi; ảnh ở `export/qa-<version>/`, không commit; bảng kết quả trong báo cáo QA |
-| Marketing | Cover / banner vẽ theo mô tả + art của game | Bắt buộc 3–5 ảnh gameplay thật (`export/marketing-ref/`) đính kèm mọi prompt; ảnh phải sát gameplay, không thêm thứ game không có, không UI; duyệt cạnh ảnh gameplay |
+| QA 8 cỡ màn hình | Không có | §2.1: 8 cỡ (4 máy tính, 3 điện thoại, 1 iPad); `tools/screens.mjs` chụp menu, AI chụp lúc chơi; **một lần mỗi game**, AI hỏi sau khi build (cần đồ hoạ bản cuối); ảnh ở `export/qa/<version>-<id>/`, không commit; bảng kết quả trong báo cáo QA |
+| Marketing | Cover / banner vẽ theo mô tả + art của game | **Một lần mỗi game**, AI hỏi sau khi có ảnh QA (cần bản game hoàn thiện); kit ra `export/marketing/<version>-<id>/`. Bắt buộc 3–5 ảnh gameplay thật (lấy từ ảnh QA `export/qa/<version>-<id>/`) đính kèm mọi prompt; ảnh phải sát gameplay, không thêm thứ game không có, không UI; duyệt cạnh ảnh gameplay |
 | Code game | | **Không `await` ở cấp ngoài cùng của file** (gói IIFE): mọi `await` trong `boot()`; `check-export --src` cảnh báo |
 
 Việc game phải làm để lên 1.0.1: [CHANGELOG.md](../CHANGELOG.md) mục 1.0.1.

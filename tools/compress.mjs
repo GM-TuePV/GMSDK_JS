@@ -4,7 +4,7 @@
  * bitrate, then every reference to a renamed file in game.js and the package's text files. The sources in public/
  * are not touched. Prints a report: sizes before / after, the largest files left, how to compress more.
  *
- *   node docs/GMSDK_JS/tools/compress.mjs [<packageDir>]        default export/<id>-<version> from public/game.json
+ *   node docs/GMSDK_JS/tools/compress.mjs [<packageDir>]        default export/build/<version>-<id> from public/game.json
  *
  * The level comes from config.json "compress" (chosen once with the owner, AI_INSTALL.md step 0); none = "normal":
  *
@@ -126,7 +126,7 @@ async function main() {
   let dir = process.argv.slice(2).find((a) => !a.startsWith('--'));
   if (!dir) {
     const g = readJson(readFileSync('public/game.json', 'utf8'));
-    dir = `export/${g.id}-${g.version}`;
+    dir = `export/build/${g.version}-${g.id}`;
   }
   dir = resolve(dir);
   if (!existsSync(join(dir, 'game.json'))) {

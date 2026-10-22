@@ -13,8 +13,7 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 │   ├── gdd/              thiết kế game: game làm gì (README.md bắt buộc)
 │   ├── plan/             kế hoạch: làm thế nào, tới đâu (README.md bắt buộc)
 │   └── qa/               báo cáo QA, mỗi bản build một file <version>.md
-├── marketing/<id>/       marketing kit (HANDOFF.md §3)
-├── export/               gói xuất, không commit
+├── export/               không commit: build/<version>-<id>/ (gói xuất), qa/<version>-<id>/ (ảnh QA), marketing/<version>-<id>/ (marketing kit, HANDOFF.md §3)
 ├── index.html            trang dev = template/index.html (KHÔNG nằm trong gói xuất)
 ├── vite.config.mjs       = template/vite.config.mjs (nếu dùng Vite)
 ├── public/

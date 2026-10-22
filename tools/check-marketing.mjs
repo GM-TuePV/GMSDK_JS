@@ -2,7 +2,7 @@
 /**
  * Checks a game's marketing kit before handover (docs/HANDOFF.md §3–§5). Plain Node 18+, no packages.
  *
- *   node docs/GMSDK_JS/tools/check-marketing.mjs                  marketing/<id>/, id from config.json
+ *   node docs/GMSDK_JS/tools/check-marketing.mjs                  the newest export/marketing/<version>-<id>/, id from config.json
  *   node docs/GMSDK_JS/tools/check-marketing.mjs <kitDir>         another folder
  *
  * config.json is the one next to the kit (docs/GMSDK_JS/config.json); --config <file> points at another one.
@@ -33,14 +33,22 @@ if (configPath) {
     console.error(`${configPath}: ${e.message}`);
   }
 }
-/** The kit folder is named after the game: <kitDir>'s name, else config.json's id. */
-const id = dirArg ? basename(dirArg.replace(/[\\/]+$/, '')) : config && typeof config.id === 'string' ? config.id : '';
+/** The kit folder is export/marketing/<version>-<id>: the id is <kitDir>'s name without the build version, else config.json's id. */
+const id = dirArg
+  ? basename(dirArg.replace(/[\\/]+$/, '')).replace(/^\d{8}-/, '')
+  : config && typeof config.id === 'string' ? config.id : '';
 if (!id) {
   console.error(`no ${relative(process.cwd(), KIT_CONFIG)} with an id, and no kit folder given`);
   console.error(USAGE);
   process.exit(2);
 }
-const dir = dirArg ?? join('marketing', id);
+/** No folder given: the newest export/marketing/<yymmddXX>-<id>/ of this game. */
+function latestKit() {
+  const root = join('export', 'marketing');
+  const names = existsSync(root) ? readdirSync(root).filter((n) => /^\d{8}-/.test(n) && n.slice(9) === id).sort() : [];
+  return join(root, names.length ? names[names.length - 1] : `<version>-${id}`);
+}
+const dir = dirArg ?? latestKit();
 
 /** The image set of the standard (docs/HANDOFF.md §4): every one as images/<id>-<w>x<h>.png and images/jpg/…jpg. */
 const IMAGES = [

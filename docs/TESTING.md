@@ -50,7 +50,7 @@ Ví dụ trong kit: chạy `npx --yes http-server <kit> -p 8080` rồi mở `htt
 
 ## 3. Trên server
 
-- Gói đã ghép theo portal ([EXPORT.md §7](EXPORT.md)): upload `export/<id>-<version>/` rồi mở `preview.html?debug`. Trang dùng API licence, GMA và quảng cáo thật; muốn quảng cáo test thì dùng trang dev.
+- Gói đã ghép theo portal ([EXPORT.md §7](EXPORT.md)): upload `export/build/<version>-<id>/` rồi mở `preview.html?debug`. Trang dùng API licence, GMA và quảng cáo thật; muốn quảng cáo test thì dùng trang dev.
 - Demo của SDK: `https://games.1games.io/lib/1games/gmsdkjs/demo/index.html?debug&adstest`. Thêm `&game=<slug>` để hỏi API licence thật (mở từ một link trên 1games.io để có referrer). Phải gõ đủ `index.html`.
 - Game thật sau khi tool build ghép template: thêm `?debug` vào URL để xem log.
 

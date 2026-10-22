@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
  * Packs the export package into one zip (docs/EXPORT.md §8), written inside the package next to index.html:
- * export/<id>-<version>/<id>-<version>.zip, holding every file of the folder (index.html at the root of the zip)
+ * export/build/<version>-<id>/<version>-<id>.zip, holding every file of the folder (index.html at the root of the zip)
  * but no .zip at the root. That zip is what goes up to the build tool on the API. Run it last, after assemble
  * and check-export. Plain Node 18+, no packages.
  *
  *   node docs/GMSDK_JS/tools/zip.mjs [<packageDir>]
  *
- * <packageDir>: default export/<id>-<version> from public/game.json. The zip is deterministic: files in name
+ * <packageDir>: default export/build/<version>-<id> from public/game.json. The zip is deterministic: files in name
  * order, every date set to the version's day, so the same package gives the same zip byte for byte. Files that
  * are compressed already (images, audio, video, fonts, archives) are stored; the rest is deflated at level 9.
  * After writing, the zip is read back and every entry compared with its file.
@@ -137,7 +137,7 @@ function main() {
   let dir = process.argv.slice(2).find((a) => !a.startsWith('--'));
   if (!dir) {
     const g = JSON.parse(readFileSync('public/game.json', 'utf8').replace(/^﻿/, ''));
-    dir = `export/${g.id}-${g.version}`;
+    dir = `export/build/${g.version}-${g.id}`;
   }
   dir = resolve(dir);
   let game;

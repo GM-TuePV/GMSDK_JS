@@ -6,10 +6,13 @@
  *
  *   node docs/GMSDK_JS/tools/screens.mjs [<packageDir>] [--channel msedge|chrome] [--wait <seconds>]
  *
- * <packageDir>: default export/<id>-<version> from public/game.json. Output: export/qa-<version>/ (outside the
- * package, so never in the zip; export/ is not committed): <w>x<h>.jpg per size + screens.md, the table to copy
+ * <packageDir>: default export/build/<version>-<id> from public/game.json. Output: export/qa/<version>-<id>/ (outside
+ * the package, so never in the zip; export/ is not committed): <w>x<h>.jpg per size + screens.md, the table to copy
  * into docs/qa/<version>.md. The AI then looks at every picture (text cut, buttons on top of each other, black bars,
  * the game not filling the screen) and adds gameplay shots of its own (docs/QA.md §2.1).
+ *
+ * Run once per game, on the final art: the shots are the reference for the banners (marketing). The AI asks the
+ * owner after a build while export/qa/ has no folder yet; after that only when the owner asks for new shots.
  *
  * Needs Playwright in the game repo: npm i -D playwright, then npx playwright install chromium; or
  * --channel msedge / chrome to use the browser already on the machine. The page loads gmsdkjs.js from the server
@@ -71,7 +74,7 @@ async function main() {
   let dir = args.find((a, i) => !a.startsWith('--') && !valueAt.has(i));
   if (!dir) {
     const g = JSON.parse(readFileSync('public/game.json', 'utf8').replace(/^\uFEFF/, ''));
-    dir = `export/${g.id}-${g.version}`;
+    dir = `export/build/${g.version}-${g.id}`;
   }
   dir = resolve(dir);
   if (!existsSync(join(dir, 'index.html')) || !existsSync(join(dir, 'game.json'))) {
@@ -80,7 +83,8 @@ async function main() {
     return;
   }
   const game = JSON.parse(readFileSync(join(dir, 'game.json'), 'utf8').replace(/^\uFEFF/, ''));
-  const out = resolve(dir, '..', `qa-${game.version}`);
+  // export/build/<version>-<id> → export/qa/<version>-<id>
+  const out = resolve(dir, '..', '..', 'qa', `${game.version}-${game.id}`);
   mkdirSync(out, { recursive: true });
   const pw = await loadPlaywright();
   if (!pw) {
@@ -136,7 +140,7 @@ async function main() {
   const md = [
     `## Màn hình: ${game.name} ${game.version}`,
     '',
-    `Ảnh: \`export/qa-${game.version}/\` (không commit). Cột "Kết quả" do người / AI điền sau khi xem từng ảnh: chữ bị cắt, nút chồng nhau, viền đen, game không phủ kín màn, chữ quá nhỏ.`,
+    `Ảnh: \`export/qa/${game.version}-${game.id}/\` (không commit). Cột "Kết quả" do người / AI điền sau khi xem từng ảnh: chữ bị cắt, nút chồng nhau, viền đen, game không phủ kín màn, chữ quá nhỏ.`,
     '',
     '| Cỡ (CSS px) | Máy | Vào menu | Lỗi trang | Kết quả | Ghi chú |',
     '| --- | --- | --- | --- | --- | --- |',

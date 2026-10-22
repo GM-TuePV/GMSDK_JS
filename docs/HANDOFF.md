@@ -8,10 +8,10 @@ Thiếu marketing kit thì kéo [PROMPT_MARKETING.md](../PROMPT_MARKETING.md) v�
 
 | Phần | Ở đâu | Đạt khi |
 | --- | --- | --- |
-| Gói build | `export/<id>-<version>/<id>-<version>.zip` | `npm run build` báo `OK` ([EXPORT.md](EXPORT.md)); `config.json` có `gameCode` thật, có `gdKey` nếu lên GD |
+| Gói build | `export/build/<version>-<id>/<version>-<id>.zip` | `npm run build` báo `OK` ([EXPORT.md](EXPORT.md)); `config.json` có `gameCode` thật, có `gdKey` nếu lên GD |
 | Báo cáo QA | Theo mẫu [QA.md §6](QA.md) | Không còn mục **Major**; mục Minor đã ghi rõ |
 | Giấy phép asset | `docs/GMSDK_JS/licenses.json` | `check-export` không lỗi, không còn cảnh báo giấy phép (asset `unknown`, thiếu bằng chứng): [ASSETS.md](ASSETS.md) |
-| Marketing kit | `marketing/<id>/` trong repo game; bên vận hành đưa lên hàng **Marketing kit** của form game trên API (zip cả thư mục, ảnh vào hàng Images) và gửi **link trang kit** cho team marketing | `node docs/GMSDK_JS/tools/check-marketing.mjs` báo `OK` (§3–§5) |
+| Marketing kit | `export/marketing/<version>-<id>/` (làm một lần mỗi game, sau ảnh QA; không commit, [PROMPT_MARKETING.md](../PROMPT_MARKETING.md)); bên vận hành đưa lên hàng **Marketing kit** của form game trên API (zip cả thư mục, ảnh vào hàng Images) và gửi **link trang kit** cho team marketing | `node docs/GMSDK_JS/tools/check-marketing.mjs` báo `OK` (§3–§5) |
 | Ghi chú bàn giao | Tin nhắn hoặc mô tả commit | Theo mẫu §2 |
 
 `<id>` là `id` trong `config.json` (slug trên portal, ví dụ `wheelie-popper`). Mọi file của kit đều mang prefix này, nên file bị tách khỏi thư mục vẫn biết của game nào.
@@ -20,11 +20,11 @@ Thiếu marketing kit thì kéo [PROMPT_MARKETING.md](../PROMPT_MARKETING.md) v�
 
 ```
 <Tên game> <version>: <id> / <gameCode>
-- Gói: export/<id>-<version>/<id>-<version>.zip (check-export OK)
+- Gói: export/build/<version>-<id>/<version>-<id>.zip (check-export OK)
 - Git: <url repo> · nhánh <nhánh> · commit Build <version> (<mã ngắn>) — nếu đã đẩy (EXPORT.md §9)
 - QA: docs/qa/<version>.md: 0 Major, <n> Minor
 - Giấy phép: licenses.json, 0 unknown; ghi công CC-BY hiện ở <Credits / store description>
-- Marketing: marketing/<id>/ (check-marketing OK); zip thư mục này để đưa lên form game
+- Marketing: export/marketing/<version>-<id>/ (check-marketing OK); zip thư mục này để đưa lên form game
 - Portal: gm / GD (gdKey có hay chưa) / CrazyGames / Poki
 - Mới trong bản này: …
 - Coming soon (có trong code, chưa mở cho người chơi): …
@@ -36,7 +36,7 @@ Thiếu marketing kit thì kéo [PROMPT_MARKETING.md](../PROMPT_MARKETING.md) v�
 Mọi thứ nằm trong **một thư mục**: gửi nguyên thư mục là đủ.
 
 ```
-marketing/<id>/
+export/marketing/<version>-<id>/
   <id>-content-brief.md          tiếng Việt
   <id>-content-brief.en.md       tiếng Anh
   <id>-content-brief.en.html     tiếng Anh, một file tự chứa: hero + Image kit
@@ -127,8 +127,8 @@ Mục 10 viết đúng dạng sau ở cả ba file, để `check-marketing` đ�
 Ảnh được vẽ bằng **Codex** (công cụ gen ảnh): mỗi phiên dán prompt chung trước, rồi dán từng prompt ảnh, kèm ảnh tham chiếu. AI (qua [PROMPT_MARKETING.md](../PROMPT_MARKETING.md)) viết các prompt này **từ art thật của game**: màu, nét, nhân vật, logo. Không viết prompt chung chung.
 
 **Ảnh gameplay thật làm tham chiếu (bắt buộc):** cover và banner phải **sát với gameplay**: người xem ảnh rồi vào game phải thấy đúng game đó (đúng nhân vật, đúng màn, đúng màu, đúng cảm giác chơi), không phải một game "đẹp hơn" do Codex tưởng tượng.
-- Trước khi viết prompt, chụp **3–5 ảnh lúc chơi thật** từ bản build: hành động chính của game, nhân vật / vật chính rõ nét, màn đặc trưng nhất, một khoảnh khắc gay cấn. Lấy luôn ảnh chụp lúc chơi của QA ([QA.md §2.1](QA.md)) ở cỡ 1920×1080 và 390×844; thiếu thì chụp thêm. Ảnh không có UI che (nếu game có chế độ ẩn HUD) thì tốt hơn.
-- Lưu ở `export/marketing-ref/<tên>.jpg` (không commit, như ảnh QA) và **liệt kê trong mục "Attach these images" của mọi prompt**, kể cả cover.
+- Trước khi viết prompt, chọn **3–5 ảnh lúc chơi thật**: hành động chính của game, nhân vật / vật chính rõ nét, màn đặc trưng nhất, một khoảnh khắc gay cấn. Lấy từ ảnh QA ([QA.md §2.1](QA.md)) trong `export/qa/<version>-<id>/`, ưu tiên cỡ 1920×1080 và 390×844; thiếu thì chụp thêm vào cùng thư mục (`ref-<tên>.jpg`). Ảnh không có UI che (nếu game có chế độ ẩn HUD) thì tốt hơn.
+- Ảnh không commit, và **liệt kê trong mục "Attach these images" của mọi prompt**, kể cả cover.
 - Prompt nêu rõ phải giữ gì từ ảnh gameplay: nhân vật, màn / bối cảnh, màu, góc nhìn, hành động. Được bố cục lại cho vừa khung và làm đẹp ánh sáng; **không thêm** nhân vật, vật, hiệu ứng, cảnh mà game không có; **không đưa UI của game** (HUD, nút, điểm) vào ảnh.
 
 **Thứ tự:**
@@ -179,7 +179,7 @@ Then for each image: open `art/prompts/store/<file>.md`, attach the listed image
 - <the logo file of the game>
 - <the hero's sprites: character, vehicle>
 - <the background / level the scene is set in>
-- export/marketing-ref/<gameplay shots>.jpg (real gameplay of this build: the scene, the hero, the colours to match)
+- export/qa/<version>-<id>/<gameplay shots>.jpg (real gameplay of this build: the scene, the hero, the colours to match)
 - art/store/<id>-1920x1080.png (the approved cover; not for the cover itself)
 
 ## Prompt
@@ -199,7 +199,7 @@ Riêng cỡ `200x120`: thay phần logo bằng *"NO logo and no text at all (unr
 
 ```bash
 npm run build                                   # gói build: check-export OK, zip
-node docs/GMSDK_JS/tools/check-marketing.mjs    # marketing/<id>/: OK
+node docs/GMSDK_JS/tools/check-marketing.mjs    # export/marketing/<version>-<id>/: OK
 ```
 
 `check-marketing` báo **lỗi** khi:
@@ -217,4 +217,4 @@ Phần máy không kiểm được thì người tự soát:
 - [ ] Ba file cùng 10 mục, cùng số liệu.
 - [ ] Mở bản HTML: hero hiện trọn logo, Image kit đủ thẻ, đọc được trên điện thoại.
 - [ ] Xem từng ảnh ở đúng cỡ: logo đọc được (trừ 200×120), không chữ lạ, nhân vật giống trong game, bố cục đúng bảng §4.
-- [ ] **Đặt cover và từng banner cạnh ảnh gameplay** (`export/marketing-ref/`): một người chưa chơi nhìn hai ảnh phải nhận ra là cùng một game. Không có nhân vật, vật, cảnh hay hiệu ứng mà game không có; không có UI của game.
+- [ ] **Đặt cover và từng banner cạnh ảnh gameplay** (`export/qa/<version>-<id>/`): một người chưa chơi nhìn hai ảnh phải nhận ra là cùng một game. Không có nhân vật, vật, cảnh hay hiệu ứng mà game không có; không có UI của game.
