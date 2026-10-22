@@ -131,5 +131,18 @@ const isMobile = type === 'mobile' || type === 'tablet';
 | `'mobile'` | Điện thoại: iPhone, Android |
 | `'tablet'` | Máy tính bảng: iPad |
 
-- `GMGameSDK` là SDK của GMA, do gmsdkjs nạp (§9): gọi **sau** `await loadSDK()`, trong `boot()`. Trước đó, trên trang dev không có SDK, hay khi GMA bị chặn thì nó chưa có: `?.` và `?? 'desktop'` giữ cho game không lỗi.
-- Đọc một lần lúc khởi động là đủ. Bố cục theo khung màn (dọc / ngang, cỡ) vẫn đi theo kích thước cửa sổ, không theo loại máy ([UX.md](UX.md)).
+- `?.` và `?? 'desktop'` giữ cho game không lỗi khi chưa có `GMGameSDK` (trang dev không SDK, GMA bị chặn).
+- **`GMGameSDK` tới muộn.** gmsdkjs nạp SDK của GMA sau, không chờ: đo trên gói thật, `loadSDK()` xong khoảng 0,8–1,3 s, `sdk.ready()` khoảng 1,5–1,9 s, còn `GMGameSDK` khoảng 2,3–2,8 s sau khi mở trang. Gọi dòng trên ngay trong `boot()` thì **điện thoại vẫn ra `'desktop'`**. Cần biết lúc khởi động thì chờ ngắn, hết hạn thì đoán theo màn cảm ứng:
+
+```js
+/** 'desktop' | 'mobile' | 'tablet': chờ GMGameSDK tối đa `ms`, không có thì đoán theo màn cảm ứng. */
+async function deviceType(ms = 3000) {
+  for (let t = 0; t < ms && !globalThis.GMGameSDK?.getDeviceType; t += 100) await new Promise((r) => setTimeout(r, 100));
+  return globalThis.GMGameSDK?.getDeviceType?.() ?? (matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop');
+}
+
+const type = await deviceType();                 // trong boot(), sau loadSDK(); chạy song song với tải tài nguyên được
+const isMobile = type === 'mobile' || type === 'tablet';
+```
+
+- Đọc một lần là đủ. Bố cục theo khung màn (dọc / ngang, cỡ) vẫn đi theo kích thước cửa sổ, không theo loại máy ([UX.md](UX.md)).
