@@ -10,14 +10,14 @@
  *   node docs/GMSDK_JS/tools/assemble.mjs [<packageDir>] [--portal gm,gd,crazy,poki] [--templates <dir|url>]
  *
  * <packageDir>: default export/build/<version>-<id> from public/game.json. --templates: default the CDN copy of
- * api.1games.io lib/1games/gmsdkjs/templates/1.0.1/ (gamesforfree-<portal>.html; templates/ without 1.0.1/ is kit 1.0.0). GD is skipped when game.json has no
+ * api.1games.io lib/1games/gmsdkjs/templates/1.0.1/ (gamesforfree-<portal>.html; templates/ itself is not for this kit). GD is skipped when game.json has no
  * portals.gd.gameKey.
  */
 import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-// Kit 1.0.1 templates (load loader.js only). templates/ itself keeps the 1.0.0 pages for kit 1.0.0 games.
+// The templates of this kit (they load loader.js only). templates/ itself holds pages of another generation.
 export const TEMPLATES = 'https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/';
 export const PORTALS = ['gm', 'gd', 'crazy', 'poki'];
 /** The pages this tool writes (the gm ones in the package are not copied to the other portals). */
@@ -54,7 +54,7 @@ export function fill(template, game, portal) {
   });
   // Kit 1.0.1: the page loads loader.js only; loader.js loads gmsdkjs.js and game.js (docs/LOADING.md).
   if (/id="gmsoft-jssdk"|<script[^>]*\bsrc="game\.js"/.test(html))
-    throw new Error(`${portal}: the template is from before kit 1.0.1 (it loads gmsdkjs.js / game.js itself): put the 1.0.1 templates on the server, or pass --templates <folder>`);
+    throw new Error(`${portal}: the template loads gmsdkjs.js / game.js itself, not loader.js: use the templates/1.0.1/ pages (default), or pass --templates <folder>`);
   if (!/<script[^>]*\bsrc="loader\.js"/.test(html)) throw new Error(`${portal}: the template does not load loader.js`);
   return html;
 }

@@ -13,7 +13,7 @@ async function boot() {
 // chỗ khác trong game: getSDK() trả cùng đối tượng. Không await ở cấp cao nhất (gói xuất là IIFE)
 ```
 
-- **`gmsdkjs.js` do `loader.js` tải** (không còn thẻ `<script>` trong template): song song với `game.js`, tối đa 3 lần, URL ở `GMSDKJS_OPTIONS.sdkUrl`. **Bắt buộc**: 3 lần vẫn lỗi thì loader hiện màn "reload the page", game không chạy. Chỉ trang dev (`platform: 'dev'`) chạy tiếp không SDK. Chi tiết: [LOADING.md §1](LOADING.md).
+- **`gmsdkjs.js` do `loader.js` tải** (template không có thẻ `<script>` của nó): song song với `game.js`, tối đa 3 lần, URL ở `GMSDKJS_OPTIONS.sdkUrl`. **Bắt buộc**: 3 lần vẫn lỗi thì loader hiện màn "reload the page", game không chạy. Chỉ trang dev (`platform: 'dev'`) chạy tiếp không SDK. Chi tiết: [LOADING.md §1](LOADING.md).
 - `loadSDK()` chờ `window.GMLoader.ready()` rồi trả `getSDK()`. Không có `loader.js` trên trang (test) thì trả ngay.
 - **Game không gọi thẳng `window.GMSDKJS`**, mà luôn qua `sdk/gmsdkjs-shim.js` (JS thuần, không cần build, kit giữ):
   - Mỗi hàm tìm `window.GMSDKJS` **lúc gọi** và được bọc: thiếu hàm, hàm throw hay promise reject thì trả câu trả lời an toàn (không quảng cáo, không tracking).

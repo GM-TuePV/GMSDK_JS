@@ -2,7 +2,7 @@
 
 Bộ chuẩn để gắn **gmsdkjs** vào một game web (JS / TS), hoặc làm game mới theo chuẩn. Cả kit nằm trong một folder, kể cả cấu hình của game (`config.json`): chép folder sang dự án khác là dùng được.
 
-**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`, bản az ở `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`; `gmsdkjs/gmsdkjs.js` không có `1.0.1/` là bản 1.0.0, chỉ cho game kit 1.0.0). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
+**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`, bản az ở `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`; kit dùng đúng thư mục `1.0.1/` này). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
 - licence, màn khoá và chuyển hướng theo API;
 - quảng cáo mọi network (AdSense H5, GameDistribution, CrazyGames, Poki, WeeGoo): preroll, xen giữa, thưởng, tạm dừng, giãn cách, chặn quảng cáo;
 - tracking GMA (tên người chơi ẩn danh ở key riêng `gma_<gameCode>.name`), thương hiệu publisher.
@@ -65,7 +65,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.1: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
 | [docs/LOADING.md](docs/LOADING.md) | Luồng tải `loader.js` (màn loading GM Loader v1, tải gmsdkjs + game, thử lại 3 lần) và dòng bản quyền mặc định `© 2026 Azgames.io` |
 | `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js`, `storage.js` (lưu của game: nén + mã hoá), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
-| `loading/` | `loader.js` chép vào `public/loader.js` (script đầu tiên của mọi trang); `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `Icons/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/Icons/` (thư mục riêng, tên cố định để dễ tìm, dễ thay), thay `loading.webp` bằng key art của game |
+| `loading/` | `loader.js` chép vào `public/loader.js` (script đầu tiên của mọi trang); `loading.js` (+ `.d.ts`) chép vào `src/sdk/loading/`; `icons/` (key art mẫu `loading.webp`, logo `logo.webp`) chép vào `public/icons/` (thư mục riêng, tên cố định để dễ tìm, dễ thay), thay `loading.webp` bằng key art của game |
 | `leaderboard/` | Game có bảng xếp hạng: `leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`) chép vào `src/sdk/leaderboard/`; `flags/`, `countries.json` chép vào `public/assets/leaderboard/` |
 | `template/index.html` | Trang dev, chép về gốc repo game |
 | `template/vite.config.mjs` | Cấu hình Vite xuất đúng gói |
@@ -92,8 +92,8 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 
 ## Cập nhật
 
-- `gmsdkjs.js` cập nhật trên server, game không phải làm gì (kit 1.0.1 cần gmsdkjs ≥ 1.0.1: bản cũ còn ghi vào `azgames.<gameCode>` và đè save của game).
-- `sdk/gmsdkjs-shim.js` từ 1.0.1 **do kit giữ** (không còn chép từ server): sửa ở kit, chép lại vào game.
+- `gmsdkjs.js` cập nhật trên server (trong thư mục `1.0.1/`), game không phải làm gì.
+- `sdk/gmsdkjs-shim.js` **do kit giữ**: sửa ở kit, chép lại vào game.
 - **Bản gốc của kit: repo api.1games.io, `GMSDK_JS/kit/`** (cùng thư mục `GMSDK_JS/` với tool build `build/` và thiết kế `docs/`). Sửa kit ở đó, rồi chép sang game thành `docs/GMSDK_JS/`; bản trong repo game chỉ là bản chép. Bản gốc **không có `config.json`, `analytics.json`, `licenses.json`**, chỉ có các file mẫu `*.example.json`.
 - **Nâng cấp kit trong một game:** chép đè folder (giữ `config.json`, `analytics.json`, `licenses.json`), rồi kéo `PROMPT.md` vào khung chat. AI xét repo còn dấu hiệu của mục nào trong `CHANGELOG.md` thì làm mục đó.
 - **Sửa kit mà game phải làm theo** (đổi file, đổi bước build, đổi API): tăng `VERSION` (MAJOR / MINOR / PATCH theo bảng đầu `CHANGELOG.md`), thêm mục vào đầu `CHANGELOG.md` với "Thay đổi", "Dấu hiệu" và "Game cần làm".

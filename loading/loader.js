@@ -5,8 +5,8 @@
  *   <script src="loader.js"></script>                                  portal page: loads game.js
  *   <script src="loader.js" data-entry="src/main.js" data-module></script>   dev page (Vite)
  *
- * 1. Shows the loading screen at once (GM Loader v1: Icons/loading.webp, logo, name, % bar), in the look of
- *    Icons/loader.css: empty for the kit look, the game's CSS for its own look (docs/LOADING.md §1.1).
+ * 1. Shows the loading screen at once (GM Loader v1: icons/loading.webp, logo, name, % bar), in the look of
+ *    icons/loader.css: empty for the kit look, the game's CSS for its own look (docs/LOADING.md §1.1).
  * 2. Loads gmsdkjs.js and the game (game.js) side by side, each up to 3 tries (10 s each, 1 s then 2 s apart).
  *    These two files fill the bar to 30 %.
  * 3. gmsdkjs is required: after the 3rd failed try the screen says so and offers Reload; nothing else runs.
@@ -22,7 +22,7 @@
   var g = window;
   if (g.GMLoader) return; // one loader per page
 
-  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js'; // gmsdkjs 1.0.1 (gmsdkjs/gmsdkjs.js stays 1.0.0 for kit 1.0.0 games)
+  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js'; // gmsdkjs 1.0.1, the version this kit is made for (docs/SERVER_NOTES.md)
   var TRIES = 3;
   var TIMEOUT_MS = 10000;
   var WAITS_MS = [1000, 2000];
@@ -32,7 +32,7 @@
   var data = (me && me.dataset) || {};
   var entry = data.entry || 'game.js';
   var entryModule = 'module' in data;
-  var icons = data.icons || 'Icons/';
+  var icons = data.icons || 'icons/';
   var opts = {};
   try {
     opts = g.GMSDKJS_OPTIONS || {};
@@ -166,10 +166,10 @@
   style.id = 'gmLoaderStyle';
   style.textContent = CSS;
   document.head.appendChild(style);
-  // The game's look (docs/LOADING.md §1.1): Icons/loader.css, after the kit CSS so it wins. Only how the screen looks
+  // The game's look (docs/LOADING.md §1.1): icons/loader.css, after the kit CSS so it wins. Only how the screen looks
   // (images, logo, bar, positions, colours); the flow above stays the kit's. The kit's own file is empty. The screen
   // stays invisible until the skin is in (at most SKIN_WAIT_MS), so the kit look never flashes first.
-  var SKIN_WAIT_MS = 1000;
+  var SKIN_WAIT_MS = 500;
   var skinDone = false;
   var skin = el('link');
   skin.rel = 'stylesheet';
@@ -251,7 +251,7 @@
     tint();
   }
   skin.onload = skinIn;
-  skin.onerror = skinIn; // no Icons/loader.css: the kit look
+  skin.onerror = skinIn; // no icons/loader.css: the kit look
   setTimeout(skinIn, SKIN_WAIT_MS);
   thumb.addEventListener('load', tint);
   tint();

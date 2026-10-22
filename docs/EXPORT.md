@@ -10,14 +10,14 @@ Game chỉ xuất **gói dữ liệu thuần**. Trang HTML, khối `GMSDKJS_OPTI
 ├── game.json        manifest
 ├── game.js          toàn bộ code game: 1 file, ES2017+, đã minify, KHÔNG obfuscate; loader.js tải nó
 ├── i18n/<thẻ>.json  mỗi ngôn ngữ một file, thẻ BCP 47: en.json, en-US.json, zh-TW.json (INTEGRATION.md §7)
-├── Icons/           màn loading: loading.webp, logo.webp, loader.css (tên cố định, LOADING.md §1.1)
+├── icons/           màn loading: loading.webp, logo.webp, loader.css (tên cố định, LOADING.md §1.1)
 ├── assets/…         ảnh, âm thanh, font, dữ liệu (giữ nguyên cấu trúc thư mục)
 ├── index.html       (sau bước ghép §7) trang gm: template của platform, đã điền
 ├── preview.html     (sau bước ghép §7) giống hệt index.html
 └── <version>-<id>.zip  (bước cuối §8) cả thư mục này trong một file zip, để upload
 ```
 
-Chỉ những mục đó ở gốc, không source map. `index.html` / `preview.html` chỉ được là trang gm do `tools/assemble.mjs` ghép (§7); game không có trang HTML riêng.
+Chỉ những mục đó ở gốc, không source map. **Tên thư mục và file phân biệt chữ hoa / thường** (CDN chạy Linux): `icons/` chứ không `Icons/`, code gọi `assets/Player.png` thì file phải đúng `Player.png`. Windows không phân biệt nên lỗi này chỉ lộ khi lên CDN; `check-export` so từng chữ và báo lỗi. `index.html` / `preview.html` chỉ được là trang gm do `tools/assemble.mjs` ghép (§7); game không có trang HTML riêng.
 
 ## 2. `game.json`
 
@@ -108,7 +108,7 @@ export default {
 
   `<version>-<id>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
 - **Nén (`tools/compress.mjs`)**, ngay sau bundler, trên gói xuất (ảnh / nhạc gốc trong `public/` để nguyên). Cần `npm i -D sharp ffmpeg-static`.
-  - Ảnh: PNG → WebP. Nhạc (`mp3`, `wav`, `ogg`, `m4a`, `flac`) → MP3; dài hơn 20 giây là nhạc nền, ngắn hơn là hiệu ứng. Không dùng Opus: Safari / iPhone cũ không phát được.
+  - Ảnh: PNG → WebP (trừ `icons/`: màn loading gọi theo tên cố định, không đổi). Nhạc (`mp3`, `wav`, `ogg`, `m4a`, `flac`) → MP3; dài hơn 20 giây là nhạc nền, ngắn hơn là hiệu ứng. Không dùng Opus: Safari / iPhone cũ không phát được.
   - Chỉ thay khi file mới nhỏ hơn; MP3 đã ở mức đích thì để nguyên; file lỗi giữ nguyên (cảnh báo, không hỏng build).
   - Tên file đổi (`.png` → `.webp`, `.wav` / `.ogg` → `.mp3`) được sửa trong `game.js` và các file chữ của gói (JSON, CSS, atlas…). Hai file trùng tên ở hai thư mục mà một file giữ nguyên thì chỉ sửa theo đường dẫn đầy đủ. Đường dẫn ghép lúc chạy (`'img/' + name + '.png'`) không sửa được: dùng `keep` hoặc tự đổi trong code. `check-export` cảnh báo khi `game.js` gọi file `assets/…` không có trong gói.
   - In bảng: số file, dung lượng trước / sau, các file lớn nhất, cách nén thêm.
@@ -157,8 +157,8 @@ node docs/GMSDK_JS/tools/assemble.mjs
 - Game build ra **một** bản: `export/build/<version>-<id>/` = gói + trang gm. `index.html` là template `gamesforfree-gm.html`, điền `name`, `id`, `gameCode`, `version` từ `game.json`; `preview.html` **giống hệt** `index.html` từng byte. Mở `preview.html?debug` để thử với API licence, GMA và quảng cáo thật.
 - Trang của từng publisher × portal (GD, CrazyGames, Poki, azgames, ofree), obfuscate và khoá domain là việc của **tool build trên API**, từ chính gói này: nó thay `index.html` / `preview.html`. Game không build riêng cho portal nào.
 - Chạy `check-export` **sau** bước ghép: nó nhận đúng trang gm này (template, hai file giống nhau, đúng giá trị của `game.json`) và vẫn báo lỗi mọi trang HTML khác.
-- Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/1.0.1/`. `templates/` không có `1.0.1/` là template của kit 1.0.0, chỉ cho game kit 1.0.0. Không có mạng thì dùng `--templates <thư mục>`.
-- **Template từ kit 1.0.1** chỉ nạp `<script src="loader.js">` và ghi `sdkUrl` (chỗ của `gmsdkjs.js`) trong `GMSDKJS_OPTIONS`; không còn thẻ `gmsdkjs.js` hay `game.js`. `assemble` và `check-export` báo lỗi khi gặp template cũ.
+- Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/1.0.1/`. Kit chỉ dùng thư mục `1.0.1/` này. Không có mạng thì dùng `--templates <thư mục>`.
+- **Template** chỉ nạp `<script src="loader.js">` và ghi `sdkUrl` (chỗ của `gmsdkjs.js`) trong `GMSDKJS_OPTIONS`; không có thẻ `gmsdkjs.js` hay `game.js`. `assemble` và `check-export` báo lỗi khi template nạp thẳng hai file đó.
 - **Chỉ khi phải tự nộp tay lên một portal** mà tool build chưa làm được: `--portal gd` (hoặc `crazy`, `poki`) chép gói ra `export/build/<version>-<id>-<portal>/` với trang của portal đó (SDK quảng cáo của portal, key GD, tắt More Games / trademark). Không chạy `check-export` trên bản chép này.
 
 ## 8. Zip: một file để upload

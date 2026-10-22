@@ -19,6 +19,8 @@
  *           off      as it is
  *   keep    globs of package paths left untouched (* within a folder, ** across folders)
  *
+ * icons/ (the loading screen, docs/LOADING.md) is never touched: its files are called by fixed names.
+ *
  * MP3, not Opus: Safari / older iPhones do not play Opus. A file is only replaced when the result is smaller; a
  * file that fails stays as it was (a warning, never a broken build). Needs, in the game's devDependencies:
  * sharp (images) and ffmpeg-static (audio): npm i -D sharp ffmpeg-static. Plain Node 18+ otherwise.
@@ -141,7 +143,11 @@ async function main() {
   const keep = s.keep.map(globToRegExp);
   const kept = (rel) => keep.some((re) => re.test(rel));
 
-  const files = walk(dir).map((abs) => ({ abs, rel: posix(relative(dir, abs)) })).filter((f) => !/\.zip$/i.test(f.rel));
+  const files = walk(dir)
+    .map((abs) => ({ abs, rel: posix(relative(dir, abs)) }))
+    .filter((f) => !/\.zip$/i.test(f.rel))
+    // icons/: fixed names that loader.js, icons/loader.css and the build tool call by name: never renamed.
+    .filter((f) => !f.rel.startsWith('icons/'));
   const pngs = files.filter((f) => extname(f.rel).toLowerCase() === '.png');
   const sounds = files.filter((f) => AUDIO_EXT.has(extname(f.rel).toLowerCase()));
   const renames = new Map();

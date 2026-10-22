@@ -2,23 +2,23 @@
  * Loading screen skin (docs/LOADING.md §1.1). This file of the kit is EMPTY: the kit look (GM Loader v1).
  * config.json "loadingScreen": "kit" → keep this file as it is; "game" → the game's look, written here.
  *
- * loader.js reads Icons/loader.css after its own CSS, so rules here win. Only how the screen looks: images, logo,
+ * loader.js reads icons/loader.css after its own CSS, so rules here win. Only how the screen looks: images, logo,
  * bar, positions, colours, font. The flow is the kit's (loader.js, unchanged): never hide the % bar, the text under
  * it or the Reload button, never hide the publisher logo (.gmLoaderBrand), load nothing from outside the package.
- * Images and fonts go in Icons/ next to this file: url(splash.webp) is Icons/splash.webp.
+ * Images and fonts go in icons/ next to this file: url(splash.webp) is icons/splash.webp.
  *
  * The screen (loader.js):
  *   #gmLoader                     whole screen; classes gmIsLoading (bar on), gmAlmost (99 %), gmFailed (Reload)
- *     .gmLoaderBackdrop           blurred Icons/loading.webp
+ *     .gmLoaderBackdrop           blurred icons/loading.webp
  *     .gmLoaderStage              centre column
- *       img.gmLoaderThumb         Icons/loading.webp
+ *       img.gmLoaderThumb         icons/loading.webp
  *       h1.gmLoaderTitle          game name
  *       .gmLoaderProgress
  *         .gmLoaderSpinner        until the first %
  *         .gmLoaderBar > #gmLoaderFill   the bar
  *         .gmLoaderInfo           "42%", "Almost there...", the error text
  *         button.gmLoaderRetry    Reload
- *     .gmLoaderBrand > img        publisher logo (Icons/logo.webp, swapped by the build tool)
+ *     .gmLoaderBrand > img        publisher logo (icons/logo.webp, swapped by the build tool)
  *     .gmLoaderVersion            version, bottom left
  *
  * Variables on #gmLoader: --gm-font, --gm-bg, --gm-track, --gm-white, --gm-muted; --gm-c1/2/3 (bar colours, "r,g,b").

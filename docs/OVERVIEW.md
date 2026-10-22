@@ -1,6 +1,6 @@
 # Tổng quan: kit GMSDK JS 1.0.1 + gmsdkjs 1.0.1
 
-Một trang để thấy cả hệ thống: game chạy từ lúc mở trang tới lúc chơi qua những bước nào, phần nào nằm ở đâu, và bản 1.0.1 đã đổi gì so với 1.0.0. Chi tiết từng phần ở các file được dẫn.
+Một trang để thấy cả hệ thống: game chạy từ lúc mở trang tới lúc chơi qua những bước nào, phần nào nằm ở đâu, kit quy định những gì. Chi tiết từng phần ở các file được dẫn.
 
 ## 1. Gói game
 
@@ -10,7 +10,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 ├── loader.js       của kit (loading/loader.js, chép nguyên): script DUY NHẤT trang nạp
 ├── game.js         code game + các module của kit, Vite bundle thành 1 file
 ├── game.json       id, gameCode, name, version (yymmddXX), languages, leaderboardId…
-├── Icons/          loading.webp (key art), logo.webp, loader.css (giao diện: kit hoặc của game): màn loading, tên cố định
+├── icons/          loading.webp (key art), logo.webp, loader.css (giao diện: kit hoặc của game): màn loading, tên cố định
 ├── i18n/           <thẻ ngôn ngữ>.json
 └── assets/         ảnh, nhạc, dữ liệu
 ```
@@ -20,10 +20,10 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 ```
 1. Trình duyệt mở index.html
    └─ GMSDKJS_OPTIONS (inline: platform, sdkType, gameId, gameCode, sdkUrl, language, api, gma, brand…)
-      + <div id="game"> + <script src="loader.js">           (không còn thẻ gmsdkjs.js chặn trang)
+      + <div id="game"> + <script src="loader.js">           (script duy nhất của trang)
 
 2. loader.js chạy ngay
-   ├─ dựng màn loading: Icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %; giao diện theo Icons/loader.css
+   ├─ dựng màn loading: icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %; giao diện theo icons/loader.css
    ├─ tải SONG SONG, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây):
    │    ├─ gmsdkjs.js (sdkUrl; mặc định …/gmsdkjs/1.0.1/gmsdkjs.js)   kiểm thêm: phải có window.GMSDKJS
    │    └─ game.js
@@ -70,41 +70,33 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 | Build: bump-version → Vite → nén → `assemble` → `check-export` → zip | `tools/` | Kit |
 | Obfuscate `loader.js` + `game.js`, khoá domain, trang từng portal, CDN | Tool build trên API | Server |
 
-## 4. gmsdkjs 1.0.1 đã sửa gì (so với 1.0.0)
+## 4. gmsdkjs 1.0.1 trên server
 
-Trên server ở **thư mục riêng** `…/gmsdkjs/1.0.1/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`; az: `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`). `gmsdkjs/gmsdkjs.js` ở gốc giữ nguyên **1.0.0** cho game kit 1.0.0 (không nâng game cũ lên). Chi tiết, thứ tự đưa lên, quy ước thư mục theo phiên bản: [SERVER_NOTES.md](SERVER_NOTES.md).
+Kit này dùng **gmsdkjs 1.0.1** ở **thư mục riêng** `…/gmsdkjs/1.0.1/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`; az: `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`). Chi tiết, thứ tự đưa lên, quy ước thư mục theo phiên bản: [SERVER_NOTES.md](SERVER_NOTES.md).
 
-| Trước (1.0.0) | Sau (1.0.1) |
+- **Không lưu dữ liệu game**: lưu là của kit (`sdk/storage.js`). gmsdkjs chỉ giữ tên GMA ở key riêng **`gma_<gameCode>.name`**.
+- Được `loader.js` chèn bằng code (không có thẻ `gmsdkjs.js` trong template).
+- **Template 1.0.1** (`templates/1.0.1/`, 4 portal × 2 host): chỉ `<script src="loader.js">`; `GMSDKJS_OPTIONS` có `sdkUrl` (gmsdkjs 1.0.1 của chính host đó) và `language: "<!--LANGUAGE-->"`.
+- **Tool build** trên API: obfuscate `loader.js` + `game.js`; thay `icons/logo.webp` bằng logo brand của publisher; các file khác trong `icons/` (`loading.webp`, `loader.css`, ảnh của giao diện game) giữ nguyên.
+
+## 5. Kit quy định những gì
+
+| Phần | Quy định |
 | --- | --- |
-| Có bộ lưu dữ liệu game (`sdk.storage`): key `azgames.<gameCode>`, JSON rõ, có vùng `sdk` của GMA | **Bỏ.** Lưu dữ liệu game là của kit. gmsdkjs chỉ giữ tên GMA ở key riêng **`gma_<gameCode>.name`** |
-| Template nạp `gmsdkjs.js` bằng thẻ đồng bộ trong `<head>`, rồi `game.js` | `loader.js` của game chèn `gmsdkjs.js` bằng code (đã thử chạy đúng: licence, quảng cáo, GMA) |
-| — | Chưa có `gma_<gameCode>.name` thì lấy tên GMA mà 1.0.0 để trong vùng `sdk` của `azgames.<gameCode>` (không đụng save `gm1…`) |
-| `VERSION = "1.0.0"`, ở `gmsdkjs/gmsdkjs.js` | `"1.0.1"`, ở `gmsdkjs/1.0.1/gmsdkjs.js` |
+| Màn loading | **`loader.js`** dựng ngay khi trang mở, tải gmsdkjs + `game.js` song song 3 lần, lỗi thì báo **tải lại trang** (gmsdkjs bắt buộc, trừ trang dev); `loading.js` để game điều khiển (`progress`, `setTitle`, `error`, `hide`) |
+| Giao diện màn loading | Luôn hỏi chủ game (`config.json` → `loadingScreen`): `"kit"` mẫu kit, `"game"` giao diện của game trong `icons/loader.css` (ảnh, logo, thanh, vị trí, màu); luồng vẫn là `loader.js` của kit (LOADING.md §1.1) |
+| Bắt đầu game | `sdk = await loadSDK()` là việc đầu tiên trong `boot()`; **không `await` ở cấp ngoài cùng của file** (gói IIFE) |
+| Lưu dữ liệu | **`sdk/storage.js`** của kit: nén LZ (UTF-16) + trộn + mã kiểm. Nhỏ khoảng 10 lần, không đọc được, sửa tay là save bị bỏ. Đồng bộ (ghi chắc lúc đóng tab). Báo `save_tampered`, `save_failed`, `save_large` |
+| Shim | `sdk/gmsdkjs-shim.js`: `loadSDK()`, tìm `window.GMSDKJS` mỗi lần gọi, bọc mọi hàm an toàn; trang dev có `gmSave.dump()` |
+| Gói | `loader.js` + `game.js` + `game.json` + `i18n/` + `icons/` + `assets/`; tên file đúng chữ hoa / thường (CDN phân biệt) |
+| Build | `export/build/<version>-<id>/<version>-<id>.zip`; `check-export` đòi `loader.js` bằng bản kit, `icons/` đủ, skin hợp lệ, tên file khớp từng chữ |
+| Trang dev | `<script src="loader.js" data-entry="src/main.js" data-module>` |
+| QA | 1.4: chặn gmsdkjs → màn Reload sau 3 lần; 1.6: màn loading hiện ngay; 5.1: save không đọc được; 5.6: sửa tay save → bỏ |
+| QA 8 cỡ màn hình | §2.1: 8 cỡ (4 máy tính, 3 điện thoại, 1 iPad); `tools/screens.mjs` chụp menu, AI chụp lúc chơi; **một lần mỗi game**, AI hỏi sau khi build (cần đồ hoạ bản cuối); ảnh ở `export/qa/<version>-<id>/`, không commit |
+| Marketing | **Một lần mỗi game**, AI hỏi sau khi có ảnh QA (cần bản game hoàn thiện); kit ra `export/marketing/<version>-<id>/`. 3–5 ảnh gameplay thật (từ ảnh QA) đính kèm mọi prompt; ảnh phải sát gameplay, không thêm thứ game không có, không UI |
+| Loại thiết bị | `GMGameSDK.getDeviceType()`: tới sau `loadSDK()`, chờ ngắn (API.md §10) |
 
-**Template 1.0.1** (8 file: 4 portal × 2 host, `gmsdkjs-server/templates/`): bỏ thẻ `gmsdkjs.js` và `game.js`; chỉ còn `<script src="loader.js">`; thêm `sdkUrl` (`…/gmsdkjs/1.0.1/gmsdkjs.js` của chính host đó; trên server ở `templates/1.0.1/`) và `language: "<!--LANGUAGE-->"`.
-
-**Tool build** nhận cả hai thế hệ: gói có `loader.js` build theo 1.0.1 (2 file JS, obfuscate cả hai), không có thì build theo 1.0.0 như trước. Khi build, logo màn loading (`Icons/logo.webp`) được thay bằng logo brand của publisher.
-
-## 5. Kit 1.0.1 đã sửa gì (so với 1.0.0)
-
-| Phần | Trước (1.0.0) | Sau (1.0.1) |
-| --- | --- | --- |
-| Màn loading | `game.js` tự dựng ở dòng đầu: chỉ hiện sau khi tải xong `gmsdkjs.js` và `game.js` (màn đen trước đó) | **`loader.js`** dựng ngay khi trang mở; `loading.js` chỉ còn điều khiển (`progress`, `setTitle`, `error`, `hide`) |
-| Giao diện màn loading | Mẫu kit; game có màn riêng thì tự vẽ | Luôn hỏi chủ game (`config.json` → `loadingScreen`): `"kit"` mẫu kit, `"game"` giao diện của game trong `Icons/loader.css` (ảnh, logo, thanh, vị trí, màu); luồng vẫn là `loader.js` của kit (LOADING.md §1.1) |
-| Tải gmsdkjs | Thẻ trong template; lỗi thì game chạy không SDK; chậm thì treo màn đen | `loader.js` tải song song với `game.js`, 3 lần, rồi báo **tải lại trang**. Bắt buộc có (trừ trang dev) |
-| Bắt đầu game | `const sdk = getSDK()` ở đầu module | `sdk = await loadSDK()` là việc đầu tiên trong `boot()` (không await cấp cao nhất: gói IIFE) |
-| Lưu dữ liệu | Bộ lưu của gmsdkjs (shim chép lại làm dự phòng), JSON rõ, sửa tay được | **`sdk/storage.js`** của kit: nén LZ (UTF-16) + trộn + mã kiểm. Nhỏ khoảng 10 lần, không đọc được, sửa tay là save bị bỏ. Đồng bộ (ghi chắc lúc đóng tab). Báo `save_tampered`, `save_failed`, `save_large` |
-| Shim | Sinh từ mã gmsdkjs, chụp SDK một lần lúc gọi `getSDK()` | Kit giữ; tìm `window.GMSDKJS` mỗi lần gọi; `loadSDK()`; dev có `gmSave.dump()` |
-| Gói | `game.js` là JS duy nhất | `loader.js` + `game.js` |
-| `check-export` | Kiểm `Icons/` chỉ khi dùng màn của kit | Đòi `loader.js` (bằng bản kit) + `Icons/` mọi gói; báo lỗi template cũ, màn loading tự dựng; cho phép `localStorage` trong `src/sdk/storage.js` |
-| `assemble` | Template phải nạp `game.js` | Template phải nạp `loader.js`; template cũ → báo lỗi |
-| Trang dev | Thẻ `gmsdkjs.js` + `<script type="module" src="src/main.js">` | `<script src="loader.js" data-entry="src/main.js" data-module>` |
-| QA | 1.4: chặn gmsdkjs vẫn chơi được | 1.4: chặn gmsdkjs → màn Reload sau 3 lần; 1.6: màn loading hiện ngay; 5.1: save không đọc được; 5.6 mới: sửa tay save → bỏ |
-| QA 8 cỡ màn hình | Không có | §2.1: 8 cỡ (4 máy tính, 3 điện thoại, 1 iPad); `tools/screens.mjs` chụp menu, AI chụp lúc chơi; **một lần mỗi game**, AI hỏi sau khi build (cần đồ hoạ bản cuối); ảnh ở `export/qa/<version>-<id>/`, không commit; bảng kết quả trong báo cáo QA |
-| Marketing | Cover / banner vẽ theo mô tả + art của game | **Một lần mỗi game**, AI hỏi sau khi có ảnh QA (cần bản game hoàn thiện); kit ra `export/marketing/<version>-<id>/`. Bắt buộc 3–5 ảnh gameplay thật (lấy từ ảnh QA `export/qa/<version>-<id>/`) đính kèm mọi prompt; ảnh phải sát gameplay, không thêm thứ game không có, không UI; duyệt cạnh ảnh gameplay |
-| Code game | | **Không `await` ở cấp ngoài cùng của file** (gói IIFE): mọi `await` trong `boot()`; `check-export --src` cảnh báo |
-
-Việc game phải làm để lên 1.0.1: [CHANGELOG.md](../CHANGELOG.md) mục 1.0.1.
+Cài kit vào game: [AI_INSTALL.md](../AI_INSTALL.md).
 
 ## 6. Con số đã đo (máy dev, Edge)
 
