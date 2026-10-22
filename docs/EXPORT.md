@@ -157,7 +157,7 @@ node docs/GMSDK_JS/tools/assemble.mjs
 - Game build ra **một** bản: `export/<id>-<version>/` = gói + trang gm. `index.html` là template `gamesforfree-gm.html`, điền `name`, `id`, `gameCode`, `version` từ `game.json`; `preview.html` **giống hệt** `index.html` từng byte. Mở `preview.html?debug` để thử với API licence, GMA và quảng cáo thật.
 - Trang của từng publisher × portal (GD, CrazyGames, Poki, azgames, ofree), obfuscate và khoá domain là việc của **tool build trên API**, từ chính gói này: nó thay `index.html` / `preview.html`. Game không build riêng cho portal nào.
 - Chạy `check-export` **sau** bước ghép: nó nhận đúng trang gm này (template, hai file giống nhau, đúng giá trị của `game.json`) và vẫn báo lỗi mọi trang HTML khác.
-- Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/`. Không có mạng thì dùng `--templates <thư mục>`.
+- Template lấy từ CDN (`https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/`), cùng bản với api.1games.io `lib/1games/gmsdkjs/templates/1.0.1/`. `templates/` không có `1.0.1/` là template của kit 1.0.0, chỉ cho game kit 1.0.0. Không có mạng thì dùng `--templates <thư mục>`.
 - **Template từ kit 1.0.1** chỉ nạp `<script src="loader.js">` và ghi `sdkUrl` (chỗ của `gmsdkjs.js`) trong `GMSDKJS_OPTIONS`; không còn thẻ `gmsdkjs.js` hay `game.js`. `assemble` và `check-export` báo lỗi khi gặp template cũ.
 - **Chỉ khi phải tự nộp tay lên một portal** mà tool build chưa làm được: `--portal gd` (hoặc `crazy`, `poki`) chép gói ra `export/<id>-<version>-<portal>/` với trang của portal đó (SDK quảng cáo của portal, key GD, tắt More Games / trademark). Không chạy `check-export` trên bản chép này.
 

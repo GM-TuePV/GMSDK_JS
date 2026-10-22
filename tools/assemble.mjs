@@ -10,14 +10,15 @@
  *   node docs/GMSDK_JS/tools/assemble.mjs [<packageDir>] [--portal gm,gd,crazy,poki] [--templates <dir|url>]
  *
  * <packageDir>: default export/<id>-<version> from public/game.json. --templates: default the CDN copy of
- * api.1games.io lib/1games/gmsdkjs/templates/ (gamesforfree-<portal>.html). GD is skipped when game.json has no
+ * api.1games.io lib/1games/gmsdkjs/templates/1.0.1/ (gamesforfree-<portal>.html; templates/ without 1.0.1/ is kit 1.0.0). GD is skipped when game.json has no
  * portals.gd.gameKey.
  */
 import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export const TEMPLATES = 'https://games.1games.io/lib/1games/gmsdkjs/templates/';
+// Kit 1.0.1 templates (load loader.js only). templates/ itself keeps the 1.0.0 pages for kit 1.0.0 games.
+export const TEMPLATES = 'https://games.1games.io/lib/1games/gmsdkjs/templates/1.0.1/';
 export const PORTALS = ['gm', 'gd', 'crazy', 'poki'];
 /** The pages this tool writes (the gm ones in the package are not copied to the other portals). */
 const PAGES = new Set(['index.html', 'preview.html']);

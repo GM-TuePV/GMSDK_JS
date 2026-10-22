@@ -46,9 +46,12 @@ const warn = (m) => warnings.push(m);
 // The copyright owner / publisher written by the game itself, in a string (not in a comment: Phaser's licence
 // header says "copyright" a thousand times). The trademark text comes from sdk.brand.trademark().
 // "AZ Games" / "AZGames" in its own case only: the storage key azgames.<gameCode> is not the owner's name.
-const OWNER_TEXT = { test: (s) => /(azgames\.io|1games\.io|gamesforfree\.io|ofree\.io|©)/i.test(s) || /\bAZ ?Games\b/.test(s) };
-// sdk/copyright.js ("© 2026 Azgames.io", "© 2026 ${owner}") is the one place allowed to name the owner.
-const KIT_COPYRIGHT = /^(["'`])(© \d{4} ?|© \d{4} Azgames\.io|Azgames\.io|© \d{4} \$\{[^`]*\})\1$/;
+// © also when a minifier escapes it (esbuild's ascii output: \xA9 or ©), so writing it that way is caught too.
+const OWNER_TEXT = { test: (s) => /(azgames\.io|1games\.io|gamesforfree\.io|ofree\.io|©|\\xa9|\\u00a9)/i.test(s) || /\bAZ ?Games\b/.test(s) };
+// sdk/copyright.js ("© 2026 Azgames.io", "© 2026 ${owner}") is the one place allowed to name the owner. After a build
+// it can read `© ${a} ${b}` (Vite keeps COPYRIGHT_YEAR / the owner as variables) or `\xA9 2026 ${o}` (esbuild):
+// © (or its escape), then the year or one ${…}, then nothing, Azgames.io or one ${…}.
+const KIT_COPYRIGHT = /^(["'`])(?:(?:©|\\xa9|\\u00a9) (?:\d{4}|\$\{[^`{}]*\})(?: (?:Azgames\.io|\$\{[^`]*\}))? ?|Azgames\.io)\1$/i;
 const ownerInStrings = (text) => (text.match(/(["'`])(?:(?!\1)[^\\\n]|\\.)*\1/g) || []).find((lit) => OWNER_TEXT.test(lit) && !KIT_COPYRIGHT.test(lit));
 const OWNER_HINT = 'the copyright line must come from copyrightText(sdk) of sdk/copyright.js (default "© 2026 Azgames.io", the server can change or hide it; docs/INTEGRATION.md §9)';
 
