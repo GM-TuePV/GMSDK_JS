@@ -13,7 +13,7 @@ Game chỉ gọi vài hàm, qua `loadSDK()` / `getSDK()`. Tổng quan luồng ch
 
 ## Bắt đầu từ đâu
 
-**Dev / chủ game đọc trước:** [DEV_GUIDE.md](DEV_GUIDE.md): cần cung cấp gì khi gắn SDK, build ra gì, QA và marketing là gì, bàn giao gồm những gì.
+**Đọc nhanh trước:** [DEV_GUIDE.md](DEV_GUIDE.md): cài kit thế nào, cần chuẩn bị gì, ảnh QA và marketing là gì.
 
 Ba bước, cho mọi trường hợp: game mới, gắn SDK vào game có sẵn, nâng cấp kit.
 
