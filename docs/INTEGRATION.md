@@ -195,7 +195,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 ## 11. Không được làm
 
-- Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`.
+- Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`. Ngoại lệ duy nhất: `src/legacy-save.js`, code đọc / ghi save kiểu cũ của game (phương án 2, 3 ở AI_INSTALL.md, Cách làm).
 - Nạp script ngoài, đường dẫn tuyệt đối (`/assets/…`), tự kiểm domain hay tự chuyển hướng.
 - Dùng file từ tên miền khác, đọc điểm ảnh, worker, nhiều luồng, âm thanh, toàn màn hình, phím, trang cha mà chưa đủ điều kiện chạy trong iframe nhiều tên miền: luật ở `PROMPT.md`, cách làm từng trường hợp ở [EMBED.md](EMBED.md).
 - Tự đặt giờ giãn cách quảng cáo theo thời gian (SDK làm); chỉ thêm luật theo nhịp game.

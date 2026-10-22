@@ -641,7 +641,8 @@ if (srcDir) {
   if (!existsSync(srcDir)) err(`--src ${srcDir}: not found`);
   else {
     for (const f of walk(srcDir)) {
-      if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim|[\\/]sdk[\\/]storage\./.test(f)) continue;
+      // legacy-save.*: the game's own old save (AI_INSTALL.md, Cách làm: converter or old players on the old save).
+      if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim|[\\/]sdk[\\/]storage\.|[\\/]legacy-save\./.test(f)) continue;
       if (/createLeaderboard\(/.test(readFileSync(f, 'utf8')) && config && !config.leaderboardId && !/[\\/]leaderboard[\\/]/.test(f)) err(`${relative(process.cwd(), f)} creates a leaderboard but config.json leaderboardId is null`);
       const lines = readFileSync(f, 'utf8').split('\n');
       lines.forEach((line, i) => {

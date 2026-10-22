@@ -19,9 +19,11 @@ Xác định trước tiên, ghi vào đầu plan:
 - Commit theo từng bước, không push. Ngoại lệ duy nhất: build xong, hỏi chủ game có commit và đẩy không; đồng ý thì làm theo [EXPORT.md §9](docs/EXPORT.md).
 - **Game có sẵn:** khảo sát code trước, rồi lên plan gồm file bỏ / sửa / thêm và lý do, cùng những gì giữ lại vì là luật riêng của game. **Chờ chủ game duyệt rồi mới sửa code.** Plan có thêm phần rà trải nghiệm theo [UX.md](docs/UX.md): mỗi lớp L1–L5 và bản đồ tính năng, game đã có gì, còn thiếu gì. Phần thiếu chỉ là **đề xuất**: làm khi chủ game chọn.
 - **Game có sẵn đang tự lưu dữ liệu** (localStorage, IndexedDB, cookie, API lưu của engine…, không qua `sdk.storage`): lúc khảo sát, **hỏi chủ game trước khi lên plan**, đúng câu này:
-  > "Game đang lưu dữ liệu kiểu cũ, chưa đồng bộ SDK 1.0.1, nên người chơi cũ sẽ mất dữ liệu cũ, có làm bộ chuyển đổi cho người chơi cũ không?"
-  - Đồng ý: tự làm bộ chuyển đổi đi kèm, lấy lại **hết** dữ liệu cũ vào `sdk.storage` khi người chơi cũ mở bản mới (một lần). Cách làm tuỳ game, ghi vào plan; thử bằng save thật của bản cũ (QA 5.2).
-  - Không đồng ý: bỏ qua, ghi trong báo cáo là người chơi cũ bắt đầu lại.
+  > "Game đang lưu dữ liệu kiểu cũ, chưa đồng bộ SDK 1.0.1, nên người chơi cũ sẽ mất dữ liệu cũ! Có 3 phương án: 1 Kệ, 2 làm bộ chuyển đổi data cũ theo chuẩn mới, 3 người cũ vẫn lưu kiểu cũ, người mới lưu kiểu mới?"
+  - **1 Kệ:** chỉ dùng `sdk.storage`; báo cáo ghi người chơi cũ bắt đầu lại.
+  - **2 Chuyển đổi:** tự làm bộ chuyển đổi đi kèm, lấy lại **hết** dữ liệu cũ vào `sdk.storage` khi người chơi cũ mở bản mới (một lần), từ đó chỉ lưu kiểu mới.
+  - **3 Giữ kiểu cũ cho người cũ:** máy đã có save cũ thì tiếp tục đọc / ghi kiểu cũ; máy chưa có thì lưu bằng `sdk.storage`.
+  - Cách làm tuỳ game, ghi vào plan. Code đọc / ghi save cũ (phương án 2, 3) đặt riêng trong `src/legacy-save.js`: file duy nhất ngoài kit được dùng `localStorage` trực tiếp (`check-export` bỏ qua file này). Thử bằng save thật của bản cũ (QA 5.2).
   - Game không lưu gì thì không hỏi.
 - **Game mới:** làm theo [NEW_GAME.md](docs/NEW_GAME.md) (cấu trúc, các màn, lưu, bố cục, hướng dẫn người chơi, quảng cáo). Plan trước, chờ duyệt.
 - Mỗi dòng trong `notes` của `config.json` là một yêu cầu riêng của game này: làm theo, và báo lại từng dòng trong báo cáo.
