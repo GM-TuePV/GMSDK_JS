@@ -131,7 +131,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | --- | --- | --- | --- | --- |
 | 5.1 | Chỉ **một** key của game, không đọc được bằng mắt | DevTools → Application → Local Storage: `azgames.<gameCode>` bắt đầu bằng `gm1`, phần sau là ký tự lạ (đã nén + mã hoá); thêm `gma_<gameCode>.name` của GMA. Không key nào khác của game. `gmSave.dump()` (console trang dev) ra đúng dữ liệu | Major | [Nội bộ] |
 | 5.6 | Sửa tay save thì save bị bỏ | Sửa một ký tự của `azgames.<gameCode>`, tải lại → game như người chơi mới (không chạy với số đã sửa), không lỗi; có sự kiện `save_tampered` | Minor | [Nội bộ] |
-| 5.2 | Save cũ được chuyển sang | Mở bản cũ, chơi, rồi mở bản mới → còn tiến trình | Major | [Nội bộ] |
+| 5.2 | Save cũ được chuyển sang (khi chủ game đồng ý làm bộ chuyển đổi, AI_INSTALL.md) | Mở bản cũ, chơi, rồi mở bản mới → còn đủ tiến trình; mở lại lần nữa vẫn còn. Chủ game không đồng ý: N/A, báo cáo ghi người chơi cũ bắt đầu lại | Major | [Nội bộ] |
 | 5.3 | Tiến trình được lưu, hoặc game nói rõ là không lưu | Chơi, tải lại trang | Minor | [Poki] |
 | 5.4 | Đổi ngôn ngữ, tải lại trang: giữ ngôn ngữ đã chọn. Mọi chữ đổi theo, không còn chữ viết cứng | Duyệt mọi màn ở từng ngôn ngữ | Minor | [Nội bộ] |
 | 5.5 | Bảng xếp hạng (game có `leaderboardId`): mở được, đủ 4 kỳ; hết ván thì điểm + hạng lên bảng; đổi tên + cờ, tải lại trang vẫn giữ; mất mạng thì báo "không tải được", không treo, không trống im lặng; game tạm dừng khi bảng mở | Trang có `gma`, console `[leaderboard] submitted …` ([LEADERBOARD.md §5](LEADERBOARD.md)) | Major | [Nội bộ] |
