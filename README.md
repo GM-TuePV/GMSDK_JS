@@ -13,6 +13,8 @@ Game chỉ gọi vài hàm, qua `loadSDK()` / `getSDK()`. Tổng quan luồng ch
 
 ## Bắt đầu từ đâu
 
+**Dev / chủ game đọc trước:** [DEV_GUIDE.md](DEV_GUIDE.md): cần cung cấp gì khi gắn SDK, build ra gì, QA và marketing là gì, bàn giao gồm những gì.
+
 Ba bước, cho mọi trường hợp: game mới, gắn SDK vào game có sẵn, nâng cấp kit.
 
 1. **Chép folder kit** vào repo game thành `docs/GMSDK_JS/`. Nâng cấp thì chép đè, **giữ `config.json`, `analytics.json` và `licenses.json`** (ba file riêng của game).
