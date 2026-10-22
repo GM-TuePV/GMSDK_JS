@@ -20,7 +20,7 @@ Từng bước, theo thứ tự game chạy. Mẫu đầy đủ, chạy được
 │   ├── loader.js         chép nguyên từ kit loading/loader.js: script đầu tiên của mọi trang (LOADING.md)
 │   ├── game.json         manifest (EXPORT.md §2)
 │   ├── i18n/en.json      (+ mỗi ngôn ngữ một file, tên theo thẻ BCP 47: en-US.json, zh-TW.json…)
-│   ├── Icons/            ảnh màn loading, tên cố định: loading.webp (key art), logo.webp (LOADING.md)
+│   ├── Icons/            màn loading, tên cố định: loading.webp (key art), logo.webp, loader.css (giao diện: kit hoặc của game, LOADING.md §1.1)
 │   └── assets/…
 └── src/
     ├── main.js           entry của game
@@ -75,7 +75,7 @@ boot().catch(() => loader.error());              // "Connection problem…" + Re
 - **Không `await` ở cấp cao nhất của module** (`const sdk = await loadSDK()` ngoài hàm): gói xuất là IIFE, Vite báo lỗi. Đặt trong `boot()` như trên.
 - `sdk.ready()` có thể chạy song song với bước tải tài nguyên. Chỉ cần xong trước khi hiện menu.
 - Không chờ quảng cáo trước khi hiện menu; preroll chạy khi menu đã hiện, game đã dừng nhờ `onPause`.
-- Màn loading là của `loader.js` (GM Loader v1 của kit 2.x, [LOADING.md](LOADING.md)), mọi game dùng chung: game không tự vẽ màn loading riêng, chỉ báo tiến độ và `hide()`.
+- Màn loading là của `loader.js` ([LOADING.md](LOADING.md)), mọi game dùng chung luồng: game không tự vẽ màn loading trong code, chỉ báo tiến độ và `hide()`. Giao diện là mẫu của kit hoặc của game qua `Icons/loader.css` (`loadingScreen`, [LOADING.md §1.1](LOADING.md)).
 
 ## 3. Tạm dừng khi có quảng cáo
 

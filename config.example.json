@@ -7,6 +7,7 @@
   "defaultLanguage": "en",
   "leaderboardId": null,
   "compress": { "images": "normal", "audio": "normal", "keep": [] },
+  "loadingScreen": null,
   "gdKey": null,
   "brief": null,
   "notes": []

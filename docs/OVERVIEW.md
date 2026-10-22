@@ -10,7 +10,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 ├── loader.js       của kit (loading/loader.js, chép nguyên): script DUY NHẤT trang nạp
 ├── game.js         code game + các module của kit, Vite bundle thành 1 file
 ├── game.json       id, gameCode, name, version (yymmddXX), languages, leaderboardId…
-├── Icons/          loading.webp (key art), logo.webp: ảnh màn loading, tên cố định
+├── Icons/          loading.webp (key art), logo.webp, loader.css (giao diện: kit hoặc của game): màn loading, tên cố định
 ├── i18n/           <thẻ ngôn ngữ>.json
 └── assets/         ảnh, nhạc, dữ liệu
 ```
@@ -23,7 +23,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
       + <div id="game"> + <script src="loader.js">           (không còn thẻ gmsdkjs.js chặn trang)
 
 2. loader.js chạy ngay
-   ├─ dựng màn loading: Icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %
+   ├─ dựng màn loading: Icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %; giao diện theo Icons/loader.css
    ├─ tải SONG SONG, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây):
    │    ├─ gmsdkjs.js (sdkUrl; mặc định …/gmsdkjs/1.0.1/gmsdkjs.js)   kiểm thêm: phải có window.GMSDKJS
    │    └─ game.js
@@ -90,6 +90,7 @@ Trên server ở **thư mục riêng** `…/gmsdkjs/1.0.1/` (`https://games.1gam
 | Phần | Trước (1.0.0) | Sau (1.0.1) |
 | --- | --- | --- |
 | Màn loading | `game.js` tự dựng ở dòng đầu: chỉ hiện sau khi tải xong `gmsdkjs.js` và `game.js` (màn đen trước đó) | **`loader.js`** dựng ngay khi trang mở; `loading.js` chỉ còn điều khiển (`progress`, `setTitle`, `error`, `hide`) |
+| Giao diện màn loading | Mẫu kit; game có màn riêng thì tự vẽ | Luôn hỏi chủ game (`config.json` → `loadingScreen`): `"kit"` mẫu kit, `"game"` giao diện của game trong `Icons/loader.css` (ảnh, logo, thanh, vị trí, màu); luồng vẫn là `loader.js` của kit (LOADING.md §1.1) |
 | Tải gmsdkjs | Thẻ trong template; lỗi thì game chạy không SDK; chậm thì treo màn đen | `loader.js` tải song song với `game.js`, 3 lần, rồi báo **tải lại trang**. Bắt buộc có (trừ trang dev) |
 | Bắt đầu game | `const sdk = getSDK()` ở đầu module | `sdk = await loadSDK()` là việc đầu tiên trong `boot()` (không await cấp cao nhất: gói IIFE) |
 | Lưu dữ liệu | Bộ lưu của gmsdkjs (shim chép lại làm dự phòng), JSON rõ, sửa tay được | **`sdk/storage.js`** của kit: nén LZ (UTF-16) + trộn + mã kiểm. Nhỏ khoảng 10 lần, không đọc được, sửa tay là save bị bỏ. Đồng bộ (ghi chắc lúc đóng tab). Báo `save_tampered`, `save_failed`, `save_large` |

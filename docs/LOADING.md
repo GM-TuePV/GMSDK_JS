@@ -24,7 +24,7 @@ Giao diện là GM Loader v1 của azgames (bộ của kit 2.x), giữ nguyên: 
 | --- | --- |
 | `loading/loader.js` | `public/loader.js` (trong gói: `loader.js` ở gốc). **Chép nguyên, không sửa**: `check-export` so với bản của kit |
 | `loading/loading.js` (+ `loading.d.ts` nếu dùng TypeScript) | `src/sdk/loading/`: phần `game.js` dùng để điều khiển màn |
-| `loading/Icons/loading.webp`, `logo.webp` | `public/Icons/` (trong gói: `Icons/` ở gốc) |
+| `loading/Icons/loading.webp`, `logo.webp`, `loader.css` | `public/Icons/` (trong gói: `Icons/` ở gốc). `loader.css` là giao diện của màn (§1.1) |
 
 - **Ảnh của màn loading nằm riêng trong `Icons/`, tên file cố định**, để sau này dễ tìm, dễ thay: thay ảnh là chép đè `public/Icons/loading.webp` rồi build lại (hoặc chép đè `Icons/loading.webp` trong gói đã build rồi đóng lại zip, [EXPORT.md §8](EXPORT.md)). Không để ảnh loading ở chỗ khác, không đổi tên.
 - **`loading.webp` là key art của game** (16:9 hoặc vuông, cạnh dài ≥ 1024): thay ảnh mẫu của kit. `check-export` cảnh báo khi còn ảnh mẫu, báo lỗi khi thiếu file.
@@ -62,6 +62,26 @@ boot().catch(() => loader.error());              // tài nguyên lúc mở lỗi
 | `loader.hide()` | Màn đầu của game đã sẵn: ẩn màn loading, gọi `sdk.loadingDone()` |
 
 Tiến độ của game đếm theo **file đã tải xong**, không theo byte: thanh đi theo bước, CSS làm mượt. Tài nguyên nặng (atlas, nhạc) nên chiếm phần lớn thanh; chia tỉ lệ theo game.
+
+### 1.1 Giao diện: mẫu của kit hoặc của game
+
+**Luôn hỏi chủ game một lần** (AI_INSTALL.md Bước 0), kể cả khi game chưa có màn loading riêng, rồi ghi vào `config.json` → `loadingScreen`:
+
+> "Màn loading: dùng mẫu mặc định của kit, hay dùng giao diện màn loading của game?"
+
+| `loadingScreen` | Giao diện | `public/Icons/loader.css` |
+| --- | --- | --- |
+| `"kit"` | GM Loader v1 của kit (ở trên), key art của game ở `loading.webp` | Bản của kit, **để nguyên** (không có luật CSS) |
+| `"game"` | Giao diện của game: ảnh, logo game, thanh tải, vị trí, màu, font | CSS của game, viết đè lên khung của kit |
+
+Hai lựa chọn chỉ khác **cách hiển thị**. **Luồng luôn là của kit**: `loader.js` chép nguyên, vẫn là script duy nhất trang nạp, vẫn tải gmsdkjs + `game.js` 3 lần, cùng thanh % (0 → 30 → 100 %), cùng chữ, cùng màn Reload, cùng `loadSDK()` / `createLoader()`. Game **không** tự vẽ màn loading trong `game.js`, không thêm script.
+
+- `loader.js` nạp `Icons/loader.css` ngay sau CSS của kit (luật của game thắng), và giữ màn ẩn tới khi file này tải xong (tối đa 1 giây), nên giao diện kit không chớp lên trước. Không có file thì dùng giao diện kit.
+- Viết theo khung có sẵn: tên class và biến màu ở chú thích đầu `loading/Icons/loader.css`. Đổi được: ảnh nền, ảnh giữa, ẩn hoặc đổi chỗ ảnh nhỏ và tên game, kiểu thanh tải và màu, vị trí từng phần, font. Muốn giữ màu riêng cho thanh thì đặt `--gm-tint: off` (không lấy màu theo key art).
+- Ảnh và font của skin để trong `public/Icons/` cạnh `loader.css`, gọi bằng đường dẫn tương đối (`url(splash.webp)` là `Icons/splash.webp`). Không tải gì từ ngoài gói, không `@import`. Giữ file nhỏ (dưới 30 KB) vì màn chờ nó.
+- **Không được giấu** thanh %, dòng chữ dưới thanh, nút Reload, logo publisher (`.gmLoaderBrand`, build tool thay bằng logo của publisher): chỉ đổi chỗ, đổi kiểu.
+- Game có sẵn màn loading riêng: chọn `"game"` thì dựng lại giao diện đó bằng `loader.css` + ảnh trong `Icons/`, rồi **bỏ** màn loading trong code game; chọn `"kit"` thì bỏ màn cũ, dùng mẫu kit.
+- `check-export` kiểm: có `Icons/loader.css`; không tải từ ngoài, không `@import`, ảnh gọi tới có trong `Icons/`; không giấu các phần trên. `"game"` mà file không có luật CSS là lỗi; `"kit"` mà file có luật thì cảnh báo; chưa có `loadingScreen` thì cảnh báo (chưa hỏi).
 
 ## 2. Dòng bản quyền
 

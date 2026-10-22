@@ -5,7 +5,8 @@
  *   <script src="loader.js"></script>                                  portal page: loads game.js
  *   <script src="loader.js" data-entry="src/main.js" data-module></script>   dev page (Vite)
  *
- * 1. Shows the loading screen at once (GM Loader v1: Icons/loading.webp, logo, name, % bar).
+ * 1. Shows the loading screen at once (GM Loader v1: Icons/loading.webp, logo, name, % bar), in the look of
+ *    Icons/loader.css: empty for the kit look, the game's CSS for its own look (docs/LOADING.md §1.1).
  * 2. Loads gmsdkjs.js and the game (game.js) side by side, each up to 3 tries (10 s each, 1 s then 2 s apart).
  *    These two files fill the bar to 30 %.
  * 3. gmsdkjs is required: after the 3rd failed try the screen says so and offers Reload; nothing else runs.
@@ -49,6 +50,7 @@
 #gmLoader{--gm-font:"Nunito","Segoe UI",system-ui,-apple-system,Arial,sans-serif;--gm-bg:#0c0d14;--gm-track:#000000;--gm-white:#ffffff;--gm-muted:#8f90a6}
 #gmLoader,#gmLoader *,#gmLoader *::before,#gmLoader *::after{box-sizing:border-box}
 #gmLoader[hidden]{display:none}
+#gmLoader.gmSkinWait>*{visibility:hidden}
 #gmLoader{position:fixed;font-family:var(--gm-font);color:var(--gm-white);-webkit-font-smoothing:antialiased;inset:0;z-index:10;overflow:hidden;background:var(--gm-bg);user-select:none;-webkit-user-select:none;--gm-c1:104,66,255;--gm-c2:140,96,255;--gm-c3:176,140,255}
 .gmLoaderBackdrop{position:absolute;inset:0;z-index:0;background-position:center;background-size:cover;background-repeat:no-repeat;filter:blur(14px) brightness(.42) saturate(1.05);transform:scale(1.08)}
 .gmLoaderBackdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 50% 45%,rgba(12,13,20,.15),rgba(12,13,20,.55))}
@@ -164,6 +166,16 @@
   style.id = 'gmLoaderStyle';
   style.textContent = CSS;
   document.head.appendChild(style);
+  // The game's look (docs/LOADING.md §1.1): Icons/loader.css, after the kit CSS so it wins. Only how the screen looks
+  // (images, logo, bar, positions, colours); the flow above stays the kit's. The kit's own file is empty. The screen
+  // stays invisible until the skin is in (at most SKIN_WAIT_MS), so the kit look never flashes first.
+  var SKIN_WAIT_MS = 1000;
+  var skinDone = false;
+  var skin = el('link');
+  skin.rel = 'stylesheet';
+  skin.id = 'gmLoaderSkin';
+  skin.href = icons + 'loader.css';
+  document.head.appendChild(skin);
 
   var art = icons + 'loading.webp';
   var root = el('div');
@@ -216,12 +228,33 @@
   root.appendChild(stage);
   root.appendChild(brand);
   root.appendChild(corner);
+  root.className = 'gmSkinWait';
   (document.body || document.documentElement).appendChild(root);
-  if (thumb.complete && thumb.naturalWidth) tintFromArt(thumb, root);
-  else
-    thumb.addEventListener('load', function () {
-      tintFromArt(thumb, root);
-    });
+
+  // The bar takes the key art's colours once both the art and the skin are in, unless the skin sets --gm-tint: off.
+  var tinted = false;
+  function tint() {
+    if (tinted || !skinDone || !(thumb.complete && thumb.naturalWidth)) return;
+    tinted = true;
+    var off = '';
+    try {
+      off = getComputedStyle(root).getPropertyValue('--gm-tint').trim();
+    } catch (e) {
+      off = '';
+    }
+    if (off !== 'off') tintFromArt(thumb, root);
+  }
+  function skinIn() {
+    if (skinDone) return;
+    skinDone = true;
+    root.classList.remove('gmSkinWait');
+    tint();
+  }
+  skin.onload = skinIn;
+  skin.onerror = skinIn; // no Icons/loader.css: the kit look
+  setTimeout(skinIn, SKIN_WAIT_MS);
+  thumb.addEventListener('load', tint);
+  tint();
 
   function setTitle(t) {
     name.textContent = t == null ? '' : String(t);

@@ -24,7 +24,7 @@ Luồng tối thiểu. Người mới phải vào được gameplay sau **tối 
 
 | Màn | Bắt buộc có | SDK |
 | --- | --- | --- |
-| Loading | Màn của `loader.js` (GM Loader v1, [LOADING.md](LOADING.md)) với key art của game ở `public/Icons/loading.webp`; game không tự vẽ màn riêng | `await loadSDK()`, `createLoader()`, `loader.progress(p)`, `ready()` |
+| Loading | Màn của `loader.js` (GM Loader v1, [LOADING.md](LOADING.md)) với key art của game ở `public/Icons/loading.webp`; giao diện mẫu kit hoặc của game qua `Icons/loader.css` (hỏi chủ game, `loadingScreen`, LOADING.md §1.1); game không tự vẽ màn trong code | `await loadSDK()`, `createLoader()`, `loader.progress(p)`, `ready()` |
 | Menu (hoặc vào chơi luôn) | Nút chơi to nhất màn; Settings; chỗ vào các tính năng ([UX.md](UX.md) §5) | `loader.hide()` khi menu hiện (gồm `loadingDone()`), rồi `preroll()` |
 | Gameplay | HUD; nút pause (và phím ESC / P); lớp điều khiển cho người mới | `gameplayStart()` ở input đầu tiên |
 | Pause | Tiếp tục, chơi lại, về menu | `gameplayStop()` |

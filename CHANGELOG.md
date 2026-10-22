@@ -42,8 +42,10 @@ Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); tha
 
 - **Thư mục `export/` mới**: gói build `export/build/<version>-<id>/` với zip `<version>-<id>.zip` (trước: `export/<id>-<version>/`); ảnh QA `export/qa/<version>-<id>/`; marketing kit `export/marketing/<version>-<id>/` (trước: `marketing/<id>/` trong repo, giờ không commit). `assemble`, `compress`, `screens`, `zip`, `check-export`, `check-marketing` và `template/vite.config.mjs` theo tên mới. Gói cũ trong `export/` để nguyên.
 - **Ảnh QA 8 cỡ và marketing: mỗi game làm một lần, AI hỏi trước** ([AI_INSTALL.md](AI_INSTALL.md) Bước 5.4, [QA.md §2.1](docs/QA.md)): build xong mà `export/qa/` trống thì hỏi chụp ảnh QA (ảnh để hỗ trợ làm Banner nên cần đồ hoạ bản cuối); đã có ảnh QA mà `export/marketing/` trống thì hỏi viết marketing (cần bản game hoàn thiện). Chủ game không đồng ý thì lần build sau hỏi lại; đã có thì chỉ làm lại khi chủ game yêu cầu. Các mục kiểm QA khác vẫn làm mỗi bản build.
+- **Giao diện màn loading: mẫu kit hoặc của game** ([LOADING.md §1.1](docs/LOADING.md)): AI luôn hỏi chủ game một lần, ghi `config.json` → `loadingScreen` (`"kit"` | `"game"`). `loader.js` nạp thêm `Icons/loader.css` (kit chép bản rỗng) và chờ nó tối đa 1 giây trước khi hiện màn; `"game"` thì giao diện của game (ảnh, logo, thanh tải, vị trí, màu, font) viết ở đó, luồng vẫn của kit. `check-export` kiểm skin: không tải từ ngoài, không giấu thanh % / chữ / Reload / logo publisher, ảnh có trong `Icons/`, khớp `loadingScreen`.
 **Dấu hiệu** (còn một trong các điều này là phải làm)
 - Không có `public/loader.js`, hoặc nó khác `docs/GMSDK_JS/loading/loader.js`.
+- Không có `public/Icons/loader.css`, hoặc `config.json` chưa có `loadingScreen`.
 - `index.html` (trang dev) còn thẻ `gmsoft-jssdk` / `gmsdkjs.js`, hoặc nạp entry trực tiếp thay vì qua `loader.js`.
 - Code gọi `getSDK(` ở đầu entry mà không có `loadSDK(`; gọi `createLoader({ sdk` (tham số cũ); gọi `sdk.loadingDone()` cạnh `loader.hide()`.
 - Không có `src/sdk/storage.js`, hoặc `src/sdk/gmsdkjs-shim.js` còn chứa `createStorage({ key, getLs`.
@@ -51,7 +53,7 @@ Số `1.0.1` do chủ kit chọn (kit còn chưa phát hành chính thức); tha
 - `vite.config.mjs` (hoặc script build) còn xuất ra `export/<id>-<version>/`.
 
 **Game cần làm**
-1. Chép `loading/loader.js` → `public/loader.js`; chép lại `loading/loading.js` (+ `.d.ts`) và `sdk/` (thêm `storage.js` + `.d.ts`) vào `src/sdk/`.
+1. Chép `loading/loader.js` → `public/loader.js` và `loading/Icons/loader.css` → `public/Icons/`; hỏi chủ game mẫu màn loading (kit / của game), ghi `loadingScreen` ([LOADING.md §1.1](docs/LOADING.md)); chép lại `loading/loading.js` (+ `.d.ts`) và `sdk/` (thêm `storage.js` + `.d.ts`) vào `src/sdk/`.
 2. Trang dev `index.html`: bỏ thẻ `gmsdkjs.js`; thay thẻ entry bằng `<script src="loader.js" data-entry="src/main.js" data-module></script>` (như `template/index.html`).
 3. Entry: `sdk = await loadSDK({ gameCode })` là việc đầu tiên trong hàm khởi động (không `await` cấp cao nhất: gói IIFE), thay `getSDK(...)`; `const loader = createLoader()`; bỏ `sdk.loadingDone()` sau `loader.hide()`. Game có màn loading riêng thì bỏ, dùng màn của `loader.js` ([LOADING.md](docs/LOADING.md)).
 4. Save: không phải sửa code (`sdk.storage` giữ nguyên hàm). Rà luật lưu gọn ở [INTEGRATION.md §6](docs/INTEGRATION.md). Save dạng JSON cũ của `azgames.<gameCode>` không đọc được nữa (chưa có người chơi thật nên không chuyển).

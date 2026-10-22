@@ -33,6 +33,7 @@ Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay 
 | `name`: tên hiển thị | `Wheelie Spooky` | `game.json` |
 | `languages`, `defaultLanguage` | `["en", "es", "zh-TW"]` / `en` (thẻ BCP 47) | `game.json`, `i18n/` |
 | `compress` | `{ "images": "normal", "audio": "normal", "keep": [] }` | Mức nén ảnh / nhạc khi build (`tools/compress.mjs`, [EXPORT.md §4](docs/EXPORT.md)). **Hỏi chủ game một lần:** "Nén ảnh (PNG → WebP) và nhạc (MP3) theo mức kit khuyến nghị không?" Mặc định có (`normal`); không thì `off`; ảnh code đọc từng điểm ảnh thì liệt kê ở `keep` |
+| `loadingScreen` | `"kit"` hoặc `"game"` | Giao diện màn loading ([LOADING.md §1.1](docs/LOADING.md)). **Luôn hỏi chủ game một lần**, kể cả game chưa có màn loading riêng: "Màn loading: dùng mẫu mặc định của kit, hay dùng giao diện màn loading của game?" `"game"`: dựng giao diện của game trong `public/Icons/loader.css` (+ ảnh trong `Icons/`); luồng vẫn của kit |
 | `gdKey`: Game ID GameDistribution | 32 ký tự hex, ghi thẳng vào đây; `null` = chưa lên GD. **Không dùng file `.env`** | `game.json` → `portals.gd.gameKey` |
 | `leaderboardId` | `leaderboard-topscore` hoặc `null` | Id bảng xếp hạng trên GMA ([LEADERBOARD.md](docs/LEADERBOARD.md)); `null` = game không có bảng |
 | `brief` | `"Đua xe một bánh, giữ thăng bằng, Phaser"` hoặc `null` | Mô tả game mới; game có sẵn để `null` |
@@ -56,7 +57,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 | Từ kit | Vào game | Ghi chú |
 | --- | --- | --- |
 | `loading/loader.js` | `public/loader.js` | **Bắt buộc, chép nguyên.** Script đầu tiên của mọi trang: màn loading, tải `gmsdkjs.js` + `game.js` ([LOADING.md](docs/LOADING.md)) |
-| `loading/loading.js` (+ `loading.d.ts`); `loading/Icons/` | `src/sdk/loading/`; `public/Icons/` | Phần game điều khiển màn của `loader.js`. Thay `loading.webp` bằng key art của game. Màn loading riêng của game (nếu có) bỏ: mọi game dùng màn của `loader.js` |
+| `loading/loading.js` (+ `loading.d.ts`); `loading/Icons/` | `src/sdk/loading/`; `public/Icons/` | Phần game điều khiển màn của `loader.js`. Thay `loading.webp` bằng key art của game. `Icons/loader.css` theo `loadingScreen` (Bước 0): `"kit"` để nguyên bản của kit, `"game"` viết giao diện của game ([LOADING.md §1.1](docs/LOADING.md)). Màn loading tự vẽ trong code game (nếu có) bỏ: màn luôn là của `loader.js` |
 | `sdk/gmsdkjs-shim.js`, `sdk/storage.js`, `sdk/i18n.js`, `sdk/net.js`, `sdk/copyright.js` (+ các `.d.ts`) | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` và `storage.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
 | `template/index.html` | `index.html` ở gốc | Trang dev. Game đã có `index.html`: thêm khối `GMSDKJS_OPTIONS` vào `<head>`, `<div id="game">`, và **chỉ một script** `<script src="loader.js" data-entry="src/main.js" data-module>` thay cho thẻ entry. Bỏ mọi thẻ `gmsdkjs.js`, `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
