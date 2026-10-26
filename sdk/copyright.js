@@ -14,6 +14,14 @@ export const COPYRIGHT_YEAR = 2026;
 export const COPYRIGHT_OWNER = 'Azgames.io';
 export const COPYRIGHT_DEFAULT = `© ${COPYRIGHT_YEAR} ${COPYRIGHT_OWNER}`;
 
+/**
+ * The Privacy Policy link (docs/INTEGRATION.md §9): a "Privacy Policy" button in Settings next to the copyright line,
+ * on every portal (CrazyGames asks for it at upload), opened in a new tab:
+ *   button.onclick = () => window.open(PRIVACY_POLICY_URL, '_blank', 'noopener');
+ * Use this constant: check-export warns when the game writes the owner's domain itself.
+ */
+export const PRIVACY_POLICY_URL = 'https://azgames.io/privacy-policy/';
+
 /** @param {object} [sdk] getSDK() of the shim @returns {string} '' = show nothing */
 export function copyrightText(sdk) {
   let owner;

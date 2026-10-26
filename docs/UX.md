@@ -57,6 +57,7 @@ Lớp 1, 2 là **hướng dẫn** (tắt được bằng Settings → Show tutor
 
 - Mọi màn thua đều có một dòng: **thua vì gì + làm gì để tránh**. Game ghi lý do ngay lúc thua.
 - Retry là nút to nhất màn thua, 1 cú bấm, có phím tắt.
+- **Màn thắng / kết quả cũng có Retry** khi game cho chơi lại để lấy điểm hay sao cao hơn (CrazyGames yêu cầu): 1 cú bấm, cạnh nút Next.
 
 ### L4. "Có việc để làm": chấm đỏ theo trạng thái
 

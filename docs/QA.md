@@ -119,7 +119,7 @@ Cỡ tính theo CSS px Cỡ tính theo CSS px; điện thoại và máy tính b�
 | 4.9 | Nút rewarded rõ là "xem quảng cáo" (biểu tượng 🎬), không màu xanh lá. Luôn có nút bỏ qua / Continue **to bằng hoặc hơn**, đặt cạnh hoặc phía trên, hiện cùng lúc | Nhìn màn có nút thưởng | Major (Poki), Minor | [Poki] [CG] |
 | 4.10 | Rewarded không bao giờ là cách duy nhất để qua màn; không mời rewarded ở mỗi lần chết | Chơi bỏ qua mọi lời mời | Major | [CG] [Poki] |
 | 4.11 | Adblock bật thì game vẫn chơi được, không bị phạt, không có popup báo adblock tự làm | Bật adblock, chơi hết một lượt | Major | [CG] [Poki] |
-| 4.12 | `gameplayStart` khi người chơi thật sự bắt đầu chơi (lần chạm hoặc phím đầu tiên), không phải lúc tải. `gameplayStop` ở mọi lúc gián đoạn (pause, menu, hết màn). Không gọi hai lần liền cùng một hàm | Log `?debug` | Major | [Poki] [CG] |
+| 4.12 | `gameplayStart` chỉ khi người chơi thật sự vào màn và điều khiển được: không lúc tải, ở menu, hay khi bảng hướng dẫn / popup / màn kết quả đang che (đóng bảng rồi mới Start). `gameplayStop` khi hết màn, về menu, pause, hoặc bảng che hiện giữa lúc chơi. Không gọi hai lần liền cùng một hàm | Log `?debug`: mở hướng dẫn / popup trong lúc chơi và lúc vào màn | Major | [Poki] [CG] |
 | 4.13 | Không gọi SDK của portal hay mạng quảng cáo nào khác | `grep -rnE "PokiSDK\|CrazyGames\|gdsdk\|adsbygoogle\|GMSOFT_\|gmsdkv2" src` không còn gì | Major | [CG] [Poki] |
 | 4.14 | Nạp SDK một lần; đúng ID game GD; preroll GD; tắt debug khi giao; cờ dashboard | Log `?debug`: một lần nạp, preset đúng. **Riêng GD: bật cờ Rewarded Ads trên dashboard** nếu game có rewarded | Major | [GD] [SDK] |
 
@@ -164,6 +164,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | 7.8 | Mọi font, âm thanh, ảnh có nguồn và giấy phép trong `licenses.json`: không NC, không "personal use", không asset lấy từ game khác; CC-BY có dòng ghi công người chơi thấy được | `check-export` không lỗi, không cảnh báo giấy phép ([ASSETS.md](ASSETS.md)) | Major | [Nội bộ] |
 | 7.9 | Game trong iframe trên tên miền khác chạy đủ: không lỗi CORS / SecurityError / Mixed Content / Worker trong console, có tiếng sau cú chạm đầu, phím game không cuộn trang ngoài | `preview.html?debug` trên portal thật, hoặc trang và file ngoài ở hai cổng khác nhau ([EMBED.md](EMBED.md) §12) | Major | [Nội bộ] |
 | 7.10 | Có nút More Games, đúng chỗ, bấm mở tab mới (không `location.href`) | Trang dev: nút luôn hiện, mở `https://azgames.io` ([INTEGRATION.md](INTEGRATION.md) §9). Trên gm theo link của server | Minor | [Nội bộ] |
+| 7.11 | Nút "Privacy Policy" trong Settings, cạnh dòng bản quyền, mọi portal: bấm mở `https://azgames.io/privacy-policy/` ở tab mới (`PRIVACY_POLICY_URL` của `sdk/copyright.js`) | Mở Settings, bấm nút | Major | [CG] |
 
 ### 3.8 Tracking và gói xuất
 
@@ -188,6 +189,7 @@ Chuẩn và cách làm: [UX.md](UX.md). Test với một save mới (xoá `azgam
 | 9.7 | Chấm đỏ đúng nghĩa | Chỉ hiện khi làm được ngay; tự mất khi không còn đúng; không sáng thường trực | Minor | [Nội bộ] |
 | 9.8 | Mở khoá và tính năng mới được báo | Báo một lần, nhãn NEW tới khi mở; mỗi lần vào menu tối đa một thông báo; người chơi mới không bị báo "mới" | Minor | [Nội bộ] |
 | 9.9 | Chữ hướng dẫn đủ mọi ngôn ngữ, không tràn | Mọi `hint_*`, `crash_*`, `new_*` có trong mọi file `i18n/`; đo ở ngôn ngữ dài nhất trên màn hẹp nhất | Minor | [CG] [Nội bộ] |
+| 9.10 | Màn thắng / kết quả có Retry khi game cho chơi lại để lấy điểm cao hơn | Thắng một màn → có nút Retry 1 cú bấm | Minor | [CG] |
 
 ## 4. Trước khi gửi portal duyệt
 

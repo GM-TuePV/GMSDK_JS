@@ -96,7 +96,9 @@ function startRun() { sdk.gameplayStart(); sdk.track('PlayGame', { GameCount: ++
 function endRun(score) { sdk.gameplayStop(); sdk.track('EndGame', { Score: score }); /* … */ }
 ```
 
-- `gameplayStart()` khi người chơi bắt đầu điều khiển; `gameplayStop()` khi thua, thắng, về menu, mở bảng tạm dừng của game.
+- **`gameplayStart()` chỉ khi người chơi thật sự vào màn và điều khiển được.** Không gọi lúc tải, ở menu, hay khi bảng hướng dẫn / popup / màn kết quả đang che: bảng đóng lại thì mới gọi. Hướng dẫn tương tác (người chơi đang tự bấm theo) vẫn tính là đang chơi. CrazyGames trả bản build về khi `gameplayStart` chạy lúc bảng hướng dẫn đang che.
+- **`gameplayStop()`** khi hết màn (thắng / thua, trước màn kết quả), về menu, mở bảng tạm dừng, hoặc khi bảng hướng dẫn / popup hiện giữa lúc chơi. Chết rồi chơi lại ngay trong màn thì không cần Stop / Start.
+- Chỉ gửi khi trạng thái thật sự đổi: không `gameplayStart` hai lần liền, không `gameplayStop` khi chưa Start.
 - **Trước mọi quảng cáo xen giữa phải là `gameplayStop()`**, sau quảng cáo mới `gameplayStart()` (luật của Poki / CrazyGames; SDK giữ đúng thứ tự gửi).
 
 ## 5. Quảng cáo
@@ -172,11 +174,14 @@ const url = sdk.moreGamesUrl();
 moreButton.hidden = !url;                                   // null: không có nút (trang dev: luôn có, mặc định azgames.io)
 moreButton.onclick = () => window.open(url, '_blank', 'noopener');
 copyrightLabel.textContent = copyrightText(sdk);           // "© 2026 Azgames.io" trừ khi server đổi; '' = không hiện gì
+privacyButton.textContent = t('privacy_policy');            // "Privacy Policy", cạnh dòng bản quyền
+privacyButton.onclick = () => window.open(PRIVACY_POLICY_URL, '_blank', 'noopener');   // sdk/copyright.js
 versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 ```
 
 - Đọc `moreGamesUrl()` và `copyrightText(sdk)` **sau `ready()`**: giá trị đến từ API.
 - More Games mở tab mới, không bao giờ `location.href` (người chơi mất ván).
+- **Nút "Privacy Policy"** trong Settings, cạnh dòng bản quyền, **mọi portal** (CrazyGames đòi khi upload): mở `PRIVACY_POLICY_URL` của `sdk/copyright.js` (`https://azgames.io/privacy-policy/`) ở tab mới. Lấy URL từ hằng này, không tự gõ (`check-export` cảnh báo khi code game tự viết tên miền của chủ bản quyền). Chữ trên nút qua `i18n` (khoá `privacy_policy`).
 - **Luôn làm nút More Games** (theo mẫu trên), kể cả khi lúc làm chưa thấy link: trên portal, server quyết có nút hay không. Trang dev (`platform: 'dev'`) server không trả link, nên shim trả **`https://azgames.io`** (`DEV_MORE_GAMES`): nút luôn hiện trên trang dev để kiểm chỗ đặt, chữ, bấm mở tab mới. Gói build lên portal thì theo server (GD, CrazyGames, Poki: không có nút).
 - Trademark và phiên bản thường đặt ở góc màn hình menu hoặc bảng Settings.
 - **Chữ bản quyền chỉ lấy từ `copyrightText(sdk)`** (`sdk/copyright.js`, [LOADING.md §2](LOADING.md)): mặc định `© 2026 Azgames.io`; server đổi (`gameinfo.trademark`: tên miền / tên khác) thì theo server; `0` và trang GD / CrazyGames / Poki thì `''`, không hiện gì. Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… ở chỗ khác trong code hay `i18n/*.json`: `check-export` cảnh báo.
@@ -195,7 +200,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 ## 11. Không được làm
 
-- Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`. Ngoại lệ duy nhất: `src/legacy-save.js`, code đọc / ghi save kiểu cũ của game (phương án 2, 3 ở AI_INSTALL.md, Cách làm).
+- Gọi thẳng `window.GMSDKJS`, `localStorage`, hay SDK của network (Poki, CrazyGames, AFG…): mọi thứ qua `sdk`. Ngoại lệ duy nhất: `src/legacy-save.js`, code đọc / ghi save kiểu cũ của game (phương án 2, 3 ở AI_INSTALL.md, Cách làm). Ví dụ: không tự gọi `CrazyGames.SDK.user.getUser()` (gmsdkjs đã gọi đúng một lần mỗi trang; gọi thêm là CrazyGames trả bản build về).
 - Nạp script ngoài, đường dẫn tuyệt đối (`/assets/…`), tự kiểm domain hay tự chuyển hướng.
 - Dùng file từ tên miền khác, đọc điểm ảnh, worker, nhiều luồng, âm thanh, toàn màn hình, phím, trang cha mà chưa đủ điều kiện chạy trong iframe nhiều tên miền: luật ở `PROMPT.md`, cách làm từng trường hợp ở [EMBED.md](EMBED.md).
 - Tự đặt giờ giãn cách quảng cáo theo thời gian (SDK làm); chỉ thêm luật theo nhịp game.

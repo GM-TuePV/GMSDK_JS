@@ -52,12 +52,13 @@ const OWNER_TEXT = { test: (s) => /(azgames\.io|1games\.io|gamesforfree\.io|ofre
 // it can read `© ${a} ${b}` (Vite keeps COPYRIGHT_YEAR / the owner as variables) or `\xA9 2026 ${o}` (esbuild):
 // © (or its escape), then the year or one ${…}, then nothing, Azgames.io or one ${…}.
 const KIT_COPYRIGHT = /^(["'`])(?:(?:©|\\xa9|\\u00a9) (?:\d{4}|\$\{[^`{}]*\})(?: (?:Azgames\.io|\$\{[^`]*\}))? ?|Azgames\.io)\1$/i;
-// sdk/gmsdkjs-shim.js DEV_MORE_GAMES: the More Games link of the dev page only, not a copyright line.
-const KIT_DEV_LINK = /^(["'`])https:\/\/azgames\.io\/?\1$/i;
-// The kit's own owner texts (copyright.js: `© ${year} ${owner}`, the default "Azgames.io"; the shim's dev link) are
-// removed from the whole code first, quotes kept: the literal scan pairs quotes naively, and in minified code a span
-// it cuts can hold one of them.
-const KIT_OWNER_BITS = /(?<=["'`])(?:©|\\xa9|\\u00a9) (?:\d{4}|\$\{[^`{}]*\}) (?:Azgames\.io|\$\{[^`]*?\})(?=["'`])|(?<=["'`])https:\/\/azgames\.io\/?(?=["'`])|(?<=["'`])Azgames\.io(?=["'`])/gi;
+// The kit's links: sdk/gmsdkjs-shim.js DEV_MORE_GAMES (More Games on the dev page) and sdk/copyright.js
+// PRIVACY_POLICY_URL. Not copyright lines.
+const KIT_DEV_LINK = /^(["'`])https:\/\/azgames\.io(?:\/privacy-policy)?\/?\1$/i;
+// The kit's own owner texts (copyright.js: `© ${year} ${owner}`, the default "Azgames.io", the privacy link; the
+// shim's dev link) are removed from the whole code first, quotes kept: the literal scan pairs quotes naively, and in
+// minified code a span it cuts can hold one of them.
+const KIT_OWNER_BITS = /(?<=["'`])(?:©|\\xa9|\\u00a9) (?:\d{4}|\$\{[^`{}]*\}) (?:Azgames\.io|\$\{[^`]*?\})(?=["'`])|(?<=["'`])https:\/\/azgames\.io(?:\/privacy-policy)?\/?(?=["'`])|(?<=["'`])Azgames\.io(?=["'`])/gi;
 const ownerInStrings = (text) =>
   (text.replace(KIT_OWNER_BITS, '').match(/(["'`])(?:(?!\1)[^\\\n]|\\.)*\1/g) || []).find(
     (lit) => OWNER_TEXT.test(lit) && !KIT_COPYRIGHT.test(lit) && !KIT_DEV_LINK.test(lit),
