@@ -2,7 +2,21 @@
 
 Tổng quan luồng chạy và ai lo phần nào: [OVERVIEW.md](OVERVIEW.md).
 
-## 1. Bắt buộc cho kit 1.0.1
+## 1. Bắt buộc cho kit 1.0.2
+
+Kit 1.0.2 trỏ **gmsdkjs 1.0.2** và **template 1.0.2**. Thư mục 1.0.1 giữ nguyên cho game đang chạy (quy ước §5).
+
+| # | Việc | Vì sao |
+| --- | --- | --- |
+| 1 | Đưa **gmsdkjs 1.0.2** vào thư mục riêng `…/gmsdkjs/1.0.2/` (`games.1games.io/lib/1games/gmsdkjs/1.0.2/`, `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.2/`), bản `_dev` và bản obfuscate. Không ghi đè `1.0.1/` | Thay đổi ở §6: lấy tên CrazyGames bằng `getUser()` một lần mỗi trang. `VERSION = "1.0.2"` |
+| 2 | Thêm **template 1.0.2** `templates/1.0.2/gamesforfree-{gm,gd,crazy,poki}.html` ở cả hai host: chép từ `1.0.1/`, chỉ đổi `sdkUrl` sang gmsdkjs 1.0.2 của chính host đó | `loader.js` của kit 1.0.2 mặc định trỏ `1.0.2/`; `assemble` của kit đọc `templates/1.0.2/` |
+| 3 | **Tool build:** gói của kit 1.0.2 dùng template 1.0.2; gói 1.0.1 vẫn dùng template 1.0.1 | Gói 1.0.2 trên template 1.0.1 thì chạy gmsdkjs 1.0.1 (không có phần CrazyGames) |
+
+**Thứ tự:** đưa gmsdkjs 1.0.2 + template 1.0.2 lên **trước**, kiểm một game, rồi mới phát kit 1.0.2 cho dev game.
+
+Kiểm sau khi đưa lên: mở một gói 1.0.2 với `?debug` → log ghi gmsdkjs `1.0.2`; trên CrazyGames làm theo phần "Kiểm" của §6.
+
+### Kit 1.0.1 (đã triển khai 21/10/2026)
 
 **Server làm thế này (2026-10-21):** gmsdkjs 1.0.1 nằm ở thư mục riêng `gmsdkjs/1.0.1/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`, az: `https://api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/gmsdkjs.js`). `gmsdkjs/gmsdkjs.js` giữ nguyên 1.0.0 cho game kit 1.0.0 đang chạy và các gói đã gửi portal. `loading/loader.js` của kit mặc định trỏ `1.0.1/`; trang build ghi `sdkUrl` của publisher. gmsdkjs 1.0.1 của server làm thêm một việc: chưa có `gma_<gameCode>.name` thì lấy tên GMA mà 1.0.0 để trong `azgames.<gameCode>` (JSON, vùng `sdk`), không đụng tới save `gm1…`. Tool build nhận cả hai thế hệ: gói có `loader.js` build theo 1.0.1, không có thì build theo 1.0.0 như trước.
 
@@ -51,7 +65,7 @@ Trong `gmsdkjs_dev.js` (bản bundle; nguồn `lib/1games/gmsdkjs/src/` sửa t�
 - Sửa lỗi không phá vỡ thì vá ngay trong thư mục đang dùng. Bản 1.0.0 ở gốc (`gmsdkjs/gmsdkjs.js`) đóng băng: chỉ vá khi lỗi làm hỏng game kit 1.0.0 đang chạy.
 - Mỗi lần đổi gmsdkjs, cập nhật cả hai host (1games, az).
 
-## 6. CrazyGames: tên người chơi (cần làm ở gmsdkjs)
+## 6. gmsdkjs 1.0.2: tên người chơi trên CrazyGames
 
 Theo cách Wacky Flip (Unity) đã qua duyệt CrazyGames. Chỉ khi `sdkType === "crazy"`; game và kit không gọi gì.
 

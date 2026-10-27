@@ -2,7 +2,7 @@
 
 Bộ chuẩn để gắn **gmsdkjs** vào một game web (JS / TS), hoặc làm game mới theo chuẩn. Cả kit nằm trong một folder, kể cả cấu hình của game (`config.json`): chép folder sang dự án khác là dùng được.
 
-**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js`, bản az ở `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.1/`; kit dùng đúng thư mục `1.0.1/` này). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
+**gmsdkjs** là một file trên server (`https://games.1games.io/lib/1games/gmsdkjs/1.0.2/gmsdkjs.js`, bản az ở `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.2/`; kit dùng đúng thư mục `1.0.2/` này). Trang của portal chỉ nạp **`loader.js`** của kit: nó hiện màn loading ngay, rồi tải `gmsdkjs.js` và `game.js` song song (bắt buộc có gmsdkjs, lỗi 3 lần thì báo tải lại trang; [docs/LOADING.md](docs/LOADING.md)). gmsdkjs lo:
 - licence, màn khoá và chuyển hướng theo API;
 - quảng cáo mọi network (AdSense H5, GameDistribution, CrazyGames, Poki, WeeGoo): preroll, xen giữa, thưởng, tạm dừng, giãn cách, chặn quảng cáo;
 - tracking GMA (tên người chơi ẩn danh ở key riêng `gma_<gameCode>.name`), thương hiệu publisher.
@@ -64,7 +64,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`export/marketing/<version>-<id>/`: content brief 10 mục, 8 cỡ ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
-| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.1: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
+| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.2: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
 | [docs/EMBED.md](docs/EMBED.md) | Game trong iframe, nhiều tên miền: lỗi CORS / SecurityError (texture, cắt ảnh, font, fetch), worker, nhiều luồng, âm thanh, toàn màn hình, phím, lưu: triệu chứng → cách làm cho chạy → đường lui |
 | [docs/LOADING.md](docs/LOADING.md) | Luồng tải `loader.js` (màn loading GM Loader v1, tải gmsdkjs + game, thử lại 3 lần) và dòng bản quyền mặc định `© 2026 Azgames.io` |
 | `sdk/` | Chép vào `src/sdk/` của game: `gmsdkjs-shim.js`, `storage.js` (lưu của game: nén + mã hoá), `i18n.js`, `net.js`, `copyright.js` (+ `.d.ts`). JS thuần, không cần build |
@@ -95,7 +95,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 
 ## Cập nhật
 
-- `gmsdkjs.js` cập nhật trên server (trong thư mục `1.0.1/`), game không phải làm gì.
+- `gmsdkjs.js` cập nhật trên server (trong thư mục `1.0.2/`), game không phải làm gì.
 - `sdk/gmsdkjs-shim.js` **do kit giữ**: sửa ở kit, chép lại vào game.
 - **Bản gốc của kit: repo api.1games.io, `GMSDK_JS/kit/`** (cùng thư mục `GMSDK_JS/` với tool build `build/` và thiết kế `docs/`). Sửa kit ở đó, rồi chép sang game thành `docs/GMSDK_JS/`; bản trong repo game chỉ là bản chép. Bản gốc **không có `config.json`, `analytics.json`, `licenses.json`**, chỉ có các file mẫu `*.example.json`.
 - **Nâng cấp kit trong một game:** chép đè folder (giữ `config.json`, `analytics.json`, `licenses.json`), rồi kéo `PROMPT.md` vào khung chat. AI xét repo còn dấu hiệu của mục nào trong `CHANGELOG.md` thì làm mục đó.

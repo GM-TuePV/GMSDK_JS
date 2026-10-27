@@ -32,7 +32,7 @@ async function boot() {
 | `loadingProgress(p)` | | Tiến độ tải `0..1`. Chuyển cho portal nếu cần. `loader.js` tự gọi theo thanh % (gồm cả phần tải gmsdkjs + game.js) |
 | `loadingDone()` | | Khi menu thật sự hiện ra. Gửi `loaded_game { load_time_ms }` (một lần). **`createLoader().hide()` đã gọi hàm này**: game không gọi lại |
 | `info` | `Info` | Cấu hình đang dùng (đọc sau `ready()`) |
-| `version` | `string` | Phiên bản gmsdkjs (`1.0.1`…), `'fallback'` khi không có SDK (trang dev) |
+| `version` | `string` | Phiên bản gmsdkjs (`1.0.2`…), `'fallback'` khi không có SDK (trang dev) |
 
 `Info`:
 

@@ -22,7 +22,7 @@
   var g = window;
   if (g.GMLoader) return; // one loader per page
 
-  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.1/gmsdkjs.js'; // gmsdkjs 1.0.1, the version this kit is made for (docs/SERVER_NOTES.md)
+  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.2/gmsdkjs.js'; // gmsdkjs 1.0.2, the version this kit is made for (docs/SERVER_NOTES.md)
   var TRIES = 3;
   var TIMEOUT_MS = 10000;
   var WAITS_MS = [1000, 2000];

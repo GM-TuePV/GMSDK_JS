@@ -20,6 +20,33 @@ AI xét từng mục, từ cũ (dưới cùng) tới mới. Repo còn **dấu hi
 
 Thay đổi chỉ ở tài liệu thì không cần mục.
 
+## 1.0.2 — 2026-10-27
+
+### Theo yêu cầu CrazyGames (mẫu: Wacky Flip đã qua duyệt)
+
+Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gmsdkjs/templates/1.0.2/`) trên server ([SERVER_NOTES.md §1](docs/SERVER_NOTES.md)). Kit 1.0.1 và game đã build theo 1.0.1 không bị ảnh hưởng.
+
+**Thay đổi**
+- **gmsdkjs 1.0.2:** trên CrazyGames gọi `user.getUser()` đúng một lần mỗi lần mở trang; tài khoản GMA tạo lần đầu mang `username` CrazyGames, đã có tài khoản thì giữ tên GMA ([SERVER_NOTES.md §6](docs/SERVER_NOTES.md)). Game không gọi gì; game **không được** tự gọi `CrazyGames.SDK.user.getUser()`.
+- `loading/loader.js` mặc định trỏ `gmsdkjs/1.0.2/`; `assemble` mặc định đọc `templates/1.0.2/`.
+- **`gameplayStart`** chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup / màn kết quả đang che; `gameplayStop` khi hết màn, về menu, pause, khi bảng che hiện giữa lúc chơi ([INTEGRATION.md §4](docs/INTEGRATION.md), QA 4.12).
+- **Retry ở màn thắng** khi game cho chơi lại để lấy điểm cao hơn ([UX.md](docs/UX.md), QA 9.10).
+- **Nút "Privacy Policy"** cạnh dòng bản quyền, mọi portal: `PRIVACY_POLICY_URL` (`https://azgames.io/privacy-policy/`) trong `sdk/copyright.js` ([INTEGRATION.md §9](docs/INTEGRATION.md), QA 7.11). `check-export` không báo nhầm link này.
+
+**Dấu hiệu** (còn một trong các điều này là phải làm)
+- `public/loader.js` khác `docs/GMSDK_JS/loading/loader.js` (còn trỏ `gmsdkjs/1.0.1/`).
+- `src/sdk/copyright.js` chưa có `PRIVACY_POLICY_URL`, hoặc màn Settings chưa có nút "Privacy Policy".
+- Có chỗ gọi `gameplayStart` lúc tải, ở menu, hoặc khi bảng hướng dẫn / popup đang che.
+- Game cho chơi lại để lấy điểm cao hơn mà màn thắng chưa có Retry.
+- Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
+
+**Game cần làm**
+1. Chép lại `loading/loader.js` → `public/loader.js` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`.
+2. Thêm nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ), mở `PRIVACY_POLICY_URL` ở tab mới.
+3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
+4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.
+5. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
+
 ## 1.0.1 — 2026-10-22
 
 ### Bản đầu
@@ -39,7 +66,6 @@ Kit gắn **gmsdkjs 1.0.1** (trên server ở thư mục riêng `…/gmsdkjs/1.0
 - **Game trong iframe, nhiều tên miền** ([EMBED.md](docs/EMBED.md)): luật ngắn trong `PROMPT.md` (file khác tên miền, đọc điểm ảnh, worker, nhiều luồng, âm thanh, toàn màn hình, phím, trang cha: được dùng khi đủ điều kiện, có đường lui); `check-export` báo lỗi file `http://`, nhắc file từ tên miền khác, ảnh ngoài chưa đặt `crossOrigin`, Worker từ URL, `SharedArrayBuffer` chưa kiểm `crossOriginIsolated`; QA 7.9.
 - **More Games trên trang dev:** server không trả link trên localhost nên nút bị ẩn, không kiểm được. Shim trả `https://azgames.io` (`DEV_MORE_GAMES`) trên trang dev (`platform: 'dev'`): nút luôn hiện để kiểm; trên portal vẫn theo server ([INTEGRATION.md §9](docs/INTEGRATION.md)).
 - **Game có sẵn đang tự lưu dữ liệu:** AI hỏi chủ game 3 phương án (kệ / chuyển đổi / người cũ giữ kiểu cũ), làm theo phương án được chọn ([AI_INSTALL.md](AI_INSTALL.md), Cách làm). Code save cũ đặt ở `src/legacy-save.js`, file duy nhất ngoài kit `check-export` cho dùng `localStorage`.
-- **Theo yêu cầu CrazyGames** (mẫu: Wacky Flip đã qua duyệt): `gameplayStart` chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup che (INTEGRATION §4, QA 4.12); màn thắng có Retry khi chơi lại được để lấy điểm cao hơn (UX, QA 9.10); nút "Privacy Policy" cạnh dòng bản quyền, mọi portal: `PRIVACY_POLICY_URL` trong `sdk/copyright.js` (INTEGRATION §9, QA 7.11). Lấy tên CrazyGames bằng `getUser()` một lần mỗi trang là việc của gmsdkjs ([SERVER_NOTES.md §6](docs/SERVER_NOTES.md)).
 - **QA** ([QA.md](docs/QA.md)): checklist theo portal; **ảnh 8 cỡ màn hình** (`tools/screens.mjs`) chụp **một lần mỗi game** khi chủ game đồng ý (cần đồ hoạ bản cuối), ra `export/qa/<version>-<id>/`.
 - **Marketing kit** ([HANDOFF.md](docs/HANDOFF.md), [PROMPT_MARKETING.md](PROMPT_MARKETING.md)): làm **một lần mỗi game**, hỏi sau khi có ảnh QA (cần bản game hoàn thiện), ra `export/marketing/<version>-<id>/`; cover / banner vẽ theo ảnh gameplay thật.
 - **Quy chuẩn repo game** ([INTEGRATION.md §1](docs/INTEGRATION.md)): game ở gốc (`src/` + `public/`), tài liệu `docs/gdd/`, `docs/plan/`, `docs/qa/<version>.md`, kit ở `docs/GMSDK_JS/`.

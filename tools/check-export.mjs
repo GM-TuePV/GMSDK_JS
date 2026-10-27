@@ -485,7 +485,7 @@ function assembledPages(dir, entry, m) {
   if (html !== readFileSync(join(dir, 'preview.html'), 'utf8')) return { error: 'preview.html must be index.html byte for byte (tools/assemble.mjs)' };
   // The page loads loader.js only; loader.js loads gmsdkjs.js and the entry (docs/LOADING.md).
   if (/id="gmsoft-jssdk"/.test(html) || new RegExp(`<script[^>]*\\bsrc="${entry.replace(/\./g, '\\.')}"`).test(html))
-    return { error: 'index.html loads gmsdkjs.js / the game itself: the platform template must load loader.js only (templates/1.0.1/, docs/EXPORT.md §7)' };
+    return { error: 'index.html loads gmsdkjs.js / the game itself: the platform template must load loader.js only (templates/1.0.2/, docs/EXPORT.md §7)' };
   const template = /GMSDKJS_OPTIONS\s*=/.test(html) && /<script[^>]*\bsrc="loader\.js"/.test(html);
   if (!template) return { error: 'index.html is not the platform template: the package has no page of its own (tools/assemble.mjs makes the gm page)' };
   if (/<!--[A-Z_]+-->/.test(html)) return { error: 'index.html still has <!--…--> placeholders: run tools/assemble.mjs again' };

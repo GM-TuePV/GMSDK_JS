@@ -19,7 +19,7 @@ Xác định trước tiên, ghi vào đầu plan:
 - Commit theo từng bước, không push. Ngoại lệ duy nhất: build xong, hỏi chủ game có commit và đẩy không; đồng ý thì làm theo [EXPORT.md §9](docs/EXPORT.md).
 - **Game có sẵn:** khảo sát code trước, rồi lên plan gồm file bỏ / sửa / thêm và lý do, cùng những gì giữ lại vì là luật riêng của game. **Chờ chủ game duyệt rồi mới sửa code.** Plan có thêm phần rà trải nghiệm theo [UX.md](docs/UX.md): mỗi lớp L1–L5 và bản đồ tính năng, game đã có gì, còn thiếu gì. Phần thiếu chỉ là **đề xuất**: làm khi chủ game chọn.
 - **Game có sẵn đang tự lưu dữ liệu** (localStorage, IndexedDB, cookie, API lưu của engine…, không qua `sdk.storage`): lúc khảo sát, **hỏi chủ game trước khi lên plan**, đúng câu này:
-  > "Game đang lưu dữ liệu kiểu cũ, chưa đồng bộ SDK 1.0.1, nên người chơi cũ sẽ mất dữ liệu cũ! Có 3 phương án: 1 Kệ, 2 làm bộ chuyển đổi data cũ theo chuẩn mới, 3 người cũ vẫn lưu kiểu cũ, người mới lưu kiểu mới?"
+  > "Game đang lưu dữ liệu kiểu cũ, chưa đồng bộ SDK mới, nên người chơi cũ sẽ mất dữ liệu cũ! Có 3 phương án: 1 Kệ, 2 làm bộ chuyển đổi data cũ theo chuẩn mới, 3 người cũ vẫn lưu kiểu cũ, người mới lưu kiểu mới?"
   Làm theo phương án chủ game chọn; cách làm do AI tự quyết, ghi vào plan. Code đọc / ghi save cũ đặt trong `src/legacy-save.js` (`check-export` cho dùng `localStorage` ở file này). Game không lưu gì thì không hỏi.
 - **Game mới:** làm theo [NEW_GAME.md](docs/NEW_GAME.md) (cấu trúc, các màn, lưu, bố cục, hướng dẫn người chơi, quảng cáo). Plan trước, chờ duyệt.
 - Mỗi dòng trong `notes` của `config.json` là một yêu cầu riêng của game này: làm theo, và báo lại từng dòng trong báo cáo.
