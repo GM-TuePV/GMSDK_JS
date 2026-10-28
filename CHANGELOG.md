@@ -33,6 +33,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Retry ở màn thắng** khi game cho chơi lại để lấy điểm cao hơn ([UX.md](docs/UX.md), QA 9.10).
 - **Nút "Privacy Policy"** cạnh dòng bản quyền, mọi portal: `PRIVACY_POLICY_URL` (`https://azgames.io/privacy-policy/`) trong `sdk/copyright.js` ([INTEGRATION.md §9](docs/INTEGRATION.md), QA 7.11). `check-export` không báo nhầm link này.
 - **Bố cục màn loading mặc định** ([LOADING.md](docs/LOADING.md)): logo publisher trên cùng giữa → tên game → key art khung 16:9 to ở giữa → thanh % ngắn ngay dưới ảnh; số build góc dưới phải. Màu, chữ, luồng giữ nguyên; tên class giữ nguyên nên `icons/loader.css` của game vẫn dùng được (logo giờ nằm trong `.gmLoaderStage`).
+- **Cờ bảng xếp hạng: bộ mới, một atlas** ([LEADERBOARD.md](docs/LEADERBOARD.md)): 254 file PNG `leaderboard/flags/` thay bằng `leaderboard/flags.webp` (253 cờ do GM vẽ, ô 100×75, 241 KB) + `flags.json`; một lần tải thay cho từng cờ, và bước nén lúc build không đổi tên được nữa (bộ PNG cũ bị `compress` đổi sang WebP làm mất cờ nếu game không `keep`). Chưa chọn nước hiện cờ **US** (bỏ `GLOBE`). `countries.json` thêm England (`GB-ENG`). `ui.js` có `loadFlags()` cho màn tự vẽ. `tools/build-flags.mjs` dựng lại atlas.
 - **Bàn phím trong iframe:** `preventDefault()` trên `pointerdown` / `mousedown` / `touchstart` chặn luôn việc iframe nhận focus, nên trên portal phím đi ra trang ngoài. `check-export` cảnh báo khi thấy dấu hiệu này; cách sửa ở [EMBED.md §8](docs/EMBED.md), QA 2.7.
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
 
@@ -42,13 +43,15 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Có chỗ gọi `gameplayStart` lúc tải, ở menu, hoặc khi bảng hướng dẫn / popup đang che.
 - Game cho chơi lại để lấy điểm cao hơn mà màn thắng chưa có Retry.
 - Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
+- Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 
 **Game cần làm**
 1. Chép lại `loading/loader.js` → `public/loader.js` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`.
 2. Thêm nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ), mở `PRIVACY_POLICY_URL` ở tab mới.
 3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
 4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.
-5. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
+5. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`.
+6. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
 
 ## 1.0.1 — 2026-10-22
 

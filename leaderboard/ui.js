@@ -49,7 +49,7 @@ const CSS = `
 .gmlb-row:nth-child(odd){background:rgba(255,255,255,.03)}
 .gmlb-row.me{background:rgba(74,108,247,.22)}
 .gmlb-rank{width:2.6em;text-align:right;font-weight:700;opacity:.85}
-.gmlb-flag{width:1.6em;height:1.1em;object-fit:cover;border-radius:2px;flex:none}
+.gmlb-flag{display:inline-block;width:1.6em;height:1.2em;border-radius:2px;flex:none;background-color:rgba(255,255,255,.08);background-repeat:no-repeat}
 .gmlb-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gmlb-score{font-variant-numeric:tabular-nums;font-weight:600}
 .gmlb-note{padding:24px 8px;text-align:center;opacity:.8}
@@ -73,6 +73,62 @@ const el = (tag, cls, text) => {
   return n;
 };
 
+/** The flag of a player who has not chosen one, and of a code the atlas does not have. */
+export const DEFAULT_FLAG = 'US';
+
+/**
+ * The flag atlas (docs/LEADERBOARD.md §2): one image <assets>flags.webp, a 4:3 cell per country code, the order in
+ * <assets>flags.json. Loaded once per folder. A game that draws its own leaderboard uses it too:
+ *
+ *   const flags = await loadFlags('assets/leaderboard/');
+ *   Object.assign(span.style, flags.style('VN'));         // DOM: any box of 4:3 (e.g. 1.6em x 1.2em)
+ *   const r = flags.rect('VN');                           // canvas: ctx.drawImage(atlasImage, r.x, r.y, r.w, r.h, …)
+ *
+ * style(code) / rect(code) give the US flag (DEFAULT_FLAG) for '' or a code the atlas lacks; style() is {} when the
+ * atlas could not load.
+ */
+const atlases = new Map();
+export function loadFlags(assets = 'assets/leaderboard/') {
+  if (!atlases.has(assets)) {
+    const url = `${assets}flags.webp`;
+    const ready = fetch(`${assets}flags.json`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((map) => {
+        const ok = map && Array.isArray(map.codes) && Array.isArray(map.cell) && map.cols > 0;
+        const codes = ok ? map.codes : [];
+        const cols = ok ? map.cols : 1;
+        const rows = Math.max(1, Math.ceil(codes.length / cols));
+        const [w, h] = ok ? map.cell : [0, 0];
+        const index = (code) => {
+          const i = codes.indexOf(String(code || '').toUpperCase());
+          return i >= 0 ? i : codes.indexOf(DEFAULT_FLAG);
+        };
+        return {
+          url,
+          has: (code) => codes.includes(String(code || '').toUpperCase()),
+          rect(code) {
+            const i = index(code);
+            return i < 0 ? null : { x: (i % cols) * w, y: Math.floor(i / cols) * h, w, h };
+          },
+          style(code) {
+            const i = index(code);
+            if (i < 0) return {};
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            return {
+              backgroundImage: `url("${url}")`,
+              backgroundSize: `${cols * 100}% ${rows * 100}%`,
+              backgroundPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 0}% ${rows > 1 ? (row / (rows - 1)) * 100 : 0}%`,
+            };
+          },
+        };
+      });
+    atlases.set(assets, ready);
+  }
+  return atlases.get(assets);
+}
+
 /**
  * Open the leaderboard screen.
  *
@@ -82,7 +138,7 @@ const el = (tag, cls, text) => {
  * @param {object} o
  * @param {object} o.board        createLeaderboard(...) of leaderboard.js
  * @param {(key: string, ...a: unknown[]) => string} [o.t]  the game's t(); English when missing
- * @param {string} [o.assets]     folder of flags/ and countries.json in the package (default assets/leaderboard/)
+ * @param {string} [o.assets]     folder of flags.webp, flags.json and countries.json in the package (default assets/leaderboard/)
  * @param {string} [o.period]     first tab (default alltime)
  * @param {number} [o.pageSize]   rows per page (default 20)
  * @param {() => void} [o.onClose]
@@ -105,17 +161,14 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     }
     return typeof s === 'string' && s && s !== full ? s : EN[key];
   };
-  const flagUrl = (code) => `${assets}flags/${code || 'GLOBE'}.png`;
-  const flag = (code) => {
-    const img = el('img', 'gmlb-flag');
-    img.alt = code || '';
-    img.src = flagUrl(code);
-    img.onerror = () => {
-      img.onerror = null;
-      img.src = flagUrl('');
-    };
-    return img;
+  const flags = loadFlags(assets);
+  /** Paint a flag box (a span of class gmlb-flag) for a country code; US when none is chosen. */
+  const paint = (box, code) => {
+    box.title = code || DEFAULT_FLAG;
+    flags.then((f) => Object.assign(box.style, f.style(code)));
+    return box;
   };
+  const flag = (code) => paint(el('span', 'gmlb-flag'), code);
   const row = (e, me) => {
     const r = el('div', me ? 'gmlb-row me' : 'gmlb-row');
     r.append(el('span', 'gmlb-rank', e.rank ? `#${e.rank}` : '–'), flag(e.country), el('span', 'gmlb-name', e.name || '—'), el('span', 'gmlb-score', String(e.score)));
@@ -255,7 +308,7 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     pick.append(preview, select);
     countryBox.appendChild(pick);
     select.addEventListener('change', () => {
-      preview.src = flagUrl(select.value);
+      paint(preview, select.value);
     });
     fetch(`${assets}countries.json`)
       .then((r) => (r.ok ? r.json() : []))

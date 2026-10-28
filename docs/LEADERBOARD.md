@@ -24,7 +24,7 @@ gmsdkjs.js đã nạp, init bằng gma.host + (id + gma.suffix) của portal, đ
 | --- | --- |
 | `leaderboard/leaderboard.js`, `hmac.js` (+ `leaderboard.d.ts` nếu dùng TypeScript) | `src/sdk/leaderboard/` |
 | `leaderboard/ui.js` (nếu dùng màn hình mặc định) | `src/sdk/leaderboard/` |
-| `leaderboard/flags/`, `leaderboard/countries.json` (nếu dùng màn hình mặc định, hoặc game tự vẽ có cờ) | `public/assets/leaderboard/` |
+| `leaderboard/flags.webp`, `flags.json`, `countries.json` (nếu dùng màn hình mặc định, hoặc game tự vẽ có cờ) | `public/assets/leaderboard/` |
 
 3. Chữ: thêm nhóm `leaderboard` vào `i18n/<thẻ>.json` (§4). Thiếu key thì màn hình mặc định hiện tiếng Anh, không hiện key.
 
@@ -61,9 +61,16 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 `openLeaderboard({ board, t, assets?, period?, pageSize?, onClose? })` mở một lớp phủ HTML trên canvas (mọi engine): bốn tab kỳ, top 20 kèm nút xem thêm, dòng của người chơi (hạng và điểm, hoặc "chưa có điểm"), nút đổi tên + cờ. Esc, nút × hoặc bấm ra ngoài để đóng; trả về `{ close() }`.
 
-- `assets`: thư mục chứa `flags/` và `countries.json` trong gói, mặc định `assets/leaderboard/`.
+- `assets`: thư mục chứa `flags.webp`, `flags.json` và `countries.json` trong gói, mặc định `assets/leaderboard/`.
 - Trong lúc mở: game tự dừng thứ đang chạy (ví dụ thêm lớp `paused` như example), tiếp tục ở `onClose`.
-- Muốn giao diện riêng: bỏ `ui.js`, tự vẽ bằng các hàm §3. Cờ: `assets/leaderboard/flags/<mã>.png`, `GLOBE.png` khi chưa chọn.
+- Muốn giao diện riêng: bỏ màn hình của `ui.js`, tự vẽ bằng các hàm §3. Cờ lấy từ atlas bằng `loadFlags()` của `ui.js`:
+  ```js
+  import { loadFlags } from './sdk/leaderboard/ui.js';
+  const flags = await loadFlags('assets/leaderboard/');
+  Object.assign(span.style, flags.style('VN'));   // DOM: hộp tỉ lệ 4:3, ví dụ 1.6em × 1.2em
+  const r = flags.rect('VN');                     // canvas: ctx.drawImage(ảnh flags.webp, r.x, r.y, r.w, r.h, x, y, w, h)
+  ```
+- **Cờ:** `flags.webp` là một atlas (mỗi ô 100×75, tỉ lệ 4:3, 253 nước / vùng theo `countries.json`, gồm England), `flags.json` ghi thứ tự. Người chơi **chưa chọn nước, hay mã không có trong atlas, hiện cờ US** (gmsdkjs tạo người chơi GMA mới với nước US). Cờ do GM tự vẽ; dựng lại atlas: `node tools/build-flags.mjs <thư mục PNG>` (người giữ kit).
 
 Khoá chữ (nhóm `leaderboard`, `t('leaderboard.title')`…):
 

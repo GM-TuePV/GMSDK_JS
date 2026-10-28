@@ -64,7 +64,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 | `sdk/gmsdkjs-shim.js`, `sdk/storage.js`, `sdk/i18n.js`, `sdk/net.js`, `sdk/copyright.js` (+ các `.d.ts`) | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` và `storage.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
 | `template/index.html` | `index.html` ở gốc | Trang dev. Game đã có `index.html`: thêm khối `GMSDKJS_OPTIONS` vào `<head>`, `<div id="game">`, và **chỉ một script** `<script src="loader.js" data-entry="src/main.js" data-module>` thay cho thẻ entry. Bỏ mọi thẻ `gmsdkjs.js`, `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
-| `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags/`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
+| `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags.webp`, `flags.json`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
 
 ## Bước 2. Manifest và bảng dịch
 

@@ -409,7 +409,7 @@ const RECORD_FILE = /(^|\/)(CREDITS|LICEN[CS]E|README)[^/]*$|\.(md|txt)$/i;
  * Files the kit hands out (loader, publisher logo, loading look, leaderboard flags): the kit answers for them, so
  * licenses.json needs no entry and an "unknown" one is not reported. A path, or a glob of licenses.json.
  */
-const KIT_FILE = /(^|\/)public\/(loader\.js|icons\/(logo\.webp|loader\.css)|assets\/leaderboard\/(flags\/[^/]*|countries\.json))$/;
+const KIT_FILE = /(^|\/)public\/(loader\.js|icons\/(logo\.webp|loader\.css)|assets\/leaderboard\/(flags\/[^/]*|flags\.(webp|json)|countries\.json))$/;
 
 /** A glob of licenses.json (/, *, **, ?) as a RegExp over repo-relative paths with '/'. */
 function globRegExp(glob) {
@@ -622,11 +622,14 @@ function checkPackage() {
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
     // The game waits for loader.js (loadSDK) and hides its screen (createLoader().hide()): both go through GMLoader.
     if (!/GMLoader/.test(js)) warn(`${entry} never mentions GMLoader: the game must start with await loadSDK() and end its loading with createLoader().hide() (docs/LOADING.md)`);
-    if (/gmlb-panel/.test(js)) {
-      for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags/GLOBE.png']) {
-        if (!existsExact(dir, need)) err(`${need} is missing: copy docs/GMSDK_JS/leaderboard/flags/ and countries.json to public/assets/leaderboard/ (docs/LEADERBOARD.md §2)`);
+    // The default leaderboard screen (ui.js), or loadFlags() of a screen of the game's own: the flag atlas.
+    if (/gmlb-panel|flags\.json/.test(js)) {
+      for (const need of ['assets/leaderboard/countries.json', 'assets/leaderboard/flags.webp', 'assets/leaderboard/flags.json']) {
+        if (!existsExact(dir, need)) err(`${need} is missing: copy docs/GMSDK_JS/leaderboard/flags.webp, flags.json and countries.json to public/assets/leaderboard/ (docs/LEADERBOARD.md §2)`);
       }
     }
+    if (existsSync(join(dir, 'assets/leaderboard/flags')))
+      warn('assets/leaderboard/flags/ (one PNG per flag) is no longer read: the flags are in flags.webp + flags.json now; remove the folder (docs/LEADERBOARD.md §2)');
     const owner = ownerInStrings(js);
     if (owner) warn(`${entry} writes ${owner.slice(0, 60)} itself: ${OWNER_HINT}`);
     // Event names stay as string literals in the minified code: a required one that never appears is not sent.
