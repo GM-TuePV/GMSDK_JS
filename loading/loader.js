@@ -51,18 +51,18 @@
 #gmLoader,#gmLoader *,#gmLoader *::before,#gmLoader *::after{box-sizing:border-box}
 #gmLoader[hidden]{display:none}
 #gmLoader.gmSkinWait>*{visibility:hidden}
-#gmLoader{position:fixed;font-family:var(--gm-font);color:var(--gm-white);-webkit-font-smoothing:antialiased;inset:0;z-index:10;overflow:hidden;background:var(--gm-bg);user-select:none;-webkit-user-select:none;--gm-c1:104,66,255;--gm-c2:140,96,255;--gm-c3:176,140,255}
+#gmLoader{position:fixed;font-family:var(--gm-font);color:var(--gm-white);-webkit-font-smoothing:antialiased;inset:0;z-index:10;overflow:hidden;background:var(--gm-bg);user-select:none;-webkit-user-select:none;--gm-c1:104,66,255;--gm-c2:140,96,255;--gm-c3:176,140,255;--gm-bar-w:min(70vw,max(180px,26vw),420px)}
 .gmLoaderBackdrop{position:absolute;inset:0;z-index:0;background-position:center;background-size:cover;background-repeat:no-repeat;filter:blur(14px) brightness(.42) saturate(1.05);transform:scale(1.08)}
 .gmLoaderBackdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 50% 45%,rgba(12,13,20,.15),rgba(12,13,20,.55))}
 .gmLoaderStage{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center}
-.gmLoaderThumb{display:block;height:clamp(80px,20vh,200px);width:auto;max-width:min(80vw,400px);object-fit:cover;border-radius:clamp(6px,1.2vh,10px);box-shadow:0 8px 28px rgba(0,0,0,.45);background:#1a1b26;animation:gmFadeUp .4s ease-out both}
-.gmLoaderTitle{margin:clamp(10px,2.6vh,20px) 0 0;max-width:90vw;color:var(--gm-white);font-size:clamp(18px,4.6vh,34px);font-weight:800;line-height:1.2;letter-spacing:-.005em;text-shadow:0 2px 10px rgba(0,0,0,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:gmFadeUp .4s .05s ease-out both}
-.gmLoaderProgress{position:relative;width:min(80vw,1010px);height:clamp(64px,13vh,96px);margin-top:clamp(14px,4.6vh,40px)}
+.gmLoaderThumb{display:block;width:min(86vw,74.7vh,780px);height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:clamp(6px,1.2vh,10px);box-shadow:0 8px 28px rgba(0,0,0,.45);background:#1a1b26;animation:gmFadeUp .4s .05s ease-out both}
+.gmLoaderTitle{margin:0 0 clamp(8px,1.8vh,14px);max-width:90vw;color:var(--gm-white);font-size:clamp(14px,3.2vh,26px);font-weight:800;line-height:1.2;letter-spacing:-.005em;text-shadow:0 2px 10px rgba(0,0,0,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:gmFadeUp .4s ease-out both}
+.gmLoaderProgress{position:relative;width:var(--gm-bar-w);height:clamp(48px,9vh,72px);margin-top:clamp(10px,2.8vh,18px)}
 .gmLoaderSpinner{position:absolute;left:50%;top:0;width:clamp(32px,7vh,48px);height:clamp(32px,7vh,48px);margin-left:calc(clamp(32px,7vh,48px) / -2);border-radius:50%;border:4px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.85);border-right-color:rgba(255,255,255,.85);animation:gmSpin .8s linear infinite}
 .gmLoaderBar,.gmLoaderInfo{opacity:0;transition:opacity .25s ease}
-.gmLoaderBar{width:100%;height:clamp(10px,2vh,14px);border-radius:999px;background:var(--gm-track);overflow:hidden}
-#gmLoaderFill{position:relative;width:0;height:100%;border-radius:999px;background:linear-gradient(90deg,rgb(var(--gm-c1)),rgb(var(--gm-c2)) 55%,rgb(var(--gm-c3))) 0 0 / min(80vw,1010px) 100% no-repeat rgb(var(--gm-c1));box-shadow:0 0 12px rgba(var(--gm-c1),.45);transition:width .25s ease;overflow:hidden}
-.gmLoaderInfo{margin-top:clamp(10px,2.2vh,16px);font-size:clamp(12px,2.4vh,16px);font-weight:600;line-height:1.2;color:var(--gm-white)}
+.gmLoaderBar{width:100%;height:clamp(5px,1.1vh,8px);border-radius:999px;background:var(--gm-track);overflow:hidden}
+#gmLoaderFill{position:relative;width:0;height:100%;border-radius:999px;background:linear-gradient(90deg,rgb(var(--gm-c1)),rgb(var(--gm-c2)) 55%,rgb(var(--gm-c3))) 0 0 / var(--gm-bar-w) 100% no-repeat rgb(var(--gm-c1));box-shadow:0 0 12px rgba(var(--gm-c1),.45);transition:width .25s ease;overflow:hidden}
+.gmLoaderInfo{margin-top:clamp(6px,1.4vh,10px);font-size:clamp(11px,2.2vh,14px);font-weight:600;line-height:1.2;color:var(--gm-white)}
 .gmLoaderInfo b{font-weight:800}
 #gmLoader.gmIsLoading .gmLoaderSpinner{display:none}
 #gmLoader.gmIsLoading .gmLoaderBar,#gmLoader.gmIsLoading .gmLoaderInfo{opacity:1}
@@ -70,10 +70,10 @@
 #gmLoader.gmAlmost #gmLoaderFill::after{content:"";position:absolute;top:0;bottom:0;left:0;width:52%;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45) 60%,rgba(255,255,255,0));animation:gmAlmost 1.6s ease-in-out infinite}
 #gmLoader.gmAlmost .gmLoaderInfo{color:var(--gm-muted);font-weight:800;animation:gmBlink 1.6s ease-in-out infinite}
 #gmLoader.gmFailed .gmLoaderInfo{max-width:90vw;white-space:normal;line-height:1.4}
-.gmLoaderBrand{position:absolute;z-index:1;right:clamp(10px,2vw,22px);bottom:clamp(8px,1.8vw,18px);opacity:.9;pointer-events:none}
-.gmLoaderBrand img{display:block;height:clamp(30px,7.5vh,56px);width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
-.gmLoaderVersion{position:absolute;z-index:1;left:clamp(10px,2vw,22px);bottom:clamp(8px,1.8vw,18px);font:600 11px/1 var(--gm-font);letter-spacing:.06em;color:var(--gm-white);opacity:.4;pointer-events:none}
-@media (max-height:420px){.gmLoaderThumb{height:clamp(64px,26vh,120px)}.gmLoaderProgress{height:56px;margin-top:12px}.gmLoaderBrand img{height:28px}}
+.gmLoaderBrand{margin:0 0 clamp(14px,6vh,48px);pointer-events:none;animation:gmFadeUp .4s ease-out both}
+.gmLoaderBrand img{display:block;height:clamp(32px,8vh,64px);width:auto;max-width:70vw;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.gmLoaderVersion{position:absolute;z-index:1;right:clamp(10px,2vw,22px);bottom:clamp(8px,1.8vw,18px);font:600 12px/1 var(--gm-font);letter-spacing:.06em;color:var(--gm-white);opacity:.5;pointer-events:none}
+@media (max-height:420px){.gmLoaderThumb{width:min(70vw,60vh)}.gmLoaderBrand{margin-bottom:8px}.gmLoaderBrand img{height:26px}.gmLoaderTitle{margin-bottom:6px}.gmLoaderProgress{height:40px;margin-top:8px}}
 @keyframes gmSpin{to{transform:rotate(360deg)}}
 @keyframes gmFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes gmAlmost{0%{transform:translateX(-105%)}100%{transform:translateX(200%)}}
@@ -206,10 +206,9 @@
   progressBox.appendChild(bar);
   progressBox.appendChild(info);
   progressBox.appendChild(retry);
-  stage.appendChild(thumb);
-  stage.appendChild(name);
-  stage.appendChild(progressBox);
-  // The publisher's logo; not on GameDistribution / CrazyGames / Poki pages (no publisher branding there, QA 7.4).
+  // Top to bottom, centred: the publisher's logo, the game's name, the key art, the bar (with its text below).
+  // The logo is not on GameDistribution / CrazyGames / Poki pages (no publisher branding there, QA 7.4): the rest
+  // stays centred without it.
   var portalPage = ['gd', 'crazy', 'poki'].indexOf(String(opts.sdkType || '').toLowerCase()) >= 0 || opts.trademark === false;
   var brand = el('div', 'gmLoaderBrand');
   brand.setAttribute('aria-hidden', 'true');
@@ -221,12 +220,16 @@
       if (brand.parentNode) brand.parentNode.removeChild(brand);
     };
     brand.appendChild(logo);
+    stage.appendChild(brand);
   }
+  stage.appendChild(name);
+  stage.appendChild(thumb);
+  stage.appendChild(progressBox);
+  // The build version (game.json), bottom right.
   var corner = el('div', 'gmLoaderVersion');
   corner.textContent = typeof opts.version === 'string' && opts.version.indexOf('<!--') < 0 ? opts.version : '';
   root.appendChild(backdrop);
   root.appendChild(stage);
-  root.appendChild(brand);
   root.appendChild(corner);
   root.className = 'gmSkinWait';
   (document.body || document.documentElement).appendChild(root);

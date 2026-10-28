@@ -10,16 +10,16 @@
  * The screen (loader.js):
  *   #gmLoader                     whole screen; classes gmIsLoading (bar on), gmAlmost (99 %), gmFailed (Reload)
  *     .gmLoaderBackdrop           blurred icons/loading.webp
- *     .gmLoaderStage              centre column
- *       img.gmLoaderThumb         icons/loading.webp
+ *     .gmLoaderStage              centre column, top to bottom:
+ *       .gmLoaderBrand > img      publisher logo (icons/logo.webp, swapped by the build tool; none on GD / CG / Poki)
  *       h1.gmLoaderTitle          game name
- *       .gmLoaderProgress
+ *       img.gmLoaderThumb         icons/loading.webp, a 16:9 card
+ *       .gmLoaderProgress         the bar's width: --gm-bar-w
  *         .gmLoaderSpinner        until the first %
  *         .gmLoaderBar > #gmLoaderFill   the bar
  *         .gmLoaderInfo           "42%", "Almost there...", the error text
  *         button.gmLoaderRetry    Reload
- *     .gmLoaderBrand > img        publisher logo (icons/logo.webp, swapped by the build tool)
- *     .gmLoaderVersion            version, bottom left
+ *     .gmLoaderVersion            build version, bottom right
  *
  * Variables on #gmLoader: --gm-font, --gm-bg, --gm-track, --gm-white, --gm-muted; --gm-c1/2/3 (bar colours, "r,g,b").
  * The bar takes the key art's colours; to keep your own, set --gm-tint: off on #gmLoader.

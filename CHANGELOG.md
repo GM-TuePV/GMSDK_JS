@@ -32,6 +32,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **`gameplayStart`** chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup / màn kết quả đang che; `gameplayStop` khi hết màn, về menu, pause, khi bảng che hiện giữa lúc chơi ([INTEGRATION.md §4](docs/INTEGRATION.md), QA 4.12).
 - **Retry ở màn thắng** khi game cho chơi lại để lấy điểm cao hơn ([UX.md](docs/UX.md), QA 9.10).
 - **Nút "Privacy Policy"** cạnh dòng bản quyền, mọi portal: `PRIVACY_POLICY_URL` (`https://azgames.io/privacy-policy/`) trong `sdk/copyright.js` ([INTEGRATION.md §9](docs/INTEGRATION.md), QA 7.11). `check-export` không báo nhầm link này.
+- **Bố cục màn loading mặc định** ([LOADING.md](docs/LOADING.md)): logo publisher trên cùng giữa → tên game → key art khung 16:9 to ở giữa → thanh % ngắn ngay dưới ảnh; số build góc dưới phải. Màu, chữ, luồng giữ nguyên; tên class giữ nguyên nên `icons/loader.css` của game vẫn dùng được (logo giờ nằm trong `.gmLoaderStage`).
 - **Bàn phím trong iframe:** `preventDefault()` trên `pointerdown` / `mousedown` / `touchstart` chặn luôn việc iframe nhận focus, nên trên portal phím đi ra trang ngoài. `check-export` cảnh báo khi thấy dấu hiệu này; cách sửa ở [EMBED.md §8](docs/EMBED.md), QA 2.7.
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
 

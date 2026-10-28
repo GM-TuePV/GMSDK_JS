@@ -18,7 +18,7 @@ Trang mở (template của portal: GMSDKJS_OPTIONS + <script src="loader.js">)
         menu hiện → loader.hide()                    ẩn màn, gọi sdk.loadingDone() (loaded_game, portal)
 ```
 
-Giao diện là GM Loader v1 của azgames (bộ của kit 2.x), giữ nguyên: nền key art làm mờ, ảnh nhỏ + tên game + vòng xoay → thanh % tô theo 3 màu nổi của key art → "Almost there..." từ 99 %, phiên bản ở góc trái, logo publisher ở góc phải.
+Giao diện mặc định (bố cục từ kit 1.0.2): nền key art làm mờ; giữa màn từ trên xuống là **logo publisher** → **tên game** → **key art** (khung 16:9 bo góc, chiếm phần lớn bề ngang) → **thanh %** ngắn ngay dưới ảnh, chữ % bên dưới; **số build** ở góc dưới phải. Trước khi có % là vòng xoay; thanh tô theo 3 màu nổi của key art; từ 99 % là "Almost there...". Trang không có logo (GD, CrazyGames, Poki) thì phần còn lại tự nằm giữa.
 
 | Từ kit | Vào game |
 | --- | --- |
