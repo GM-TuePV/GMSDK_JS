@@ -177,6 +177,17 @@ function checkEmbed(js, entry) {
   if (/new\s+Worker\s*\(\s*["'`]https?:/.test(js)) warn(`${entry} starts a Worker from a URL: a worker must come from the page's own domain: fetch it (CORS) and start it from a blob URL (docs/EMBED.md §4)`);
   if (/new\s+SharedArrayBuffer\b/.test(js) && !/crossOriginIsolated/.test(js))
     warn(`${entry} creates a SharedArrayBuffer without checking crossOriginIsolated: in a portal iframe it is usually missing; check it and fall back to one thread (docs/EMBED.md §5)`);
+  // preventDefault() on a press (pointerdown / mousedown / touchstart) also stops the iframe from taking the focus: on a
+  // portal the keys then go to the page around the game. Seen as a press listener with preventDefault close after it
+  // and no .focus( in that same stretch (a focus() elsewhere, e.g. a text field, does not count).
+  const pressBlocked = [...js.matchAll(/["'`](?:pointerdown|mousedown|touchstart)["'`]/g)].some((m) => {
+    // that listener only: up to the next addEventListener, 400 characters at most
+    const next = js.indexOf('addEventListener', m.index + 1);
+    const near = js.slice(m.index, next > m.index ? Math.min(next, m.index + 400) : m.index + 400);
+    return near.includes('preventDefault') && !near.includes('.focus(');
+  });
+  if (pressBlocked)
+    warn(`${entry} calls preventDefault() on a press (pointerdown / mousedown / touchstart) without focus() there: in a portal iframe the game then gets no keys (they go to the page around it). Use CSS user-select: none; touch-action: none instead, or call window.focus() in that handler (docs/EMBED.md §8)`);
 }
 
 /** A table of i18n/ as { "group.key": text } and the paths that are not texts (numbers, lists…). */

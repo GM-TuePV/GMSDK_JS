@@ -94,6 +94,7 @@ Cỡ tính theo CSS px Cỡ tính theo CSS px; điện thoại và máy tính b�
 | 2.4 | Không nhấp nháy, không màn đen khi xoay | Xoay liên tục 5–10 lần trên Android | Major | [QA-GD] |
 | 2.5 | Không icon mất, không icon đè chữ, không chữ tràn khung, ở **mọi ngôn ngữ** | Duyệt mọi màn và popup, cả hai chiều, trên điện thoại hẹp và màn rộng, với ngôn ngữ dài nhất → mọi chữ đọc trọn | Minor | [QA-GD] [Poki] |
 | 2.6 | Không làm cuộn trang cha; không hiện kính lúp hay menu chọn chữ trên điện thoại | Phím mũi tên / Space không cuộn trang chứa iframe; `body` có `user-select: none` | Minor | [Poki] [CG] |
+| 2.7 | Trong iframe: bấm vào game một lần rồi chỉ dùng bàn phím → game nhận đủ phím, trang ngoài không cuộn | `preview.html` trên portal, hoặc trang thử nhúng game bằng iframe (chạy game riêng một trang thì không lộ lỗi). Lỗi thường do `preventDefault()` trên `pointerdown` / `mousedown` / `touchstart`: [EMBED.md](EMBED.md) §8 | Major | [Nội bộ] |
 
 ### 3.3 Âm thanh
 

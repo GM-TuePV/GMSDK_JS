@@ -106,9 +106,12 @@ button.onclick = () => document.documentElement.requestFullscreen?.().catch(() =
 
 ## 8. Bàn phím trong iframe
 
-**Vì sao:** iframe chỉ nhận phím khi đang được chọn; phím mũi tên / Space / PageDown mặc định cuộn trang ngoài.
+**Vì sao:** iframe chỉ nhận phím khi đang được chọn (có focus); phím mũi tên / Space / PageDown mặc định cuộn trang ngoài. Bình thường bấm vào iframe là iframe được chọn, nhưng **`preventDefault()` trên `pointerdown` / `mousedown` / `touchstart`** (thường để chặn bôi đen chữ hay cuộn) chặn luôn bước chuyển focus đó: trên portal bấm vào game xong, phím vẫn đi ra trang ngoài. Chạy game riêng một trang thì trang đã có focus sẵn nên không lộ lỗi.
 
-**Cách làm cho chạy:** `preventDefault()` cho đúng các phím game dùng; game cần phím thì bấm / chạm vào game là nhận (màn đầu có nút bấm, hoặc `canvas.focus()` khi chạm).
+**Cách làm cho chạy:**
+- Chặn bôi đen / cuộn bằng CSS thay vì `preventDefault()` trên cú bấm: `user-select: none; touch-action: none;` cho canvas / khung game.
+- Buộc phải `preventDefault()` trên cú bấm thì gọi `window.focus()` ngay trong handler đó.
+- `preventDefault()` cho đúng các phím game dùng, để không cuộn trang ngoài.
 
 ```js
 const GAME_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ']);
