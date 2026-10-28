@@ -36,6 +36,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Cờ bảng xếp hạng: bộ mới, một atlas** ([LEADERBOARD.md](docs/LEADERBOARD.md)): 254 file PNG `leaderboard/flags/` thay bằng `leaderboard/flags.webp` (253 cờ do GM vẽ, ô 100×75, 241 KB) + `flags.json`; một lần tải thay cho từng cờ, và bước nén lúc build không đổi tên được nữa (bộ PNG cũ bị `compress` đổi sang WebP làm mất cờ nếu game không `keep`). Chưa chọn nước hiện cờ **US** (bỏ `GLOBE`). `countries.json` thêm England (`GB-ENG`). `ui.js` có `loadFlags()` cho màn tự vẽ. `tools/build-flags.mjs` dựng lại atlas.
 - **Bàn phím trong iframe:** `preventDefault()` trên `pointerdown` / `mousedown` / `touchstart` chặn luôn việc iframe nhận focus, nên trên portal phím đi ra trang ngoài. `check-export` cảnh báo khi thấy dấu hiệu này; cách sửa ở [EMBED.md §8](docs/EMBED.md), QA 2.7.
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
+- **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
 
 **Dấu hiệu** (còn một trong các điều này là phải làm)
 - `public/loader.js` khác `docs/GMSDK_JS/loading/loader.js` (còn trỏ `gmsdkjs/1.0.1/`).
@@ -46,7 +47,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 
 **Game cần làm**
-1. Chép lại `loading/loader.js` → `public/loader.js` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`.
+1. Chép lại `loading/loader.js` → `public/loader.js`, `loading/loading.js` (+ `.d.ts`) → `src/sdk/loading/` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`. Chỗ gọi `loader.error()` truyền file tải lỗi nếu biết: `loader.error(null, file)`.
 2. Thêm nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ), mở `PRIVACY_POLICY_URL` ở tab mới.
 3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
 4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.

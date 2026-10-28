@@ -173,5 +173,5 @@ onLangChange(() => manifest && showMenu());
 
 boot().catch((e) => {
   console.error(e);
-  loader.error(); // "Connection problem…" + Reload on the loading screen
+  loader.error(null, e?.file); // "Connection problem…" + Reload on the loading screen; LoadingFail { name: the file }
 });

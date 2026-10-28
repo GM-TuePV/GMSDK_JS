@@ -12,6 +12,8 @@ Trang mở (template của portal: GMSDKJS_OPTIONS + <script src="loader.js">)
    │    mỗi file tối đa 3 lần, mỗi lần chờ 10 giây, nghỉ 1 rồi 2 giây; hai file này chạy thanh 0 → 30 %
    ├─ gmsdkjs.js BẮT BUỘC: 3 lần vẫn lỗi → "Connection problem. Please check your network and reload the page."
    │    + nút Reload; game không chạy. (Chỉ trang dev, platform 'dev', được chạy tiếp không SDK.)
+   ├─ màn Reload hiện (gmsdkjs.js / game.js hỏng 3 lần, hay game gọi loader.error) → sự kiện tracking
+   │    LoadingFail { name: file tải lỗi }; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau có SDK
    └─ đủ hai file → game.js chạy tiếp:
         sdk = await loadSDK({ gameCode })            chờ gmsdkjs (trong boot(): không await cấp cao nhất)
         tải tài nguyên → loader.progress(p)          thanh 30 → 100 %
@@ -49,7 +51,7 @@ async function boot() {
   showMenu();
   loader.hide();                                 // menu đã hiện: ẩn màn + sdk.loadingDone() (không gọi lại)
 }
-boot().catch(() => loader.error());              // tài nguyên lúc mở lỗi: cùng màn Reload
+boot().catch((e) => loader.error(null, e?.file)); // tài nguyên lúc mở lỗi: cùng màn Reload + LoadingFail
 ```
 
 | Hàm | Làm gì |
@@ -58,7 +60,7 @@ boot().catch(() => loader.error());              // tài nguyên lúc mở lỗi
 | `createLoader()` | Lấy màn của `loader.js` (`window.GMLoader`). Không có `loader.js` trên trang thì mọi hàm không làm gì |
 | `loader.progress(f)` | Phần tải của game (0..1): thanh từ 30 % tới 100 %, "Almost there..." từ 99 %. Tự chuyển cho `sdk.loadingProgress` |
 | `loader.setTitle(name)` | Tên game (sau khi đọc `game.json`) |
-| `loader.error(text?)` | Tải lỗi: thông báo + nút Reload |
+| `loader.error(text?, file?)` | Tải lỗi: thông báo + nút Reload, gửi sự kiện `LoadingFail { name: file }`. `file` là đường dẫn file tải lỗi (ví dụ `assets/atlas.webp`), để biết lỗi ở đâu: hàm tải tài nguyên của game nên gắn nó vào lỗi ném ra (`e.file`). Không có thì `name` là `game` |
 | `loader.hide()` | Màn đầu của game đã sẵn: ẩn màn loading, gọi `sdk.loadingDone()` |
 
 Tiến độ của game đếm theo **file đã tải xong**, không theo byte: thanh đi theo bước, CSS làm mượt. Tài nguyên nặng (atlas, nhạc) nên chiếm phần lớn thanh; chia tỉ lệ theo game.

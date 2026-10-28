@@ -302,8 +302,40 @@
     root.classList.add('gmIsLoading');
     info.textContent = text;
   }
-  function fail(text) {
+  // LoadingFail (docs/LOADING.md §1): the tracking event of a failed load, { name: the file }. Kept on the device
+  // until sent: when gmsdkjs.js itself failed there is no SDK to send it, so it goes on the next page that has one.
+  var FAIL_KEY = 'gmLoadingFail.' + String(opts.gameId || '');
+  var failName = null;
+  try {
+    failName = g.localStorage.getItem(FAIL_KEY);
+  } catch (e) {
+    failName = null;
+  }
+  function reportFail() {
+    if (!failName) return;
+    try {
+      var s = g.GMSDKJS;
+      if (!s || typeof s.track !== 'function') return;
+      s.track('LoadingFail', { name: failName });
+    } catch (e) {
+      return;
+    }
+    failName = null;
+    try {
+      g.localStorage.removeItem(FAIL_KEY);
+    } catch (e) {
+      // sent anyway
+    }
+  }
+  function fail(text, file) {
     if (failed) return;
+    failName = String(file || 'game');
+    try {
+      g.localStorage.setItem(FAIL_KEY, failName);
+    } catch (e) {
+      // no storage: sent only if the SDK is up
+    }
+    reportFail();
     failed = true;
     root.hidden = false;
     root.classList.remove('gmAlmost');
@@ -382,6 +414,7 @@
       if (ok) {
         filesDone++;
         show();
+        reportFail();
         resolveReady(g.GMSDKJS);
         return;
       }
@@ -393,14 +426,14 @@
         resolveReady(null);
         return;
       }
-      fail();
+      fail(null, 'gmsdkjs.js');
     }
   );
   var gameLoad = loadWithRetry('game', entry, entryModule, null, function () {
     return true;
   }).then(function (ok) {
     state.game = ok ? 'ok' : 'failed';
-    if (!ok) return fail();
+    if (!ok) return fail(null, entry);
     filesDone++;
     show();
   });
@@ -431,7 +464,7 @@
       root.hidden = true;
       sdkCall('loadingDone');
     },
-    /** The game's own loading failed (an asset that is needed at start): the same Reload screen. */
+    /** The game's own loading failed (an asset that is needed at start): the same Reload screen; file goes in LoadingFail. */
     fail: fail,
     /** Where loading is: { sdk, game } each 'loading' | 'ok' | 'failed'. */
     state: state,

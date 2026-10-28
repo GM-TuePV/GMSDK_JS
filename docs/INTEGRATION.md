@@ -69,7 +69,7 @@ async function boot() {
   loader.hide();                                   // 7. menu đã hiện: ẩn màn + sdk.loadingDone() (loaded_game)
   await sdk.preroll();                             // 8. preroll nếu API bật (≤ 15 s), rồi cho chơi
 }
-boot().catch(() => loader.error());              // "Connection problem…" + Reload
+boot().catch((e) => loader.error(null, e?.file)); // "Connection problem…" + Reload + LoadingFail { name: file }
 ```
 
 - **Không `await` ở cấp cao nhất của module** (`const sdk = await loadSDK()` ngoài hàm): gói xuất là IIFE, Vite báo lỗi. Đặt trong `boot()` như trên.

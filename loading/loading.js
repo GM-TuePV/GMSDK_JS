@@ -9,7 +9,7 @@
  *   ...each loaded asset:   loader.progress(done / total);   // 0..1 → the bar from 30 % to 100 %
  *   ...game.json loaded:    loader.setTitle(manifest.name);
  *   ...menu on screen:      loader.hide();                   // hides the screen, tells the SDK (sdk.loadingDone)
- *   ...load failed:         loader.error();                  // "Connection problem…" + Reload
+ *   ...load failed:         loader.error(null, file);        // "Connection problem…" + Reload; LoadingFail { name: file }
  *
  * Without loader.js on the page (a test page) every call does nothing.
  */
@@ -30,9 +30,12 @@ export function createLoader() {
     setTitle(title) {
       l?.setTitle(title);
     },
-    /** Load failed: "Connection problem. Please check your network and reload the page." + Reload. */
-    error(text) {
-      l?.fail(text);
+    /**
+     * Load failed: "Connection problem. Please check your network and reload the page." + Reload. file: the file that
+     * failed, sent as the tracking event LoadingFail { name } ('game' when not given).
+     */
+    error(text, file) {
+      l?.fail(text, file);
     },
     /** The first screen of the game is ready: hide the screen and tell the SDK (do not call sdk.loadingDone too). */
     hide() {

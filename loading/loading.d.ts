@@ -6,8 +6,8 @@ export interface Loader {
   progress(fraction: number): void;
   /** The game's name, once game.json is loaded. */
   setTitle(name: string): void;
-  /** Load failed: the message (default "Connection problem…") and a Reload button. */
-  error(text?: string): void;
+  /** Load failed: the message (default "Connection problem…") and a Reload button; file goes in LoadingFail { name }. */
+  error(text?: string | null, file?: string): void;
   /** The first screen of the game is on: hides the screen and calls sdk.loadingDone(). */
   hide(): void;
 }
@@ -21,7 +21,7 @@ export interface GmLoader {
   progress(fraction: number): void;
   setTitle(name: string): void;
   done(): void;
-  fail(text?: string): void;
+  fail(text?: string | null, file?: string): void;
   readonly state: { sdk: 'loading' | 'ok' | 'failed'; game: 'loading' | 'ok' | 'failed' };
 }
 
