@@ -41,6 +41,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Bảng xếp hạng: `board.me()` hỏi "chưa có điểm" một lần** mỗi kỳ mỗi lần mở trang (máy chủ trả 204 No Content cho trường hợp này, trước là 404 kèm dòng đỏ trong console; `me()` nhận cả hai, trước đó kit chỉ nhận 404 nên 204 thành "không tải được"), gửi điểm xong thì hỏi lại ([LEADERBOARD.md §3](docs/LEADERBOARD.md)).
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
 - **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
+- **Marketing kit: thêm 3 ảnh, ảnh nhỏ bớt rối** ([HANDOFF.md §4, §6](docs/HANDOFF.md)): `800x800` và `800x1200` (cover vuông và dọc 2:3 CrazyGames đòi), `512x512_logo` (vuông có logo, cho CrazyGames và site của mình); `512x512` giờ **không chữ** (Poki cấm chữ). Luật "Ảnh nhỏ phải đọc được": một vật chính, nền gọn, tương phản mạnh, thử ở 128 / 96 px; mẫu prompt Codex có câu cấm rối. `check-marketing` đòi đủ 11 ảnh.
 
 **Dấu hiệu** (còn một trong các điều này là phải làm)
 - `public/loader.js` khác `docs/GMSDK_JS/loading/loader.js` (còn trỏ `gmsdkjs/1.0.1/`).
@@ -50,6 +51,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
 - Âm thanh của game không xét `sdk.portalMuted()` / không có `sdk.onPortalMuted`.
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
+- Marketing kit thiếu `800x800`, `800x1200` hay `512x512_logo` (`check-marketing` báo), hoặc `512x512` còn logo / chữ.
 
 **Game cần làm**
 1. Chép lại `loading/loader.js` → `public/loader.js`, `loading/loading.js` (+ `.d.ts`) → `src/sdk/loading/` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`. Chỗ gọi `loader.error()` truyền file tải lỗi nếu biết: `loader.error(null, file)`.
@@ -59,6 +61,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 5. Chép lại `sdk/gmsdkjs-shim.js` (+ `.d.ts`) → `src/sdk/`; âm thanh xét thêm `sdk.portalMuted()` và nghe `sdk.onPortalMuted` ([INTEGRATION.md §3](docs/INTEGRATION.md)).
 6. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`.
 7. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
+8. Marketing kit đã làm: vẽ thêm `800x800`, `800x1200`, `512x512_logo`, vẽ lại `512x512` không chữ (prompt theo HANDOFF.md §6), dựng lại kit, `check-marketing` → `OK`.
 
 ## 1.0.1 — 2026-10-22
 

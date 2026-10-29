@@ -50,17 +50,24 @@ function latestKit() {
 }
 const dir = dirArg ?? latestKit();
 
-/** The image set of the standard (docs/HANDOFF.md §4): every one as images/<id>-<w>x<h>.png and images/jpg/…jpg. */
+/**
+ * The image set of the standard (docs/HANDOFF.md §4): every one as images/<id>-<w>x<h><variant>.png and
+ * images/jpg/…jpg. The variant tells two images of one size apart (512x512: no text, 512x512_logo: with the logo).
+ */
 const IMAGES = [
   [1024, 1024, 'Store icon'],
   [1920, 1080, 'Cover 16:9'],
   [1080, 1920, 'Cover 9:16'],
+  [800, 1200, 'Portal cover 2:3 (CrazyGames)'],
+  [800, 800, 'Portal cover square (CrazyGames)'],
   [512, 384, 'Portal thumbnail 4:3'],
-  [512, 512, 'Portal thumbnail square'],
+  [512, 512, 'Portal thumbnail square, no text (Poki)'],
+  [512, 512, 'Portal thumbnail square with the logo', '_logo'],
   [200, 120, 'Portal tiny thumbnail'],
   [1280, 720, 'Portal banner 16:9'],
   [1280, 550, 'Portal banner wide'],
 ];
+const imageName = (w, h, variant = '') => `${id}-${w}x${h}${variant}`;
 const BRIEFS = [`${id}-content-brief.md`, `${id}-content-brief.en.md`, `${id}-content-brief.en.html`];
 /** Words that never go in a text for players (docs/HANDOFF.md §5): the engine, the tech, another game. */
 const TECH_WORDS = /\b(Phaser|Unity|PixiJS|Pixi\.js|Three\.js|Babylon(?:\.js)?|Cocos|Godot|Construct 3|TypeScript|JavaScript|WebGL|Vite|Webpack|Planck|Box2D|Matter\.js|clone|reverse[- ]engineer(?:ed|ing)?|inspired by)\b/gi;
@@ -126,12 +133,12 @@ if (!existsSync(dir)) {
 
   // --- images ------------------------------------------------------------------------------------------------------
   // PNG first (images/), the JPG copy in images/jpg/.
-  const NAMED = new RegExp(`^images/(jpg/)?${id.replace(/[-]/g, '\\-')}-(\\d+)x(\\d+)\\.(jpg|png)$`);
+  const NAMED = new RegExp(`^images/(jpg/)?${id.replace(/[-]/g, '\\-')}-(\\d+)x(\\d+)(?:_[a-z]+)?\\.(jpg|png)$`);
   if ([...files].some((f) => f.startsWith('images/png/') || /^images\/[^/]+\.jpe?g$/i.test(f))) {
     err('PNGs in images/png/ and JPGs in images/ are the earlier layout: the PNGs go in images/, the JPGs in images/jpg/ (docs/HANDOFF.md §3)');
   }
-  for (const [w, h] of IMAGES) {
-    for (const name of [`images/${id}-${w}x${h}.png`, `images/jpg/${id}-${w}x${h}.jpg`]) {
+  for (const [w, h, , variant] of IMAGES) {
+    for (const name of [`images/${imageName(w, h, variant)}.png`, `images/jpg/${imageName(w, h, variant)}.jpg`]) {
       if (!files.has(name)) err(`${name} is missing (${w}x${h}, docs/HANDOFF.md §4)`);
     }
   }
@@ -179,8 +186,9 @@ if (!existsSync(dir)) {
         ...[...raw.matchAll(/url\(\s*["']?([^"')]+)/gi)].map((x) => x[1]),
       ].filter((u) => !/^(data:|#)/i.test(u));
       for (const u of new Set(loads)) err(`${name} loads ${u}: the HTML brief embeds everything (base64) so it opens on its own`);
-      for (const [w, h] of IMAGES) {
-        if (!raw.includes(`images/${id}-${w}x${h}.png`)) err(`${name}: its Image kit has no images/${id}-${w}x${h}.png (a card, or Pending)`);
+      for (const [w, h, , variant] of IMAGES) {
+        const png = `images/${imageName(w, h, variant)}.png`;
+        if (!raw.includes(png)) err(`${name}: its Image kit has no ${png} (a card, or Pending)`);
       }
     } else {
       for (let n = 1; n <= 10; n++) {

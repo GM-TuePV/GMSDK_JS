@@ -56,8 +56,11 @@ export/marketing/<version>-<id>/
 | `<id>-1024x1024` | 1024 × 1024 | Icon store, favicon | Nhân vật / xe chính + logo, nằm trong 80 % giữa (icon bị bo góc) |
 | `<id>-1920x1080` | 1920 × 1080 | Cover ngang, hero của HTML | Logo một bên, hành động chính một bên |
 | `<id>-1080x1920` | 1080 × 1920 | Cover dọc (mobile, story) | Logo trên, hành động dưới |
+| `<id>-800x1200` | 800 × 1200 | Cover dọc 2:3 của cổng game (CrazyGames) | Logo to 1/3 trên, một nhân vật / vật chính đang hành động ở dưới; nền gọn |
+| `<id>-800x800` | 800 × 800 | Cover vuông của cổng game (CrazyGames) | Một nhân vật / vật chính đang hành động 2/3, logo to ở 1/3 trên hoặc dưới; nền gọn, nhìn rõ khi thu nhỏ |
 | `<id>-512x384` | 512 × 384 | Thumbnail cổng game 4:3 | Logo 1/3 trên phải, hành động từ dưới trái |
-| `<id>-512x512` | 512 × 512 | Thumbnail vuông | Hành động 2/3 trên, logo to ở 1/3 dưới, mọi thứ trong 90 % giữa |
+| `<id>-512x512` | 512 × 512 | Thumbnail vuông **không chữ** (Poki cấm chữ, cả tên game) | Một nhân vật / vật chính đang hành động chiếm 60–70 % khung, nền gọn; **không logo, không chữ** |
+| `<id>-512x512_logo` | 512 × 512 | Thumbnail vuông **có logo** (CrazyGames, site của mình) | Cùng cảnh với `512x512`: vật chính 2/3, logo to ở 1/3 trên hoặc dưới (rộng 80–90 % khung); góc trên phải để trống (site đặt nhãn New / Trending ở đó) |
 | `<id>-200x120` | 200 × 120 | Thumbnail rất nhỏ | **Không logo, không chữ**; cận cảnh hành động, bóng rõ, tương phản cao |
 | `<id>-1280x720` | 1280 × 720 | Banner 16:9 | Hành động nửa trái, logo nửa phải |
 | `<id>-1280x550` | 1280 × 550 | Banner ngang rộng | Hành động 1/3 trái, logo bên phải; mọi thứ quan trọng trong 80 % giữa theo chiều cao (cổng hay cắt trên dưới) |
@@ -71,8 +74,16 @@ Mỗi cỡ có bản chính `.png` trong `images/` và bản `.jpg` trong `image
 - Logo **chép đúng** logo game (chữ, màu, viền), không gõ lại.
 - Không chữ nào ngoài logo. **Không** ký hiệu ©, tên publisher, tên miền hay watermark: cùng một bộ ảnh dùng cho mọi publisher, và chủ bản quyền do trang game hiện.
 - JPG chất lượng khoảng 85–90.
+- Không viền khung, không bo góc (cổng tự bo), không chữ "New", "Play", không icon store.
 
-Cổng game đòi thêm cỡ nào thì thêm dòng vào bảng trong kit của game, đúng quy ước tên `<id>-<rộng>x<cao>`. `check-marketing` kiểm cả cỡ thêm (đúng pixel, không trong suốt).
+**Ảnh nhỏ phải đọc được (thumbnail, cover vuông, cover dọc):** ảnh hiện thành ô nhỏ trên trang danh sách, nhiều chi tiết thì thành nhoè và lẫn với game bên cạnh.
+- **Một vật chính duy nhất**: nhân vật / xe / vật chính của game, đúng skin mặc định, tư thế đang hành động; chiếm 60–70 % khung. Thêm **tối đa một** vật phụ cho biết game làm gì. Không ghép đủ thứ của game.
+- **Nền đơn giản**: 2–3 mảng màu lớn, hoặc cảnh của game làm mờ. Không đồ vật nhỏ, không hạt / tia bay khắp nơi, không chữ nhỏ, không UI.
+- **Tương phản mạnh**: vật chính sáng, có viền sáng; nền tối hơn hoặc khác hẳn màu. Hình bóng (silhouette) nhận ra ngay. Tránh nền xanh ngọc gần `#83FFE7` (màu nền Poki).
+- **Thử khi thu nhỏ**: xem ảnh ở 128 px và 96 px. Không nhận ra game, hay thấy rối, thì bỏ bớt chi tiết và vẽ lại.
+- Ảnh to (cover 1920×1080, banner) được nhiều cảnh hơn, nhưng vẫn một tâm điểm rõ.
+
+Cổng game đòi thêm cỡ nào thì thêm dòng vào bảng trong kit của game, đúng quy ước tên `<id>-<rộng>x<cao>` (hai ảnh cùng cỡ thì thêm đuôi, như `_logo`). `check-marketing` kiểm cả cỡ thêm (đúng pixel, không trong suốt).
 
 ## 5. Content brief
 
@@ -160,6 +171,7 @@ Keep the game's existing style exactly (reference images from the game are attac
 - No text anywhere except the logo. No watermark, signature, © mark, publisher name or web address.
 - Opaque background (no transparency), sRGB.
 - Compose every image for its exact frame; never crop or shrink a bigger image.
+- Keep it simple and readable when small: ONE main subject in a dynamic pose, at most one secondary object, a simple background of a few large shapes. No clutter, no small props, no particles everywhere, no extra characters, no borders.
 - Output a PNG at exactly the requested pixel size and save it under the exact file name given.
 ```
 
@@ -191,7 +203,9 @@ Style: match the attached game art exactly: <the outline and fill rules of MASTE
 ```
 ~~~
 
-Riêng cỡ `200x120`: thay phần logo bằng *"NO logo and no text at all (unreadable this small); a close-up of the hero filling most of the frame, bold silhouette, high contrast"*.
+Riêng cỡ `200x120` và `512x512`: thay phần logo bằng *"NO logo and no text at all; ONE subject (the hero) filling 60-70% of the frame in a dynamic pose, simple background of 2-3 large shapes, bold silhouette, high contrast; must still read at 96 px"*.
+
+Cỡ `512x512_logo`, `800x800`, `800x1200`: thêm *"Readable as a small tile: ONE subject, at most one secondary object, simple background, no clutter. The logo big (80-90% of the width) in the top or bottom third; keep the top-right corner free of anything important"*. `512x512_logo` kèm `512x512` đã duyệt: cùng cảnh, chỉ thêm logo.
 
 ## 7. Kiểm trước khi giao
 

@@ -46,6 +46,7 @@ Viết `export/marketing/<version>-<id>/<id>-content-brief.md` (tiếng Việt),
 - Grep chữ của ba file với danh sách tên cấm ở Bước 2, cộng các tính năng chưa mở: phải ra 0 kết quả.
 - Mở bản HTML trong trình duyệt, chụp màn hình phần hero và Image kit để soát.
 - Đặt cover và từng banner cạnh ảnh gameplay ở `export/qa/<version>-<id>/`: phải nhận ra cùng một game, không có thứ game không có, không UI của game. Ảnh nào lệch thì sửa prompt và vẽ lại.
+- Thu nhỏ các ảnh `512x512`, `512x512_logo`, `800x800`, `800x1200`, `200x120` còn khoảng 128 px và 96 px: vẫn nhận ra vật chính, không rối (HANDOFF.md §4, "Ảnh nhỏ phải đọc được"). Rối thì sửa prompt cho bớt chi tiết và vẽ lại.
 - Báo cáo:
   - đường dẫn kit;
   - ảnh đã có, ảnh còn thiếu kèm đường dẫn file prompt Codex của từng ảnh;

@@ -42,7 +42,7 @@ Ra **`export/build/<version>-<id>/<version>-<id>.zip`**: file để upload. Buil
 
 - **Là gì:** bộ tài liệu để làm trang game và store:
   - mô tả game (tiếng Việt, tiếng Anh, bản HTML);
-  - 8 cỡ ảnh icon / cover / thumbnail / banner.
+  - 11 ảnh icon / cover / thumbnail / banner.
 - **Làm gì:** AI viết nội dung từ game thật, và viết prompt cho các ảnh còn thiếu. Bạn chạy prompt, duyệt ảnh.
 - **Khi nào:** khi **game đã hoàn thiện** và **đã có ảnh QA** (ảnh marketing vẽ theo ảnh gameplay). Chỉ làm một lần. Ra `export/marketing/<version>-<id>/`.
 
