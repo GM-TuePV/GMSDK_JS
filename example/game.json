@@ -7,5 +7,6 @@
   "orientation": "any",
   "languages": ["en", "es"],
   "defaultLanguage": "en",
-  "leaderboardId": "leaderboard-topscore"
+  "leaderboardId": "leaderboard-topscore",
+  "leaderboardPeriods": ["daily", "alltime"]
 }

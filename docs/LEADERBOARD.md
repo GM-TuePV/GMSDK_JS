@@ -18,6 +18,7 @@ gmsdkjs.js đã nạp, init bằng gma.host + (id + gma.suffix) của portal, đ
 ## 2. Gắn vào game
 
 1. `config.json`: `"leaderboardId": "<id bảng chủ game cấp>"` (ví dụ `leaderboard-topscore`); game không có bảng thì `null`. `tools/bump-version.mjs` chép sang `game.json`. **Không đoán:** id sai thì máy chủ báo lỗi 500, không có bảng nào nhận điểm.
+   `"leaderboardPeriods"`: các kỳ bảng có trên GMA, **chủ game quyết** khi tạo bảng (ví dụ `["daily", "alltime"]`; trong `daily`, `weekly`, `monthly`, `alltime`). Màn bảng chỉ hiện đúng các tab này; một kỳ thì không có hàng tab. Thiếu thì chỉ `alltime`. **Không đoán:** kỳ bảng không có thì máy chủ trả 400 `invalid period`.
 2. Chép code:
 
 | Từ kit | Vào game |
@@ -33,7 +34,7 @@ import { createLeaderboard } from './sdk/leaderboard/leaderboard.js';
 import { openLeaderboard } from './sdk/leaderboard/ui.js';
 
 // Sau getSDK() và game.json (INTEGRATION.md §2). Tạo sớm: nó tự chờ gmsdkjs đăng nhập.
-const board = manifest.leaderboardId ? createLeaderboard({ sdk, boardId: manifest.leaderboardId }) : null;
+const board = manifest.leaderboardId ? createLeaderboard({ sdk, boardId: manifest.leaderboardId, periods: manifest.leaderboardPeriods }) : null;
 
 // Hết ván: gửi một lần, máy chủ giữ điểm cao nhất của từng kỳ.
 const r = await board?.submit(score); // { rank, score } | null
@@ -46,7 +47,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 | Hàm | Trả về | Ghi chú |
 | --- | --- | --- |
-| `createLeaderboard({ sdk, boardId, waitMs? })` | `board` | `sdk` = `getSDK()` (bản sao tên / cờ trong save của game, gửi sự kiện). `waitMs` mặc định 20 000. **Tên và cờ lấy từ hồ sơ GMA** (`getMyProfile`): đặt ở game nào cùng người chơi GMA thì game khác cũng thấy. Bản trong save chỉ dùng khi không đọc được GMA; riêng khi GMA còn tên ngẫu nhiên `playerXXXXXX` mà máy có tên người chơi đã chọn thì tên đó được gửi lên |
+| `createLeaderboard({ sdk, boardId, periods?, waitMs? })` | `board` | `periods` = `game.json` `leaderboardPeriods` (các kỳ bảng có; mặc định `['alltime']`), có lại ở `board.periods`; `top` / `me` với kỳ khác thì dùng `alltime` (hoặc kỳ đầu).  `sdk` = `getSDK()` (bản sao tên / cờ trong save của game, gửi sự kiện). `waitMs` mặc định 20 000. **Tên và cờ lấy từ hồ sơ GMA** (`getMyProfile`): đặt ở game nào cùng người chơi GMA thì game khác cũng thấy. Bản trong save chỉ dùng khi không đọc được GMA; riêng khi GMA còn tên ngẫu nhiên `playerXXXXXX` mà máy có tên người chơi đã chọn thì tên đó được gửi lên |
 | `board.ready()` | `Promise<boolean>` | Đã đăng nhập, dùng được. Lần đầu chờ gmsdkjs tối đa `waitMs`; `false` thì lần gọi sau thử lại |
 | `board.player()` | `{ id, name, country } \| null` | `null` trước khi `ready()`. `country` là mã ISO (`US`, `VN`, `GB-ENG`), `''` = chưa chọn |
 | `board.needsName()` | `boolean` | Người chơi còn tên mặc định `playerXXXXXX` |
@@ -59,7 +60,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 ## 4. Màn hình mặc định (`ui.js`)
 
-`openLeaderboard({ board, t, assets?, period?, pageSize?, onClose? })` mở một lớp phủ HTML trên canvas (mọi engine): bốn tab kỳ, top 20 kèm nút xem thêm, dòng của người chơi (hạng và điểm, hoặc "chưa có điểm"), nút đổi tên + cờ. Esc, nút × hoặc bấm ra ngoài để đóng; trả về `{ close() }`.
+`openLeaderboard({ board, t, assets?, period?, pageSize?, onClose? })` mở một lớp phủ HTML trên canvas (mọi engine): một tab cho mỗi kỳ của bảng (`board.periods`), top 20 kèm nút xem thêm, dòng của người chơi (hạng và điểm, hoặc "chưa có điểm"), nút đổi tên + cờ. Esc, nút × hoặc bấm ra ngoài để đóng; trả về `{ close() }`.
 
 - `assets`: thư mục chứa `flags.webp`, `flags.json` và `countries.json` trong gói, mặc định `assets/leaderboard/`.
 - Trong lúc mở: game tự dừng thứ đang chạy (ví dụ thêm lớp `paused` như example), tiếp tục ở `onClose`.

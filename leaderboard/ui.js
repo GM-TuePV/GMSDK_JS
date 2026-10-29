@@ -42,6 +42,7 @@ const CSS = `
 .gmlb button:disabled{opacity:.5;cursor:default}
 .gmlb .gmlb-x{background:none;font-size:1.3em;line-height:1;padding:.2em .45em}
 .gmlb-tabs{display:flex;gap:4px;padding:4px 10px 8px}
+.gmlb-tabs[hidden]{display:none}
 .gmlb-tabs button{flex:1;padding:.4em .2em;font-size:.88em;background:#252937}
 .gmlb-tabs button[aria-selected=true]{background:#4a6cf7;color:#fff}
 .gmlb-list{flex:1;overflow-y:auto;padding:0 10px;min-height:120px}
@@ -139,7 +140,7 @@ export function loadFlags(assets = 'assets/leaderboard/') {
  * @param {object} o.board        createLeaderboard(...) of leaderboard.js
  * @param {(key: string, ...a: unknown[]) => string} [o.t]  the game's t(); English when missing
  * @param {string} [o.assets]     folder of flags.webp, flags.json and countries.json in the package (default assets/leaderboard/)
- * @param {string} [o.period]     first tab (default alltime)
+ * @param {string} [o.period]     first tab (default alltime); the tabs are board.periods (createLeaderboard periods)
  * @param {number} [o.pageSize]   rows per page (default 20)
  * @param {() => void} [o.onClose]
  * @returns {{ close(): void }}
@@ -183,7 +184,9 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
   document.body.appendChild(root);
 
   let closed = false;
-  let current = PERIODS.includes(period) ? period : 'alltime';
+  // The board's own periods (createLeaderboard periods); a board of an older leaderboard.js has none: all four.
+  const periods = Array.isArray(board?.periods) && board.periods.length ? board.periods : PERIODS;
+  let current = periods.includes(period) ? period : periods.includes('alltime') ? 'alltime' : periods[0];
   let loadId = 0;
 
   function close() {
@@ -217,7 +220,8 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     panel.replaceChildren(head(text('title')));
     const tabs = el('div', 'gmlb-tabs');
     tabs.setAttribute('role', 'tablist');
-    for (const p of PERIODS) {
+    tabs.hidden = periods.length < 2; // one period: no tab row
+    for (const p of periods) {
       const b = el('button', '', text(p));
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(p === current));

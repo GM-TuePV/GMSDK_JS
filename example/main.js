@@ -63,7 +63,7 @@ async function boot() {
 
   // The leaderboard rides on the GMA sign-in gmsdkjs does: create it now, it signs in in the background.
   if (manifest.leaderboardId) {
-    board = createLeaderboard({ sdk, boardId: manifest.leaderboardId });
+    board = createLeaderboard({ sdk, boardId: manifest.leaderboardId, periods: manifest.leaderboardPeriods });
     board.ready().then((ok) => log(`leaderboard ready → ${ok}`));
   }
 

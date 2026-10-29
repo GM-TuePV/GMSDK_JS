@@ -39,6 +39,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Bàn phím trong iframe:** `preventDefault()` trên `pointerdown` / `mousedown` / `touchstart` chặn luôn việc iframe nhận focus, nên trên portal phím đi ra trang ngoài. `check-export` cảnh báo khi thấy dấu hiệu này; cách sửa ở [EMBED.md §8](docs/EMBED.md), QA 2.7.
 - **Không tạm dừng theo `blur` rồi chờ `focus`:** trong iframe, bấm ra ngoài rồi bấm vào lại thì `focus` có thể không tới, game đứng mãi (gặp trên CrazyGames). Dừng theo `visibilitychange` / `sdk.onPause`, hoặc chạy lại ở cú bấm kế tiếp. `check-export` cảnh báo khi game nghe `blur`; [EMBED.md §8](docs/EMBED.md), QA 2.7.
 - **Bảng xếp hạng: `board.me()` hỏi "chưa có điểm" một lần** mỗi kỳ mỗi lần mở trang (máy chủ trả 204 No Content cho trường hợp này, trước là 404 kèm dòng đỏ trong console; `me()` nhận cả hai, trước đó kit chỉ nhận 404 nên 204 thành "không tải được"), gửi điểm xong thì hỏi lại ([LEADERBOARD.md §3](docs/LEADERBOARD.md)).
+- **Bảng xếp hạng: các kỳ do chủ game quyết** (`config.json` `leaderboardPeriods`, ví dụ `["daily", "alltime"]`, chép sang `game.json`): màn bảng chỉ hiện các tab đó, một kỳ thì không có hàng tab; thiếu thì chỉ `alltime`. Trước đây luôn bốn tab, mà bảng GMA không có kỳ nào thì máy chủ trả 400 `invalid period` (đang gặp với tuần / tháng). `createLeaderboard({ …, periods })`, `board.periods`; `check-export` kiểm khoá này ([LEADERBOARD.md §2](docs/LEADERBOARD.md), QA 5.5).
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
 - **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
 
@@ -49,6 +50,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Game cho chơi lại để lấy điểm cao hơn mà màn thắng chưa có Retry.
 - Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
 - Âm thanh của game không xét `sdk.portalMuted()` / không có `sdk.onPortalMuted`.
+- Game có bảng xếp hạng mà `config.json` chưa có `leaderboardPeriods`, hoặc `createLeaderboard` chưa truyền `periods`.
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 
 **Game cần làm**
@@ -57,7 +59,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
 4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.
 5. Chép lại `sdk/gmsdkjs-shim.js` (+ `.d.ts`) → `src/sdk/`; âm thanh xét thêm `sdk.portalMuted()` và nghe `sdk.onPortalMuted` ([INTEGRATION.md §3](docs/INTEGRATION.md)).
-6. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`.
+6. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`. Chép lại `leaderboard/leaderboard.js` (+ `.d.ts`); hỏi chủ game các kỳ bảng có, ghi `leaderboardPeriods` vào `config.json`, truyền `periods: manifest.leaderboardPeriods` vào `createLeaderboard`.
 7. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
 
 ## 1.0.1 — 2026-10-22

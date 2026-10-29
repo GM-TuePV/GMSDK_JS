@@ -46,6 +46,7 @@ Chỉ những mục đó ở gốc, không source map. **Tên thư mục và fil
 | `languages` | ✓ | Thẻ BCP 47 có file trong `i18n/` (`en`, `en-US`, `zh-TW`…, đúng chữ hoa / thường). Phải có một tiếng Anh (`en` hoặc `en-XX`) |
 | `defaultLanguage` | ✓ | Ngôn ngữ dự phòng, có file đủ mọi key. Người chơi chưa chọn và trang không đặt `language` thì game mở bằng ngôn ngữ này (INTEGRATION.md §7). `tools/assemble.mjs` điền nó vào `<!--LANGUAGE-->` của trang |
 | `leaderboardId` | khi có bảng xếp hạng | Id bảng trên GMA ([LEADERBOARD.md](LEADERBOARD.md)); chép từ `config.json`. Không có khoá này = game không có bảng |
+| `leaderboardPeriods` | khi có bảng xếp hạng | Các kỳ bảng có trên GMA (`daily`, `weekly`, `monthly`, `alltime`); chép từ `config.json`. Màn bảng chỉ hiện các kỳ này |
 | `portals.gd.gameKey` | khi lên GameDistribution | Game ID của GameDistribution (32 hex), giá trị **mặc định**. Tool build điền vào `GMSDKJS_OPTIONS.gdKey` của template GD; ô GD key ở form game trên API (khối GMSDK JS), nếu điền, được dùng thay |
 
 `id`, `gameCode` và `portals.gd.gameKey` do chủ game cấp: **không đoán**. Chúng (cùng `name`, `languages`, `defaultLanguage`) được ghi trong `docs/GMSDK_JS/config.json`; `tools/bump-version.mjs` chép sang `game.json` mỗi lần build (§4). Không sửa tay ở `game.json`, không dùng `.env`.

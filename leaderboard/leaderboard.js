@@ -69,17 +69,25 @@ function entry(r) {
 /**
  * The leaderboard of one board.
  *
- *   const board = createLeaderboard({ sdk, boardId: manifest.leaderboardId });
+ *   const board = createLeaderboard({ sdk, boardId: manifest.leaderboardId, periods: manifest.leaderboardPeriods });
  *   if (await board.ready()) await board.submit(score);
  *
  * @param {object} o
  * @param {object} o.sdk          getSDK() of the shim: storage for the player's choice, track for events
  * @param {string} o.boardId      game.json leaderboardId
+ * @param {string[]} [o.periods]  the periods this board has on GMA, as the game owner set it up (default ['alltime']);
+ *                                a period the board lacks is a 400 "invalid period" from the server
  * @param {number} [o.waitMs]     how long ready() waits for gmsdkjs to sign the player in (default 20 s)
  * @param {object} [o.g]          the global object (tests)
  */
-export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis } = {}) {
+export function createLeaderboard({ sdk, boardId, periods = ['alltime'], waitMs = 20000, g = globalThis } = {}) {
   const id = typeof boardId === 'string' ? boardId.trim() : '';
+  // In PERIODS order; nothing valid given: alltime.
+  const asked = Array.isArray(periods) ? periods : [periods];
+  const own = PERIODS.filter((p) => asked.includes(p));
+  if (!own.length) own.push('alltime');
+  /** A period of this board: the one asked for, else alltime when the board has it, else its first. */
+  const periodOf = (p) => (own.includes(p) ? p : own.includes('alltime') ? 'alltime' : own[0]);
   let gm = null;
   let profile = null;
   let starting = null;
@@ -173,6 +181,9 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
     /** The board id this leaderboard uses. */
     boardId: id,
 
+    /** The periods of this board (createLeaderboard periods), in PERIODS order: the tabs of ui.js. */
+    periods: Object.freeze(own),
+
     /** Signed in and the board can be used. Waits for gmsdkjs (up to waitMs) the first time; never rejects. */
     ready() {
       starting ??= start().catch((e) => {
@@ -246,7 +257,7 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
      * @returns {Promise<{ period: string, total: number, entries: object[] } | null>} null = could not load
      */
     async top(period = 'alltime', { offset = 0, limit = 10 } = {}) {
-      if (!PERIODS.includes(period)) period = 'alltime';
+      period = periodOf(period);
       if (!(await this.ready())) return null;
       try {
         const page = await board().getTopScores({ period, offset, limit });
@@ -266,7 +277,7 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
      * @returns {Promise<object | null | undefined>} the entry; null = no score yet; undefined = could not load
      */
     async me(period = 'alltime') {
-      if (!PERIODS.includes(period)) period = 'alltime';
+      period = periodOf(period);
       if (noScore.has(period)) return null;
       if (!(await this.ready())) return undefined;
       try {

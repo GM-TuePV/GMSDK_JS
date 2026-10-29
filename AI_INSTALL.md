@@ -39,6 +39,7 @@ Mọi giá trị định danh nằm trong **`docs/GMSDK_JS/config.json`**, ngay 
 | `loadingScreen` | `"kit"` hoặc `"game"` | Giao diện màn loading ([LOADING.md §1.1](docs/LOADING.md)). **Luôn hỏi chủ game một lần**, kể cả game chưa có màn loading riêng: "Màn loading: dùng mẫu mặc định của kit, hay dùng giao diện màn loading của game?" `"game"`: dựng giao diện của game trong `public/icons/loader.css` (+ ảnh trong `icons/`); luồng vẫn của kit |
 | `gdKey`: Game ID GameDistribution | 32 ký tự hex, ghi thẳng vào đây; `null` = chưa lên GD. **Không dùng file `.env`** | `game.json` → `portals.gd.gameKey` |
 | `leaderboardId` | `leaderboard-topscore` hoặc `null` | Id bảng xếp hạng trên GMA ([LEADERBOARD.md](docs/LEADERBOARD.md)); `null` = game không có bảng |
+| `leaderboardPeriods` | `["daily", "alltime"]` | Có bảng thì hỏi: các kỳ bảng có trên GMA (`daily` / `weekly` / `monthly` / `alltime`). Màn bảng chỉ hiện các kỳ này |
 | `brief` | `"Đua xe một bánh, giữ thăng bằng, Phaser"` hoặc `null` | Mô tả game mới; game có sẵn để `null` |
 | `notes` | `["Save cũ ở azgames.g0: chuyển sang azgames.g475"]` | Luật riêng của game |
 

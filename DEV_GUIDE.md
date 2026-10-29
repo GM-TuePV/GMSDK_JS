@@ -17,6 +17,7 @@ AI tự làm phần còn lại: khảo sát game, đưa plan, **chờ bạn duy�
 | `gameCode`: mã game bên vận hành cấp | `g131` (chưa có thì để `null`, build đặt mã tạm; phải thay trước khi phát hành) |
 | `languages`, `defaultLanguage` | `["en", "vi"]`, `en` |
 | `leaderboardId` (nếu có bảng xếp hạng) | `leaderboard-topscore`, không có thì `null` |
+| `leaderboardPeriods` (nếu có bảng) | các kỳ bảng có trên GMA, ví dụ `["daily", "alltime"]` |
 | `gdKey` (nếu lên GameDistribution) | 32 ký tự hex, chưa có thì `null` |
 | `brief` (chỉ game mới) | Mô tả ngắn game cần làm |
 
