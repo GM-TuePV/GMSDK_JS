@@ -37,7 +37,7 @@ Preset của từng portal (tool build dùng; trang dev chỉ cần đổi khi m
 | `ads` | API quyết | `{ enable: 'yes', sdk_type: 'gd', time_show_inter: 180, time_show_reward: 0 }` | `{ enable: 'yes', time_show_inter: 0, time_show_reward: 0 }` | như CrazyGames |
 | `moreGames`, `trademark` | API quyết | `false` | `false` | `false` |
 
-Mọi portal đều gọi API licence, gửi GMA và nạp `gmsdkjs.js` từ CDN. More Games và trademark chỉ có ở trang nhà (gm), theo API. Template GD, CrazyGames, Poki tắt hẳn hai thứ này (luật portal, [QA.md](QA.md) 7.4); API không bật lại được.
+Mọi portal đều gọi API licence, gửi GMA và nạp `gmsdkjs.js` từ CDN. More Games chỉ có ở trang nhà (gm), trademark ở trang nhà và CrazyGames, theo API. Template GD, CrazyGames, Poki tắt hẳn More Games, template GD, Poki tắt hẳn trademark (luật portal, [QA.md](QA.md) 7.4); API không bật lại được.
 
 ## 2. Chạy
 

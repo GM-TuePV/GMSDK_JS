@@ -3,7 +3,7 @@
 //
 //   no SDK / no answer / the default owner   → "© 2026 Azgames.io"
 //   another domain or name from the server   → "© 2026 <that>"
-//   trademark off (0, and GD / CrazyGames / Poki templates)  → ''  (show nothing)
+//   trademark off (0, and GD / Poki templates)  → ''  (show nothing); CrazyGames shows it (text, never a link)
 //
 //   import { copyrightText } from './sdk/copyright.js';
 //   label.textContent = copyrightText(sdk);   // after sdk.ready(): the server's answer is in

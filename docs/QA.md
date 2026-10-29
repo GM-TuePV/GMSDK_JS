@@ -159,7 +159,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | 7.1 | Game hoàn chỉnh, không phải bản dở dang, không còn code debug hay công cụ dev | Không có nút test, cheat, log thừa | Major | [Poki] [GD] |
 | 7.2 | Nội dung hợp độ tuổi | PEGI 12 | Major | [CG] |
 | 7.3 | Không mua bằng tiền thật, không đăng nhập ngoài | Không có UI mua hay login ngoài | Major | [Poki] [CG] |
-| 7.4 | **Poki: không splash, không link ra ngoài.** Logo studio trên màn loading thì được | Trên GD, CrazyGames, Poki: không nút More Games, không trademark (template đặt `moreGames: false`, `trademark: false`; trên admin cũng tắt). Logo brand không hiện như một splash | Major | [Poki] |
+| 7.4 | **Poki: không splash, không link ra ngoài.** Logo studio trên màn loading thì được | Trên GD, CrazyGames, Poki: không nút More Games (template đặt `moreGames: false`). Trademark: GD, Poki không có (`trademark: false`, admin cũng tắt); CrazyGames có dòng bản quyền, chỉ là chữ, không link. Logo brand không hiện như một splash | Major | [Poki] |
 | 7.5 | GD, CrazyGames: logo brand của portal khác | Cần xác nhận với từng portal. GD không ghi luật này, nhưng QA của họ có thể chấm | Cần xác nhận | [Nội bộ] |
 | 7.6 | Game thu dữ liệu cá nhân ngoài sự kiện SDK | Có thông báo Privacy Policy / Terms cho người chơi mới | Major | [CG] [Poki] |
 | 7.7 | Trademark và `V<version>` ở góc (dòng bản quyền từ `copyrightText(sdk)`: mặc định `© 2026 Azgames.io`, server đổi thì theo server, rỗng thì không hiện gì; không chữ viết cứng ở chỗ khác); nút More Games ẩn khi `moreGamesUrl()` là `null`, có URL thì mở tab mới | Nhìn menu | Minor | [Nội bộ] |
@@ -198,7 +198,7 @@ Chuẩn và cách làm: [UX.md](UX.md). Test với một save mới (xoá `azgam
 | Việc | Ai làm |
 | --- | --- |
 | Domain của portal đã bật cho game trên admin. Tắt `force_redirect` để người QA của portal không bị chuyển trang | Người vận hành (admin api.1games.io) |
-| Tắt More Games, trademark cho domain GD, CrazyGames, Poki (mục 7.4; template đã tắt, admin tắt cho chắc) | Người vận hành |
+| Tắt More Games cho domain GD, CrazyGames, Poki; tắt trademark cho GD, Poki (**không** tắt cho CrazyGames) (mục 7.4; template đã tắt, admin tắt cho chắc) | Người vận hành |
 | GD: bật cờ Rewarded Ads trên dashboard. Kích hoạt SDK: mở game trên portal, tắt adblock, xem **trọn** một preroll. Wiki ghi bước này có thể mất tới hai tuần | Người vận hành |
 | Zip gd có key GD: ô GD key ở form game trên API, hoặc `config.json` → `gdKey` (mặc định) | Dev |
 | Báo cáo QA (mục 6) có 0 Major | QA |

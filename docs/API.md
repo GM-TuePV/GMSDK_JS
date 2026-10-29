@@ -105,7 +105,7 @@ Bộ lưu **của game** ([`sdk/storage.js`](../sdk/storage.js), kit), không ph
 | --- | --- |
 | `name`, `logo`, `url` | Publisher của template (ví dụ GamesForFree) |
 | `loadLogo()` | `Promise<HTMLImageElement \| null>`: logo đã nạp (CORS, vẽ WebGL được), hoặc `null` |
-| `trademark()` | Chữ bản quyền, theo `gameinfo.trademark` của API: `0` → `''` (**không hiện gì**); `1` (mặc định, cả khi API không trả lời) → tên miền chủ bản quyền (`azgames.io`); `2` → tên chủ bản quyền (`AZ Games`). Chủ bản quyền là `copyright` trong preset của tool build, giống nhau ở mọi publisher. Trên GD, CrazyGames, Poki luôn là `''` (template tắt). **Game không tự viết chữ bản quyền**: dùng `copyrightText(sdk)` của `sdk/copyright.js` (mặc định `© 2026 Azgames.io`, [LOADING.md §2](LOADING.md)) |
+| `trademark()` | Chữ bản quyền, theo `gameinfo.trademark` của API: `0` → `''` (**không hiện gì**); `1` (mặc định, cả khi API không trả lời) → tên miền chủ bản quyền (`azgames.io`); `2` → tên chủ bản quyền (`AZ Games`). Chủ bản quyền là `copyright` trong preset của tool build, giống nhau ở mọi publisher. Trên GD, Poki luôn là `''` (template tắt); CrazyGames theo API như trang nhà. **Game không tự viết chữ bản quyền**: dùng `copyrightText(sdk)` của `sdk/copyright.js` (mặc định `© 2026 Azgames.io`, [LOADING.md §2](LOADING.md)) |
 
 ## 8. Bảng xếp hạng
 
