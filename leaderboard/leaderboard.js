@@ -165,8 +165,8 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
   }
 
   const board = () => gm.leaderboard(id);
-  // Periods where the server said "no score yet" (404): asked once per page, until a score is submitted. Each 404 is
-  // a red line in the console and a request for nothing, and a tab / mode switch asks again.
+  // Periods where the server said "no score yet" (204 No Content; 404 before): asked once per page, until a score is
+  // submitted. Each ask is a request for nothing (with 404, a red line in the console), and a tab / mode switch asks again.
   const noScore = new Set();
 
   return {
@@ -270,9 +270,16 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
       if (noScore.has(period)) return null;
       if (!(await this.ready())) return undefined;
       try {
-        return entry(await board().getMyScore({ period }));
+        // "no score yet": the server answers 204 No Content (404 before); gm-sdk.js throws { status: 204, error:
+        // 'no score' } for it (below), an empty result is taken the same way
+        const r = await board().getMyScore({ period });
+        if (r == null) {
+          noScore.add(period);
+          return null;
+        }
+        return entry(r);
       } catch (e) {
-        if (e?.status === 404) {
+        if (e?.status === 204 || e?.status === 404) {
           noScore.add(period);
           return null;
         }
