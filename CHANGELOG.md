@@ -28,6 +28,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 
 **Thay đổi**
 - **gmsdkjs 1.0.2:** trên CrazyGames gọi `user.getUser()` đúng một lần mỗi lần mở trang; tài khoản GMA tạo lần đầu mang `username` CrazyGames, đã có tài khoản thì giữ tên GMA ([SERVER_NOTES.md §6](docs/SERVER_NOTES.md)). Game không gọi gì; game **không được** tự gọi `CrazyGames.SDK.user.getUser()`.
+- **Portal bắt tắt tiếng (CrazyGames `muteAudio`):** gmsdkjs 1.0.2 có `sdk.portalMuted()` và `sdk.onPortalMuted(fn)`; lệnh của portal đứng trên nút âm thanh của game, nút đó không bật lại tiếng khi portal đang bắt tắt ([INTEGRATION.md §3](docs/INTEGRATION.md), QA 4.15, [SERVER_NOTES.md §7](docs/SERVER_NOTES.md)). Làm xong thì tick được mục "muting audio through SDK" của CrazyGames.
 - `loading/loader.js` mặc định trỏ `gmsdkjs/1.0.2/`; `assemble` mặc định đọc `templates/1.0.2/`.
 - **`gameplayStart`** chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup / màn kết quả đang che; `gameplayStop` khi hết màn, về menu, pause, khi bảng che hiện giữa lúc chơi ([INTEGRATION.md §4](docs/INTEGRATION.md), QA 4.12).
 - **Retry ở màn thắng** khi game cho chơi lại để lấy điểm cao hơn ([UX.md](docs/UX.md), QA 9.10).
@@ -46,6 +47,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Có chỗ gọi `gameplayStart` lúc tải, ở menu, hoặc khi bảng hướng dẫn / popup đang che.
 - Game cho chơi lại để lấy điểm cao hơn mà màn thắng chưa có Retry.
 - Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
+- Âm thanh của game không xét `sdk.portalMuted()` / không có `sdk.onPortalMuted`.
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 
 **Game cần làm**
@@ -53,8 +55,9 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 2. Thêm nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ), mở `PRIVACY_POLICY_URL` ở tab mới.
 3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
 4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.
-5. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`.
-6. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
+5. Chép lại `sdk/gmsdkjs-shim.js` (+ `.d.ts`) → `src/sdk/`; âm thanh xét thêm `sdk.portalMuted()` và nghe `sdk.onPortalMuted` ([INTEGRATION.md §3](docs/INTEGRATION.md)).
+6. Game có bảng xếp hạng: chép lại `leaderboard/ui.js` và `flags.webp`, `flags.json`, `countries.json` vào `public/assets/leaderboard/`; xoá `public/assets/leaderboard/flags/` và mục `keep` cho thư mục đó trong `config.json` (nếu có). Màn tự vẽ có cờ: đổi sang `loadFlags()`.
+7. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
 
 ## 1.0.1 — 2026-10-22
 

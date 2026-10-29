@@ -55,6 +55,8 @@ async function boot() {
 | `rewarded(placement?)` | `Promise<boolean>` | **`true` chỉ khi xem hết**: chỉ thưởng khi `true`. Gọi **ngay trong handler click** của người chơi |
 | `onPause(fn)` / `onResume(fn)` | | SDK gọi `fn` trước và sau **mọi** quảng cáo, kể cả quảng cáo network tự chạy. Game tắt tiếng, dừng vòng lặp, chặn input. Quảng cáo treo thì sau 30 s SDK tự gọi `onResume` |
 | `setMuted(muted)` | | Người chơi bật / tắt tiếng. AFG chọn quảng cáo có tiếng hay không |
+| `portalMuted()` | `boolean` | Portal đang bắt tắt tiếng (CrazyGames `muteAudio`). Đứng trên nút âm thanh của game: [INTEGRATION.md §3](INTEGRATION.md). Portal khác, gmsdkjs trước 1.0.2: `false` |
+| `onPortalMuted(fn)` | | `fn(muted)` mỗi khi `portalMuted()` đổi (CrazyGames đổi được giữa lúc chơi) |
 
 - `placement` là tên chỗ đặt quảng cáo (`'run_end'`, `'revive'`, `'double_coins'`…). Được ghi vào tracking.
 - Chỉ một quảng cáo một lúc: gọi khi đang có quảng cáo thì trả `false` ngay. Bấm hai lần không chạy hai quảng cáo.

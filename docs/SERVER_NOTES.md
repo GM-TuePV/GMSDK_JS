@@ -81,3 +81,13 @@ Theo cách Wacky Flip (Unity) đã qua duyệt CrazyGames. Chỉ khi `sdkType ==
 **Không cần:** Data module (`SDK.data`), nút đăng nhập, theo dõi đăng nhập / đăng xuất, avatar, userId.
 
 **Kiểm** (trang thử của CrazyGames hoặc `dev-crazygames`, `?debug`): đăng nhập CrazyGames, xoá dữ liệu trang, mở game → tài khoản GMA mới mang đúng `username`; mỗi lần mở trang log có **đúng một** lần `getUser`; đổi tên trong game rồi tải lại → giữ tên đã đổi; chưa đăng nhập → tên `playerXXXXXX` như cũ.
+
+## 7. gmsdkjs 1.0.2: tắt tiếng theo CrazyGames (`muteAudio`)
+
+Mục "The game supports CrazyGames muting audio through SDK" của CrazyGames ([docs.crazygames.com/sdk/game](https://docs.crazygames.com/sdk/game/), *Game settings*): CrazyGames có thể bắt game tắt tiếng, lệnh này đứng trên nút âm thanh của game và đổi được giữa lúc chơi.
+
+- Adapter `crazy`: sau `init()` đọc `SDK.game.settings.muteAudio`, nghe `SDK.game.addSettingsChangeListener`.
+- `GMSDKJS.portalMuted()` (`boolean`) và `GMSDKJS.onPortalMuted(fn)` (`fn(muted)` mỗi lần đổi). Portal khác luôn `false`.
+- Game dùng theo [INTEGRATION.md §3](INTEGRATION.md), QA 4.15. Shim của kit trả `false` khi trang chạy gmsdkjs cũ.
+
+**Kiểm:** mở game trên CrazyGames với `?muteAudio=true` (`?debug` có dòng `portal mute true`): game im, bấm nút âm thanh vẫn im.

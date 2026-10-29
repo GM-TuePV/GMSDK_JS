@@ -100,6 +100,7 @@ function showMenu() {
   for (const { code, name } of languageList()) langs.append(el('button', name, () => setLang(code)));
   root.append(langs);
 
+  // The player's choice; the portal's mute (CrazyGames muteAudio) stands above it: sdk.portalMuted() (INTEGRATION.md §3).
   let muted = sdk.storage.get('settings', {}).muted === true;
   const mute = el('button', muted ? t('sound_off') : t('sound_on'), () => {
     muted = !muted;

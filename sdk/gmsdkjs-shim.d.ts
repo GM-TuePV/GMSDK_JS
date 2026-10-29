@@ -61,6 +61,10 @@ export interface Gmsdk {
   moreGamesUrl(): string | null;
   happyTime(): void;
   setMuted(muted: boolean): void;
+  /** The portal mutes the game (CrazyGames settings.muteAudio): above the game's sound setting. false before gmsdkjs 1.0.2. */
+  portalMuted(): boolean;
+  /** fn(muted) on each change of portalMuted() (docs/INTEGRATION.md §3). */
+  onPortalMuted(fn: (muted: boolean) => void): void;
 }
 
 /** More Games on the dev page, where the server gives none: https://azgames.io. */

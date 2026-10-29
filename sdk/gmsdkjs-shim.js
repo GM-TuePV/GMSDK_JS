@@ -28,6 +28,8 @@ export const METHODS = [
   'moreGamesUrl',
   'happyTime',
   'setMuted',
+  'portalMuted',
+  'onPortalMuted',
 ];
 
 /** More Games on the dev page (platform 'dev'), where the server gives none: the button shows and can be checked. */
@@ -83,6 +85,8 @@ export function createFallback() {
     moreGamesUrl: () => null,
     happyTime: noop,
     setMuted: noop,
+    portalMuted: () => false,
+    onPortalMuted: noop,
     brand: { name: '', logo: '', url: '', loadLogo: async () => null, trademark: () => '' },
   };
 }

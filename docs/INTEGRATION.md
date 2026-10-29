@@ -88,6 +88,14 @@ sdk.onResume(() => { audio.unmute(); loop.start(); input.unblock(); });
 - Quảng cáo treo thì sau 30 s SDK vẫn gọi `onResume`.
 - Khi site bị khoá, SDK gọi `onPause` và không bao giờ gọi `onResume`: game đứng yên dưới màn khoá. Đó là ý muốn.
 - Âm thanh: tắt bằng `onPause`, nhưng **giữ lựa chọn tắt tiếng của người chơi** (bật lại ở `onResume` chỉ khi người chơi không tắt).
+- **Portal bắt tắt tiếng** (CrazyGames `muteAudio`, lấy qua `sdk.portalMuted()`, đổi được giữa lúc chơi): đứng trên nút âm thanh của game. Nút vẫn lưu lựa chọn của người chơi, nhưng **không bật lại tiếng** khi portal đang bắt tắt. Tiếng chỉ kêu khi cả ba cho phép:
+
+```js
+const applySound = () => audio.setMuted(playerMuted || sdk.portalMuted() || adPaused);
+sdk.onPortalMuted(applySound);   // gọi applySound() cả ở onPause / onResume và nút âm thanh
+```
+
+Không gọi thẳng `CrazyGames.SDK.game.settings` (QA 4.13). Thử: CrazyGames mở game với `?muteAudio=true`.
 
 ## 4. Đang chơi
 

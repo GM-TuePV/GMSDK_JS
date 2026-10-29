@@ -123,6 +123,7 @@ Cỡ tính theo CSS px Cỡ tính theo CSS px; điện thoại và máy tính b�
 | 4.12 | `gameplayStart` chỉ khi người chơi thật sự vào màn và điều khiển được: không lúc tải, ở menu, hay khi bảng hướng dẫn / popup / màn kết quả đang che (đóng bảng rồi mới Start). `gameplayStop` khi hết màn, về menu, pause, hoặc bảng che hiện giữa lúc chơi. Không gọi hai lần liền cùng một hàm | Log `?debug`: mở hướng dẫn / popup trong lúc chơi và lúc vào màn | Major | [Poki] [CG] |
 | 4.13 | Không gọi SDK của portal hay mạng quảng cáo nào khác | `grep -rnE "PokiSDK\|CrazyGames\|gdsdk\|adsbygoogle\|GMSOFT_\|gmsdkv2" src` không còn gì | Major | [CG] [Poki] |
 | 4.14 | Nạp SDK một lần; đúng ID game GD; preroll GD; tắt debug khi giao; cờ dashboard | Log `?debug`: một lần nạp, preset đúng. **Riêng GD: bật cờ Rewarded Ads trên dashboard** nếu game có rewarded | Major | [GD] [SDK] |
+| 4.15 | Portal bắt tắt tiếng thì game im, kể cả khi bấm nút âm thanh của game; portal thôi bắt tắt thì tiếng theo lại lựa chọn của người chơi | CrazyGames: mở với `?muteAudio=true`; bấm nút âm thanh vẫn im. Code: âm thanh xét `sdk.portalMuted()` và có `sdk.onPortalMuted` ([INTEGRATION.md §3](INTEGRATION.md)) | Major | [CG] |
 
 Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần suất, và đã thấy nó **tự chạy thêm một quảng cáo khoảng 6 s sau preroll** [Nội bộ]. Thấy hai quảng cáo liền nhau ngay đầu game thì kiểm xem có phải do SDK của GD không, trước khi báo lỗi game.
 
