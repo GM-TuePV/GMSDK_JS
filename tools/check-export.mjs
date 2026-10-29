@@ -188,6 +188,10 @@ function checkEmbed(js, entry) {
   });
   if (pressBlocked)
     warn(`${entry} calls preventDefault() on a press (pointerdown / mousedown / touchstart) without focus() there: in a portal iframe the game then gets no keys (they go to the page around it). Use CSS user-select: none; touch-action: none instead, or call window.focus() in that handler (docs/EMBED.md §8)`);
+  // Pausing on the window's blur and going on at focus: in an iframe whose press is preventDefault()-ed the focus never
+  // comes back, so the game stays paused for good on a portal (docs/EMBED.md §8).
+  if (/addEventListener\(\s*["'`]blur["'`]|\bonblur\s*=/.test(js))
+    warn(`${entry} listens to the window's blur: if it pauses the game there, do not wait for focus to go on (in a portal iframe it may never come); pause on visibilitychange / sdk.onPause, or go on at the next press (docs/EMBED.md §8)`);
 }
 
 /** A table of i18n/ as { "group.key": text } and the paths that are not texts (numbers, lists…). */

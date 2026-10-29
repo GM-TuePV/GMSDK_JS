@@ -165,6 +165,9 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
   }
 
   const board = () => gm.leaderboard(id);
+  // Periods where the server said "no score yet" (404): asked once per page, until a score is submitted. Each 404 is
+  // a red line in the console and a request for nothing, and a tab / mode switch asks again.
+  const noScore = new Set();
 
   return {
     /** The board id this leaderboard uses. */
@@ -228,6 +231,7 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
         const r = await board().submitScore(value, opts);
         // Logged in release builds too: "my score is not on the board" is answered by this line.
         console.info(`[leaderboard] submitted ${value} as ${playerId} to ${id}: rank ${r?.rank}`);
+        noScore.clear();
         track('leaderboard_submit', { ok: 1, score: value });
         return { rank: Number(r?.rank ?? 0), score: Number(r?.score ?? value) };
       } catch (e) {
@@ -263,11 +267,15 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
      */
     async me(period = 'alltime') {
       if (!PERIODS.includes(period)) period = 'alltime';
+      if (noScore.has(period)) return null;
       if (!(await this.ready())) return undefined;
       try {
         return entry(await board().getMyScore({ period }));
       } catch (e) {
-        if (e?.status === 404) return null;
+        if (e?.status === 404) {
+          noScore.add(period);
+          return null;
+        }
         console.warn('[leaderboard] my score failed:', reason(e));
         return undefined;
       }

@@ -53,7 +53,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 | `board.setPlayer({ name?, country? })` | `Promise<boolean>` | Đổi tên / cờ. Bản trên máy chỉ đổi khi máy chủ nhận. **Luật tên của máy chủ:** 1–20 ký tự `A-Z a-z 0-9 _ -`; `cleanName()` tự đổi dấu cách thành `_`, bỏ dấu (é → e) và ký tự khác |
 | `board.submit(score, metadata?)` | `Promise<{ rank, score } \| null>` | Ký rồi gửi. `null` = điểm không lên bảng (mạng, token, chưa đăng nhập) |
 | `board.top(period?, { offset?, limit? })` | `Promise<{ period, total, entries } \| null>` | `period`: `daily` / `weekly` / `monthly` / `alltime` (mặc định). **`null` = không tải được**, khác bảng trống (`entries: []`) |
-| `board.me(period?)` | `Promise<entry \| null \| undefined>` | Hạng của người chơi. `null` = chưa có điểm kỳ này, `undefined` = không tải được |
+| `board.me(period?)` | `Promise<entry \| null \| undefined>` | Hạng của người chơi. `null` = chưa có điểm kỳ này, `undefined` = không tải được. Máy chủ trả "chưa có điểm" bằng 404: mỗi kỳ chỉ hỏi một lần mỗi lần mở trang, gửi điểm xong thì hỏi lại. Game không tự nhớ thêm |
 
 `entry` = `{ rank, playerId, name, country, score }`. Kỳ là giờ **UTC** của máy chủ: "hôm nay" đổi lúc 0 h UTC, tuần bắt đầu thứ Hai (ISO).
 
@@ -104,6 +104,7 @@ Trang dev phải nạp GMA thì mới có bảng: `gma: { host: 'https://gm.azga
 | `submit` → `null`, lý do `invalid request` (400) | Token sai / hết hạn (giờ máy lệch quá 30 phút), hoặc điểm ngoài giới hạn của bảng |
 | `top` → `null`, lỗi 500 `server error` | `leaderboardId` không có trên GMA (id sai, hoặc chưa tạo bảng cho game) |
 | `setPlayer` → `false`, lý do `invalid name` | Tên ngoài luật của máy chủ (dấu cách, có dấu, quá 20 ký tự): đưa qua `cleanName()` trước; `ui.js` tự lọc khi gõ |
+| Console có một dòng đỏ 404 `…/me` lúc mở bảng | Người chơi chưa có điểm ở kỳ đó: bình thường, `me()` trả `null`. Mỗi kỳ chỉ một lần mỗi lần mở trang; lặp lại nhiều lần là game gọi thẳng SDK thay vì `board.me()` |
 | Cờ `US`, tên `playerXXXXXX` | Người chơi chưa chọn: gmsdkjs đăng nhập lần đầu với giá trị mặc định. Chọn trong màn hình tên + cờ là lưu lên máy chủ |
 
 ## 7. QA

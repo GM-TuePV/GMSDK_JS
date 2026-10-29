@@ -111,6 +111,7 @@ button.onclick = () => document.documentElement.requestFullscreen?.().catch(() =
 **Cách làm cho chạy:**
 - Chặn bôi đen / cuộn bằng CSS thay vì `preventDefault()` trên cú bấm: `user-select: none; touch-action: none;` cho canvas / khung game.
 - Buộc phải `preventDefault()` trên cú bấm thì gọi `window.focus()` ngay trong handler đó.
+- **Không tạm dừng game theo `blur` / `focus` của cửa sổ.** Trong iframe, bấm ra trang ngoài là `blur`, nhưng bấm vào lại thì `focus` không tới khi cú bấm bị `preventDefault()` như trên: game đứng mãi, người chơi tưởng treo. Tạm dừng theo `visibilitychange` (tab ẩn) và `sdk.onPause`. Game muốn dừng khi mất focus thì phải chạy lại ở cú bấm / phím kế tiếp, không chờ `focus`.
 - `preventDefault()` cho đúng các phím game dùng, để không cuộn trang ngoài.
 
 ```js
