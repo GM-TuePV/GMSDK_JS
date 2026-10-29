@@ -260,9 +260,7 @@ function checkSkin(dir) {
 }
 
 // --- config.json: the game's values (AI_INSTALL.md step 0) -----------------------------------------------------
-/** The periods of a GMA board (leaderboard/leaderboard.js PERIODS). */
-const LEADERBOARD_PERIODS = ['daily', 'weekly', 'monthly', 'alltime'];
-const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'leaderboardPeriods', 'compress', 'loadingScreen', 'gdKey', 'notes', 'brief']);
+const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'compress', 'loadingScreen', 'gdKey', 'notes', 'brief']);
 /** A GMA board id (docs/LEADERBOARD.md), e.g. leaderboard-topscore. */
 const BOARD_ID = /^[a-z0-9][a-z0-9_-]*$/i;
 const PLACEHOLDER_BOARDS = new Set(['idleaderboard', 'id-leaderboard', 'leaderboard-id', 'leaderboardid']);
@@ -291,13 +289,6 @@ if (configPath) {
     checkLanguages('config.json', Array.isArray(config.languages) ? config.languages : [], config.defaultLanguage);
     if (config.leaderboardId === undefined) warn('config.json leaderboardId is missing: the board id the owner gives (docs/LEADERBOARD.md), or null when the game has no leaderboard');
     else if (config.leaderboardId !== null && (typeof config.leaderboardId !== 'string' || !BOARD_ID.test(config.leaderboardId) || PLACEHOLDER_BOARDS.has(config.leaderboardId.toLowerCase()))) err(`config.json leaderboardId "${config.leaderboardId}": the board id the owner gives (e.g. leaderboard-topscore), or null`);
-    // leaderboardPeriods: the periods the board has on GMA (the owner's choice); a period the board lacks is a 400.
-    if (typeof config.leaderboardId === 'string') {
-      const p = config.leaderboardPeriods;
-      if (p === undefined) warn('config.json leaderboardPeriods is missing: the periods the board has on GMA, as the owner set it up (e.g. ["daily", "alltime"]); without it the leaderboard shows alltime only (docs/LEADERBOARD.md)');
-      else if (!Array.isArray(p) || !p.length || p.some((x) => !LEADERBOARD_PERIODS.includes(x)) || new Set(p).size !== p.length)
-        err(`config.json leaderboardPeriods ${JSON.stringify(p)}: a list of ${LEADERBOARD_PERIODS.join(' / ')}, each once, as the board has them on GMA`);
-    }
     // compress (tools/compress.mjs): the level chosen once with the owner; none = normal.
     if (config.compress !== undefined) {
       const c = config.compress;
@@ -560,7 +551,6 @@ function checkPackage() {
       const want = [...(config.languages ?? [])].sort().join(',');
       if (languages.slice().sort().join(',') !== want) err(`game.json languages [${languages}] differ from config.json [${config.languages}]`);
       if (config.leaderboardId !== undefined && (m.leaderboardId ?? null) !== config.leaderboardId) err(`game.json leaderboardId "${m.leaderboardId ?? ''}" differs from config.json "${config.leaderboardId ?? ''}": run tools/bump-version.mjs`);
-      if (Array.isArray(config.leaderboardPeriods) && config.leaderboardId && JSON.stringify(m.leaderboardPeriods ?? null) !== JSON.stringify(config.leaderboardPeriods)) err(`game.json leaderboardPeriods ${JSON.stringify(m.leaderboardPeriods ?? null)} differs from config.json ${JSON.stringify(config.leaderboardPeriods)}: run tools/bump-version.mjs`);
       if (configGdKey !== undefined && (gdKey ?? null) !== configGdKey) err(`game.json portals.gd.gameKey "${gdKey ?? ''}" differs from config.json gdKey "${configGdKey ?? ''}"`);
     }
   }

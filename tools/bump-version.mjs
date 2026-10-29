@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * The first step of every build (docs/EXPORT.md §4). config.json (next to the kit) is the one source of the
- * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId, leaderboardPeriods,
+ * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId,
  * portals.gd.gameKey) and the dev page (gameId, gameCode; language from defaultLanguage while it is a placeholder). Then the next version, GM standard yymmddXX
  * (EXPORT.md §2): today's date (this machine's local time) and the build of the day, 01, 02, … Plain Node 18+.
  *
@@ -28,9 +28,6 @@ export function withConfig(game, config) {
   // leaderboardId: the board of docs/LEADERBOARD.md; null = the game has none (and none in game.json).
   if (typeof config.leaderboardId === 'string') out.leaderboardId = config.leaderboardId;
   else if (config.leaderboardId === null) delete out.leaderboardId;
-  // leaderboardPeriods: the periods the board has on GMA (the owner's choice); with no board, none.
-  if (Array.isArray(config.leaderboardPeriods) && out.leaderboardId) out.leaderboardPeriods = config.leaderboardPeriods;
-  else delete out.leaderboardPeriods;
   if (typeof config.gdKey === 'string') out.portals = { ...out.portals, gd: { ...out.portals?.gd, gameKey: config.gdKey } };
   else if (config.gdKey === null && out.portals?.gd) {
     const { gd, ...rest } = out.portals;

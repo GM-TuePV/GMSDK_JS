@@ -6,7 +6,6 @@
   "languages": ["en"],
   "defaultLanguage": "en",
   "leaderboardId": null,
-  "leaderboardPeriods": ["alltime"],
   "compress": { "images": "normal", "audio": "normal", "keep": [] },
   "loadingScreen": null,
   "gdKey": null,

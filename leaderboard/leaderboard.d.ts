@@ -40,8 +40,6 @@ export interface LeaderboardSDK {
 
 export interface Leaderboard {
   readonly boardId: string;
-  /** This board's periods, in PERIODS order: the tabs of ui.js. */
-  readonly periods: readonly Period[];
   /** Signed in and usable. Waits for gmsdkjs the first time (up to waitMs); never rejects. */
   ready(): Promise<boolean>;
   /** The signed-in player; null before ready(). */
@@ -62,8 +60,6 @@ export function createLeaderboard(o: {
   sdk: LeaderboardSDK;
   /** game.json leaderboardId. */
   boardId: string;
-  /** The periods the board has on GMA (game.json leaderboardPeriods); default ['alltime']. */
-  periods?: readonly Period[];
   /** Default 20000. */
   waitMs?: number;
   g?: typeof globalThis;

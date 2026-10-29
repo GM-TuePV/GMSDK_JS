@@ -199,7 +199,7 @@ versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 Game có `leaderboardId` trong `game.json`: tạo bảng sau khi đọc `game.json`, gửi điểm một lần mỗi ván (sau `gameplayStop`), mở bảng từ menu và tạm dừng game khi bảng mở. Chi tiết: [LEADERBOARD.md](LEADERBOARD.md).
 
 ```js
-const board = manifest.leaderboardId ? createLeaderboard({ sdk, boardId: manifest.leaderboardId, periods: manifest.leaderboardPeriods }) : null;
+const board = manifest.leaderboardId ? createLeaderboard({ sdk, boardId: manifest.leaderboardId }) : null;
 // hết ván
 board?.submit(score).then((r) => r && showRank(r.rank));
 // nút ở menu
