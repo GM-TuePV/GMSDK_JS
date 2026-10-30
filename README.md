@@ -1,4 +1,22 @@
-# GMSDK JS kit
+# GMSDK_JS — Kit SDK cho game JS / HTML5
+
+**Version: 1.0.2** · 30/10/2026
+
+## Hướng dẫn sử dụng
+
+Chép cả thư mục `GMSDK_JS` vào dự án thành `docs/GMSDK_JS/`, rồi nhắn AI:
+
+- **Game mới:**
+  > Cài đặt SDK theo hướng dẫn `docs/GMSDK_JS/PROMPT.md` và bắt đầu làm game theo quy chuẩn SDK yêu cầu.
+- **Dự án cũ:**
+  > Cài đặt SDK theo hướng dẫn `docs/GMSDK_JS/PROMPT.md` và chỉnh sửa các nội dung theo đúng yêu cầu của SDK.
+- **Nâng cấp kit:** chép đè thư mục `docs/GMSDK_JS/`, giữ lại `config.json`, `analytics.json`, `licenses.json` của game.
+
+AI sẽ hỏi các giá trị còn thiếu (mã game, tên…), đưa kế hoạch để bạn duyệt rồi mới sửa code.
+
+---
+
+## Kit gồm gì
 
 Bộ chuẩn để gắn **gmsdkjs** vào một game web (JS / TS), hoặc làm game mới theo chuẩn. Cả kit nằm trong một folder, kể cả cấu hình của game (`config.json`): chép folder sang dự án khác là dùng được.
 
