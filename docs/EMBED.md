@@ -1,6 +1,13 @@
 # Game trong iframe, nhiều tên miền
 
-Game chạy trong iframe của nhiều portal. Thứ gì **cùng tên miền với trang** (file trong gói, gọi bằng đường dẫn tương đối) thì không vướng gì. Thứ gì **khác tên miền** vẫn dùng được, nhưng phải đủ điều kiện. File này là bảng tra: câu báo lỗi → vì sao → cách làm cho chạy → đường lui. Luật ngắn để AI làm theo nằm ở `PROMPT.md`; `check-export` nhắc các chỗ dò được trong `game.js`.
+Game chạy trong iframe của nhiều portal. Thứ gì **cùng tên miền với trang** thì không vướng gì. Thứ gì **khác tên miền** vẫn dùng được, nhưng phải đủ điều kiện.
+
+**Trên site của mình, file trong gói cũng khác tên miền với trang.** Trang ở `game.1games.io/<id>/`; tool build gắn `<base href="https://gdn.1games.io/game/<id>/<version>/">`, nên mọi đường dẫn tương đối (`assets/…`, `i18n/…`, `game.js`) tải từ CDN. Trên CrazyGames / Poki thì trang và gói cùng chỗ. Trên máy mọi thứ cùng một chỗ, nên lỗi **chỉ lộ khi lên site**. Ba luật, cả khi sửa ảnh, giảm dung lượng, đổi cách tải:
+- Ảnh đọc điểm ảnh, làm texture, tô màu / mask / va chạm theo pixel: **luôn** `img.crossOrigin = 'anonymous'` trước `src` (§1, §2). Không có thì canvas "bẩn" và lỗi.
+- **Không dựng URL từ `location.href` / `document.URL`** (`new URL(path, location.href)`, `location.origin + …`): chúng bỏ qua `<base>` và trỏ về `game.1games.io`. Dùng đường dẫn tương đối, hoặc `new URL(path, document.baseURI)`.
+- **Worker từ file trong gói không chạy** (Worker phải cùng tên miền với trang): tải về rồi chạy từ blob (§4).
+
+`tools/screens.mjs` chạy trang và gói ở hai tên miền như site (§12): lỗi hiện ngay lúc chụp QA. File này là bảng tra: câu báo lỗi → vì sao → cách làm cho chạy → đường lui. Luật ngắn để AI làm theo nằm ở `PROMPT.md`; `check-export` nhắc các chỗ dò được trong `game.js`.
 
 | # | Triệu chứng (console) | Mục |
 | --- | --- | --- |
@@ -139,6 +146,7 @@ addEventListener('keydown', (e) => { if (GAME_KEYS.has(e.key)) e.preventDefault(
 
 ## 12. Cách thử
 
-- Trên máy: chạy gói ở một cổng, file ngoài ở cổng khác (ví dụ trang `localhost:8080`, ảnh `127.0.0.1:5500`): khác cổng là khác tên miền, lỗi CORS hiện y như thật.
+- **`node docs/GMSDK_JS/tools/screens.mjs`** (QA.md §2.1) chạy y như site của mình: trang ở `127.0.0.1:<cổng A>`, gói ở `localhost:<cổng B>` qua `<base href>`, có CORS. Lỗi CORS, canvas bẩn, Worker, đường dẫn dựng từ `location.href` hiện trong `screens.md` (cột Lỗi). `--same-origin` để chạy như cũ (một tên miền).
+- Trên máy, tự thử: chạy gói ở một cổng, file ngoài ở cổng khác (ví dụ trang `localhost:8080`, ảnh `127.0.0.1:5500`): khác cổng là khác tên miền, lỗi CORS hiện y như thật.
 - Trên portal: mở `preview.html?debug` của gói đã upload, xem console không có dòng nào của bảng đầu file ([QA.md](QA.md) 7.9).
-- `check-export` (EXPORT.md §5) nhắc: file tải từ tên miền khác, ảnh ngoài chưa đặt `crossOrigin`, Worker từ URL, `SharedArrayBuffer` chưa kiểm `crossOriginIsolated`; báo lỗi file `http://`.
+- `check-export` (EXPORT.md §5) nhắc: file tải từ tên miền khác, ảnh ngoài chưa đặt `crossOrigin`, đọc điểm ảnh / texture mà không có `crossOrigin`, URL dựng từ `location.href` / `document.URL`, Worker (từ URL hay từ file gói), `SharedArrayBuffer` chưa kiểm `crossOriginIsolated`; báo lỗi file `http://`.

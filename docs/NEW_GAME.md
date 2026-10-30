@@ -62,6 +62,7 @@ Thiết kế **cùng lúc với gameplay**, không để cuối:
 
 ## Bước 7. Quảng cáo
 
+- **Bắt buộc**, ghi bảng "Chỗ quảng cáo" vào plan ([AI_INSTALL.md](../AI_INSTALL.md) Bước 3): `preroll` sau menu, `interstitial` ở chỗ nghỉ, `rewarded` nếu game có thưởng. `check-export` báo lỗi khi thiếu `preroll` / `interstitial`.
 - Chọn chỗ đặt từ đầu: xen giữa ở chỗ nghỉ (hết ván, qua màn, về menu); thưởng ở chỗ người chơi được lợi rõ (hồi sinh, x2 tiền, quà ngày). Luật nhịp riêng của game (không sau ván đầu…) do game giữ; giãn cách theo thời gian là của SDK ([INTEGRATION.md §5](INTEGRATION.md)).
 - `onPause` / `onResume`: dừng vòng lặp, tắt tiếng, chặn input; ván đang chạy chuyển sang màn pause ([INTEGRATION.md §3](INTEGRATION.md)).
 - Nút thưởng theo `rewardedAvailable()` **trong suốt lúc nút còn trên màn** (giá trị đổi theo thời gian, sau `ready()`, sau mỗi quảng cáo).

@@ -4,7 +4,11 @@
  * tools/assemble.mjs) in each size, waits until loader.js hides the loading screen (the menu is on), and saves a
  * screenshot. Phones and tablets are emulated with touch and their real pixel ratio.
  *
- *   node docs/GMSDK_JS/tools/screens.mjs [<packageDir>] [--channel msedge|chrome] [--wait <seconds>]
+ *   node docs/GMSDK_JS/tools/screens.mjs [<packageDir>] [--channel msedge|chrome] [--wait <seconds>] [--same-origin]
+ *
+ * The page and the package run on two domains, as on the own site (page on game.1games.io, package on the CDN through
+ * <base href>, docs/EMBED.md): errors of CORS, tainted canvases, workers and failed files land in the "Lỗi trang" column.
+ * --same-origin: one domain (as on CrazyGames / Poki).
  *
  * <packageDir>: default export/build/<version>-<id> from public/game.json. Output: export/qa/<version>-<id>/ (outside
  * the package, so never in the zip; export/ is not committed): <w>x<h>.jpg per size + screens.md, the table to copy
@@ -94,15 +98,32 @@ async function main() {
   }
   const waitMs = (Number(opt('--wait')) || 60) * 1000;
 
-  // The package as a site of its own (relative paths, like on the CDN).
+  // The package as the CDN serves it (relative paths, CORS for every file). As on the own site (docs/EMBED.md), the
+  // page is on another domain: 127.0.0.1 serves only index.html with <base href> on the package at localhost, so CORS,
+  // tainted canvases, workers and URLs built on location.href fail here as they do there. --same-origin: one domain.
+  const sameOrigin = args.includes('--same-origin');
   const server = createServer((req, res) => {
     const p = resolve(dir, '.' + decodeURIComponent(new URL(req.url, 'http://x').pathname));
     if (!(p === dir || p.startsWith(dir + sep)) || !existsSync(p) || statSync(p).isDirectory()) return res.writeHead(404).end();
-    res.writeHead(200, { 'Content-Type': TYPES[extname(p).toLowerCase()] ?? 'application/octet-stream' });
+    res.writeHead(200, { 'Content-Type': TYPES[extname(p).toLowerCase()] ?? 'application/octet-stream', 'Access-Control-Allow-Origin': '*' });
     createReadStream(p).pipe(res);
   });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  const base = `http://127.0.0.1:${server.address().port}/index.html`;
+  await new Promise((r) => server.listen(0, sameOrigin ? '127.0.0.1' : 'localhost', r));
+  const cdn = `http://${sameOrigin ? '127.0.0.1' : 'localhost'}:${server.address().port}/`;
+  let pageServer = null;
+  let base = `${cdn}index.html`;
+  if (!sameOrigin) {
+    const html = readFileSync(join(dir, 'index.html'), 'utf8');
+    const tag = `<base href="${cdn}">`;
+    const page = /<meta\s+charset[^>]*>/i.test(html) ? html.replace(/(<meta\s+charset[^>]*>)/i, `$1\n  ${tag}`) : html.replace(/<head[^>]*>/i, (h) => `${h}\n  ${tag}`);
+    pageServer = createServer((req, res) => {
+      if (new URL(req.url, 'http://x').pathname !== '/index.html') return res.writeHead(404).end();
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end(page);
+    });
+    await new Promise((r) => pageServer.listen(0, '127.0.0.1', r));
+    base = `http://127.0.0.1:${pageServer.address().port}/index.html`;
+  }
+  console.log(sameOrigin ? `page and package on ${cdn}` : `page on ${base}, package on ${cdn} (two domains, as on the own site)`);
 
   const browser = await pw.chromium.launch({ headless: true, ...(opt('--channel') ? { channel: opt('--channel') } : {}) });
   const rows = [];
@@ -117,6 +138,13 @@ async function main() {
       const page = await ctx.newPage();
       const errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
+      // CORS, tainted canvas, worker: console errors, not page errors. Requests of the package that failed too.
+      page.on('console', (m) => {
+        if (m.type() === 'error' && /CORS|cross-origin|Access-Control|tainted|SecurityError|Worker/i.test(m.text())) errors.push(m.text().slice(0, 200));
+      });
+      page.on('requestfailed', (r) => {
+        if (r.url().startsWith(cdn)) errors.push(`${r.url().slice(cdn.length)}: ${r.failure()?.errorText ?? 'failed'}`);
+      });
       const t0 = Date.now();
       await page.goto(base, { waitUntil: 'commit' });
       const ok = await page
@@ -135,12 +163,17 @@ async function main() {
   } finally {
     await browser.close();
     server.close();
+    pageServer?.close();
   }
 
   const md = [
     `## Màn hình: ${game.name} ${game.version}`,
     '',
     `Ảnh: \`export/qa/${game.version}-${game.id}/\` (không commit). Cột "Kết quả" do người / AI điền sau khi xem từng ảnh: chữ bị cắt, nút chồng nhau, viền đen, game không phủ kín màn, chữ quá nhỏ.`,
+    '',
+    sameOrigin
+      ? 'Chạy một tên miền (`--same-origin`): lỗi chỉ có khi trang và gói khác tên miền (site của mình) không hiện ở đây.'
+      : 'Trang và gói ở hai tên miền như site của mình (`<base href>` lên CDN, docs/EMBED.md): cột "Lỗi trang" có CORS / canvas bẩn / Worker / file tải hỏng thì sửa trước khi lên site.',
     '',
     '| Cỡ (CSS px) | Máy | Vào menu | Lỗi trang | Kết quả | Ghi chú |',
     '| --- | --- | --- | --- | --- | --- |',

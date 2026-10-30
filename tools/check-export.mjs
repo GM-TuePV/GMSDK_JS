@@ -175,6 +175,14 @@ function checkEmbed(js, entry) {
       warn(`${entry} loads images from other domains but never sets crossOrigin: set img.crossOrigin = 'anonymous' (Three.js: loader.setCrossOrigin('anonymous')) before src, or WebGL / canvas reads fail (docs/EMBED.md §1)`);
   }
   if (/new\s+Worker\s*\(\s*["'`]https?:/.test(js)) warn(`${entry} starts a Worker from a URL: a worker must come from the page's own domain: fetch it (CORS) and start it from a blob URL (docs/EMBED.md §4)`);
+  // On the own site the package itself is on another domain than the page (<base href> on the CDN, docs/EMBED.md):
+  // a worker file of the package, pixels read without crossOrigin and URLs built on location.href all break there.
+  else if (/new\s+Worker\s*\(/.test(js) && !/createObjectURL|["'`]blob:/.test(js))
+    warn(`${entry} starts a Worker from a file: on the own site the package is on the CDN, another domain than the page, and a worker must come from the page's domain: fetch it and start it from a blob URL (docs/EMBED.md §4)`);
+  if (/\b(?:getImageData|toDataURL|toBlob|texImage2D|createImageBitmap)\b/.test(js) && !/crossOrigin|setCrossOrigin/.test(js))
+    warn(`${entry} reads pixels or makes textures (getImageData / toDataURL / texImage2D…) but never sets crossOrigin: on the own site every file of the package comes from the CDN, another domain: set img.crossOrigin = 'anonymous' before src (docs/EMBED.md, §2)`);
+  if (/new\s+URL\s*\([^()]*,\s*(?:window\.|self\.|globalThis\.)?(?:location(?:\.href)?|document\.URL)\s*\)|\blocation\.origin\s*\+/.test(js))
+    warn(`${entry} builds a URL on location.href / document.URL / location.origin: on the own site the page's <base href> points at the CDN and these skip it: use a relative path or new URL(path, document.baseURI) (docs/EMBED.md)`);
   if (/new\s+SharedArrayBuffer\b/.test(js) && !/crossOriginIsolated/.test(js))
     warn(`${entry} creates a SharedArrayBuffer without checking crossOriginIsolated: in a portal iframe it is usually missing; check it and fall back to one thread (docs/EMBED.md §5)`);
   // preventDefault() on a press (pointerdown / mousedown / touchstart) also stops the iframe from taking the focus: on a
@@ -624,6 +632,12 @@ function checkPackage() {
     if (byProblem.missing.length) warn(`${entry} names files that are not in the package (fine if they are keys, e.g. of an atlas; else a typo or a renamed file): ${byProblem.missing.slice(0, 6).join(', ')}`);
     // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
+    // Ads are required (AI_INSTALL.md Bước 3, the plan's "Chỗ quảng cáo"): sdk.<method>( keeps its name in the minified
+    // code. A preroll after the menu and interstitials at the breaks always; rewarded where the game has a reward.
+    for (const fn of ['preroll', 'interstitial']) {
+      if (!new RegExp(`\\.${fn}\\s*\\(`).test(js)) err(`${entry} never calls sdk.${fn}(): ads are required: ${fn === 'preroll' ? 'preroll() once the menu is on' : 'interstitial() at the breaks (end of a run, back to the menu…)'} (docs/INTEGRATION.md §5, AI_INSTALL.md Bước 3)`);
+    }
+    if (!/\.rewarded\s*\(/.test(js)) warn(`${entry} never calls sdk.rewarded(): fine only when the game has no reward (the plan's "Chỗ quảng cáo" says so); else a rewarded button with rewardedAvailable() (docs/INTEGRATION.md §5)`);
     // The game waits for loader.js (loadSDK) and hides its screen (createLoader().hide()): both go through GMLoader.
     if (!/GMLoader/.test(js)) warn(`${entry} never mentions GMLoader: the game must start with await loadSDK() and end its loading with createLoader().hide() (docs/LOADING.md)`);
     // The default leaderboard screen (ui.js), or loadFlags() of a screen of the game's own: the flag atlas.

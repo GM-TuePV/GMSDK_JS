@@ -78,7 +78,15 @@ Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng c�
 2. Khởi động: `game.json` → `initI18n` → `migrate` (nếu game từng tự lưu key khác) → tải tài nguyên với `loader.progress` → `ready()` → hiện menu → `loader.hide()` (đã gồm `loadingDone()`) → `preroll()` (§2).
    **Không `await` ở cấp ngoài cùng của file** (gói IIFE không build được): mọi `await` nằm trong `async function boot()` ([EXPORT.md §3](docs/EXPORT.md)).
 3. `gameplayStart` / `gameplayStop` quanh lúc chơi thật (§4).
-4. Xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5).
+4. **Quảng cáo (bắt buộc):** `preroll()` sau menu, xen giữa ở chỗ nghỉ; thưởng với `rewardedAvailable()` + `rewarded()` ngay trong click (§5). Plan có bảng **Chỗ quảng cáo** cho chủ game duyệt:
+
+   | Loại | Chỗ | Ghi chú |
+   | --- | --- | --- |
+   | `preroll` | Sau khi menu hiện | Một lần mỗi trang |
+   | `interstitial` | <hết ván / qua màn / về menu…> | Luật nhịp riêng của game (nếu có) |
+   | `rewarded` | <hồi sinh / x2 / quà…, hoặc "không có"> | Nút theo `rewardedAvailable()` |
+
+   `check-export` báo lỗi khi `game.js` không gọi `preroll` hoặc `interstitial`; cảnh báo khi không có `rewarded`.
 5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
 6. More Games, trademark, `V<version>` (§9).
    Có bảng xếp hạng: `createLeaderboard` sau `game.json`, `submit` một lần mỗi ván, nút mở bảng ([LEADERBOARD.md](docs/LEADERBOARD.md)).

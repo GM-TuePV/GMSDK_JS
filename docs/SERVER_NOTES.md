@@ -30,7 +30,7 @@ Game theo kit 1.0.1 **chỉ chạy đúng khi server đã có đủ ba thứ dư
 
 Kiểm sau khi đưa lên: mở một gói 1.0.1 trên `game.1games.io` → màn loading hiện ngay; DevTools chặn `gmsdkjs.js` → "Connecting again (2/3)…" rồi màn Reload; Local Storage chỉ có `azgames.<gameCode>` (chuỗi `gm1…`) và `gma_<gameCode>.name`.
 
-**CORS trên CDN (nên có):** mọi file của gói trên CDN (ảnh, font, JSON, âm thanh, model, `.wasm`) trả `Access-Control-Allow-Origin: *`, `.wasm` trả `Content-Type: application/wasm`. Gói theo kit gọi file bằng đường dẫn tương đối nên bình thường cùng tên miền với trang; header này để game vẫn chạy khi trang và file nằm ở hai tên miền (trang của portal, CDN riêng). Đổi header thì xoá cache CDN ([EMBED.md](EMBED.md) §3).
+**CORS trên CDN (bắt buộc):** mọi file của gói trên CDN (ảnh, font, JSON, âm thanh, model, `.wasm`) trả `Access-Control-Allow-Origin: *`, `.wasm` trả `Content-Type: application/wasm`. Trang của site (`game.1games.io/<id>/`) tải gói từ CDN `gdn.1games.io` qua `<base href>`: mọi file của gói khác tên miền với trang, thiếu header này thì ảnh làm texture, font, `fetch` hỏng. Đổi header thì xoá cache CDN ([EMBED.md](EMBED.md) §3).
 
 **Thứ tự:** đưa gmsdkjs 1.0.1 lên **trước** khi game 1.0.1 đầu tiên lên portal. gmsdkjs 1.0.1 vẫn chạy với game 1.0.0 (shim 1.0.0 thấy `GMSDKJS.storage` không còn thì dùng bộ lưu dự phòng của nó, cùng key), nên đưa sớm không hỏng gì. Template mới chỉ hợp với gói 1.0.1 (có `loader.js`).
 
