@@ -87,7 +87,7 @@ Cổng game đòi thêm cỡ nào thì thêm dòng vào bảng trong kit của g
 
 ## 5. Content brief
 
-Ba file, **cùng 10 mục, cùng fact, cùng số liệu**. Viết cho team marketing (store page, social, video script), không phải tài liệu kỹ thuật.
+Ba file, **cùng 11 mục, cùng fact, cùng số liệu**. Viết cho team marketing (store page, social, video script), không phải tài liệu kỹ thuật.
 
 | # | Mục (`## <số>. <tên>`) | Nội dung |
 | --- | --- | --- |
@@ -101,6 +101,7 @@ Ba file, **cùng 10 mục, cùng fact, cùng số liệu**. Viết cho team mark
 | 8 | Progression và phần thưởng | Tiền, mở khoá, nâng cấp, quà ngày, nhiệm vụ |
 | 9 | Game feel | Chất liệu cho copywriter: cảm giác, nhịp, màu sắc, âm thanh |
 | 10 | Store description (tiếng Anh, đăng ngay) | Short ≤ 160 ký tự, Long có Features, Tags / keywords |
+| 11 | Control Guide (tiếng Anh, đăng ngay) | **Controls**: hướng dẫn điều khiển theo từng kiểu (bàn phím, chuột, cảm ứng); **How to play**: hướng dẫn chơi 3–6 bước. Dán thẳng vào ô Controls / How to play của các cổng game |
 
 Mục 10 viết đúng dạng sau ở cả ba file, để `check-marketing` đếm được độ dài bản Short:
 
@@ -119,10 +120,31 @@ Mục 10 viết đúng dạng sau ở cả ba file, để `check-marketing` đ�
 **Tags / keywords:** a, b, c
 ```
 
+Mục 11 viết đúng dạng sau ở cả ba file (`check-marketing` đòi đủ hai phần):
+
+```
+**Controls:**
+
+- Keyboard: ← → or A D to steer, Space to jump, Esc to pause
+- Mouse: click to jump
+- Touch: tap the left / right half to steer, swipe up to jump
+
+**How to play:**
+
+1. <mục tiêu của game, một câu>
+2. <cách ghi điểm / qua màn>
+3. <khi nào thua>
+4. <mẹo, vật phẩm, nâng cấp>
+```
+
+- **Đúng phím thật:** lấy từ code xử lý input và màn hướng dẫn trong game, không bịa phím. Kiểu điều khiển nào game không có thì bỏ dòng đó (không có chuột thì không có dòng Mouse).
+- **Controls** mỗi dòng một kiểu điều khiển, động tác trước rồi việc nó làm. Phím gọi đúng tên trên bàn phím (Space, Enter, Esc, Shift, ← ↑ → ↓).
+- **How to play** 3–6 bước ngắn, đọc xong người chưa chơi biết phải làm gì để thắng: mục tiêu, cách ghi điểm / qua màn, khi nào thua, một hai mẹo.
+
 **File HTML** (`<id>-content-brief.en.html`):
 - **Tự chứa:** CSS viết trong file, ảnh nhúng base64, không tải gì từ ngoài. Mở trực tiếp bằng trình duyệt được, và in ra PDF vẫn đẹp.
 - **Hero:** cover 1920×1080 hiện trọn khung 16:9 (logo trong ảnh không bị cắt). Tiêu đề và mô tả nằm ở dải riêng bên dưới, không đè lên ảnh.
-- **Image kit**, phụ lục sau mục 10: mỗi ảnh trong bảng §4 là một thẻ gồm ảnh thu nhỏ, tên (ví dụ "Portal thumbnail 4:3"), kích thước, dung lượng và đường dẫn `images/<id>-<w>x<h>.png`. Ảnh chưa có hiện ô **Pending**. Script dựng kit sinh phụ lục này, nên chạy lại là cập nhật.
+- **Image kit**, phụ lục sau mục 11: mỗi ảnh trong bảng §4 là một thẻ gồm ảnh thu nhỏ, tên (ví dụ "Portal thumbnail 4:3"), kích thước, dung lượng và đường dẫn `images/<id>-<w>x<h>.png`. Ảnh chưa có hiện ô **Pending**. Script dựng kit sinh phụ lục này, nên chạy lại là cập nhật.
 - Bảng có style, đọc được trên điện thoại.
 
 **Luật nội dung:**
@@ -219,7 +241,7 @@ node docs/GMSDK_JS/tools/check-marketing.mjs    # export/marketing/<version>-<id
 `check-marketing` báo **lỗi** khi:
 - thiếu file của chuẩn;
 - ảnh lệch kích thước so với tên, không phải JPEG / PNG thật, có trong suốt, hoặc là CMYK;
-- brief thiếu mục, hoặc bản Short dài hơn 160 ký tự;
+- brief thiếu mục, mục 11 thiếu **Controls** / **How to play**, hoặc bản Short dài hơn 160 ký tự;
 - HTML tải gì đó từ ngoài, hoặc Image kit thiếu ảnh.
 
 Nó **cảnh báo** khi:
@@ -228,7 +250,8 @@ Nó **cảnh báo** khi:
 
 Phần máy không kiểm được thì người tự soát:
 - [ ] Grep chữ của ba file brief với danh sách tên cấm của chủ game (IP, thương hiệu, tính năng chưa mở): 0 kết quả.
-- [ ] Ba file cùng 10 mục, cùng số liệu.
+- [ ] Ba file cùng 11 mục, cùng số liệu.
+- [ ] Control Guide khớp game: chơi thử theo đúng các phím / thao tác đã ghi.
 - [ ] Mở bản HTML: hero hiện trọn logo, Image kit đủ thẻ, đọc được trên điện thoại.
 - [ ] Xem từng ảnh ở đúng cỡ: logo đọc được (trừ 200×120), không chữ lạ, nhân vật giống trong game, bố cục đúng bảng §4.
 - [ ] **Đặt cover và từng banner cạnh ảnh gameplay** (`export/qa/<version>-<id>/`): một người chưa chơi nhìn hai ảnh phải nhận ra là cùng một game. Không có nhân vật, vật, cảnh hay hiệu ứng mà game không có; không có UI của game.

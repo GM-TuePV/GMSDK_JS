@@ -80,7 +80,7 @@ Mở `http://localhost:8080/example/`. Một game nhỏ dùng đủ mọi phần
 | [docs/UX.md](docs/UX.md) | Trải nghiệm người chơi: vào chơi ngay, hướng dẫn người mới từng bước, gợi ý đúng lúc, lý do thua, chấm đỏ, tính năng mới, bản đồ tính năng |
 | [docs/QA.md](docs/QA.md) | Tiêu chuẩn QA đạt / không đạt trước khi giao portal (GD, CrazyGames, Poki): thiết bị, checklist, trải nghiệm người mới, hiệu năng, lỗi hay gặp, mẫu báo cáo |
 | [docs/ASSETS.md](docs/ASSETS.md) | Asset và giấy phép: `licenses.json`, giấy phép dùng được / cấm (game có quảng cáo là thương mại), ghi công CC-BY, asset chưa rõ nguồn, art gen bằng AI |
-| [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`export/marketing/<version>-<id>/`: content brief 10 mục, 11 ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
+| [docs/HANDOFF.md](docs/HANDOFF.md) | Tiêu chuẩn bàn giao: gói build, báo cáo QA, ghi chú bàn giao, marketing kit (`export/marketing/<version>-<id>/`: content brief 11 mục (mục 11: Control Guide), 11 ảnh store / portal: PNG trong `images/`, JPG trong `images/jpg/`), mẫu prompt Codex cho ảnh |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | Bảng xếp hạng: gửi điểm, top theo kỳ, hạng của người chơi, tên + cờ, màn hình mặc định, thử trên máy |
 | [docs/OVERVIEW.md](docs/OVERVIEW.md) | Tổng quan 1.0.2: luồng chạy từ lúc mở trang, phần nào ở `loader.js` / `gmsdkjs.js` / `game.js`, gmsdkjs và kit đã sửa gì |
 | [docs/EMBED.md](docs/EMBED.md) | Game trong iframe, nhiều tên miền: lỗi CORS / SecurityError (texture, cắt ảnh, font, fetch), worker, nhiều luồng, âm thanh, toàn màn hình, phím, lưu: triệu chứng → cách làm cho chạy → đường lui |

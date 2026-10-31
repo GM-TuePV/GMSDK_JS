@@ -9,9 +9,10 @@
  * Run it from the game repo root.
  *
  * Errors (exit code 1): a file of the standard missing, an image not at the exact pixel size of its name, not a
- * JPEG / PNG, with transparency or in CMYK, a brief without its 10 sections or with a short description over 160
- * characters, an HTML brief that loads anything from outside or misses an image of the set. Warnings: engine /
- * technical words or "clone" in the brief text, files that are not part of the kit.
+ * JPEG / PNG, with transparency or in CMYK, a brief without its 11 sections, a Control Guide (section 11) without
+ * its Controls and How to play, a short description over 160 characters, an HTML brief that loads anything from
+ * outside or misses an image of the set. Warnings: engine / technical words or "clone" in the brief text, files that
+ * are not part of the kit.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
@@ -190,9 +191,17 @@ if (!existsSync(dir)) {
         const png = `images/${imageName(w, h, variant)}.png`;
         if (!raw.includes(png)) err(`${name}: its Image kit has no ${png} (a card, or Pending)`);
       }
+      for (const part of ['Control Guide', 'Controls', 'How to play']) {
+        if (!text.toLowerCase().includes(part.toLowerCase())) err(`${name}: no "${part}" (section 11, docs/HANDOFF.md §5)`);
+      }
     } else {
-      for (let n = 1; n <= 10; n++) {
+      for (let n = 1; n <= 11; n++) {
         if (!new RegExp(`^##\\s+${n}\\.\\s`, 'm').test(raw)) err(`${name}: no section ${n} ("## ${n}. …", docs/HANDOFF.md §5)`);
+      }
+      // Section 11, the Control Guide: both parts, as the portals ask for them (docs/HANDOFF.md §5).
+      const guide = /^##\s+11\.\s[\s\S]*/m.exec(raw)?.[0] ?? '';
+      for (const part of ['Controls', 'How to play']) {
+        if (guide && !new RegExp(`^\\*\\*${part}:?\\*\\*`, 'im').test(guide)) err(`${name}: section 11 has no "**${part}:**" (docs/HANDOFF.md §5)`);
       }
       if (name.endsWith('.en.md')) {
         const short = /^\*\*Short[^\n]*\n+\s*>\s?(.+)$/im.exec(raw);

@@ -11,7 +11,8 @@ Dựng marketing kit cho game trong repo này, đúng chuẩn `docs/GMSDK_JS/doc
 
 Đọc code và data của game, rút ra các fact nhìn từ phía người chơi:
 - Level / bản đồ / campaign: tên hiển thị (lấy từ `i18n/`), độ khó, điều kiện mở, phần thưởng.
-- Chế độ chơi, nhân vật / phương tiện, cách điều khiển bằng bàn phím và cảm ứng.
+- Chế độ chơi, nhân vật / phương tiện.
+- Điều khiển: mọi phím / thao tác chuột / cảm ứng và việc nó làm, đọc trong code xử lý input và màn hướng dẫn của game; mục tiêu, cách thắng, khi nào thua (cho mục 11 Control Guide).
 - Cơ chế trong màn: vật phẩm, địa hình, hệ số điểm, power-up.
 - Progression: giá, phần thưởng, tuỳ biến, quà ngày, nhiệm vụ, lý do quay lại.
 - Thời lượng một lượt, nền tảng, hướng màn hình.
@@ -38,7 +39,7 @@ Chờ trả lời rồi mới viết.
 
 ## Bước 4. Ba file brief
 
-Viết `export/marketing/<version>-<id>/<id>-content-brief.md` (tiếng Việt), `.en.md` và `.en.html` (tiếng Anh), đúng 10 mục, dạng mục 10, và luật nội dung của HANDOFF.md §5. Bản HTML tự chứa, có hero và Image kit; ảnh nào chưa có thì hiện ô Pending.
+Viết `export/marketing/<version>-<id>/<id>-content-brief.md` (tiếng Việt), `.en.md` và `.en.html` (tiếng Anh), đúng 11 mục, dạng mục 10 và mục 11 (Control Guide: hướng dẫn điều khiển, hướng dẫn chơi), và luật nội dung của HANDOFF.md §5. Bản HTML tự chứa, có hero và Image kit; ảnh nào chưa có thì hiện ô Pending.
 
 ## Bước 5. Kiểm và báo cáo
 

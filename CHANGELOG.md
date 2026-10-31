@@ -42,6 +42,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - `PROMPT.md` gọn hơn: khối luật "game trong iframe" còn một dòng; `check-export` nhắc đúng lúc code vướng, chi tiết ở EMBED.md.
 - **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
 - **Marketing kit: thêm 3 ảnh, ảnh nhỏ bớt rối** ([HANDOFF.md §4, §6](docs/HANDOFF.md)): `800x800` và `800x1200` (cover vuông và dọc 2:3 CrazyGames đòi), `512x512_logo` (vuông có logo, cho CrazyGames và site của mình); `512x512` giờ **không chữ** (Poki cấm chữ). Luật "Ảnh nhỏ phải đọc được": một vật chính, nền gọn, tương phản mạnh, thử ở 128 / 96 px; mẫu prompt Codex có câu cấm rối. `check-marketing` đòi đủ 11 ảnh.
+- **Content brief thêm mục 11 "Control Guide"** ([HANDOFF.md §5](docs/HANDOFF.md)): **Controls** (hướng dẫn điều khiển theo bàn phím / chuột / cảm ứng, đúng phím trong code) và **How to play** (hướng dẫn chơi 3–6 bước), tiếng Anh, dán thẳng lên cổng game. `check-marketing` đòi 11 mục và đủ hai phần.
 - **Quảng cáo bắt buộc:** plan có bảng "Chỗ quảng cáo" (`PROMPT.md`, AI_INSTALL Bước 3, NEW_GAME Bước 7); `check-export` **báo lỗi** khi `game.js` không gọi `preroll()` hoặc `interstitial()`, cảnh báo khi không có `rewarded()`.
 - **Trang và gói ở hai tên miền** trên site của mình (trang `game.1games.io`, gói qua `<base href>` trên CDN `gdn.1games.io`): EMBED.md trước ghi sai là file trong gói cùng tên miền. Luật trong `PROMPT.md` và EMBED.md: ảnh đọc điểm ảnh / làm texture luôn `crossOrigin`, không dựng URL từ `location.href`, Worker từ blob. `check-export` cảnh báo các dấu hiệu này; `tools/screens.mjs` chạy hai tên miền như site (QA §2.1); SERVER_NOTES: CORS trên CDN là bắt buộc.
 
@@ -55,6 +56,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 - Marketing kit thiếu `800x800`, `800x1200` hay `512x512_logo` (`check-marketing` báo), hoặc `512x512` còn logo / chữ.
 - `check-export` báo `never calls sdk.preroll()` / `sdk.interstitial()`, hoặc cảnh báo đọc điểm ảnh không `crossOrigin`, URL dựng từ `location.href`, Worker từ file.
+- Content brief chưa có mục `## 11. Control Guide` (`check-marketing` báo).
 - `screens.mjs` có lỗi `cross-origin data` / CORS ở cột "Lỗi trang".
 
 **Game cần làm**
@@ -67,6 +69,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 7. Build lại (`npm run build`), `check-export` → `OK`; trang build dùng template 1.0.2.
 8. Marketing kit đã làm: vẽ thêm `800x800`, `800x1200`, `512x512_logo`, vẽ lại `512x512` không chữ (prompt theo HANDOFF.md §6), dựng lại kit, `check-marketing` → `OK`.
 9. Gắn đủ quảng cáo theo bảng "Chỗ quảng cáo" đã duyệt (`preroll`, `interstitial`, `rewarded` nếu có thưởng). Sửa các chỗ vướng hai tên miền (EMBED.md, đầu file), chạy `screens.mjs` không còn lỗi `cross-origin`.
+10. Marketing kit đã làm: thêm mục 11 Control Guide vào cả ba file brief (HTML: trước Image kit), `check-marketing` → `OK`.
 
 ## 1.0.1 — 2026-10-22
 
