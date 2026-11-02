@@ -182,14 +182,16 @@ const url = sdk.moreGamesUrl();
 moreButton.hidden = !url;                                   // null: không có nút (trang dev: luôn có, mặc định azgames.io)
 moreButton.onclick = () => window.open(url, '_blank', 'noopener');
 copyrightLabel.textContent = copyrightText(sdk);           // "© 2026 Azgames.io" trừ khi server đổi; '' = không hiện gì
+const privacy = privacyPolicyUrl(sdk);                      // sdk/copyright.js: link của server, '' = không có nút
+privacyButton.hidden = !privacy;
 privacyButton.textContent = t('privacy_policy');            // "Privacy Policy", cạnh dòng bản quyền
-privacyButton.onclick = () => window.open(PRIVACY_POLICY_URL, '_blank', 'noopener');   // sdk/copyright.js
+privacyButton.onclick = () => window.open(privacy, '_blank', 'noopener');
 versionLabel.textContent = `V${manifest.version}`;          // từ game.json
 ```
 
-- Đọc `moreGamesUrl()` và `copyrightText(sdk)` **sau `ready()`**: giá trị đến từ API.
+- Đọc `moreGamesUrl()`, `copyrightText(sdk)` và `privacyPolicyUrl(sdk)` **sau `ready()`**: giá trị đến từ API.
 - More Games mở tab mới, không bao giờ `location.href` (người chơi mất ván).
-- **Nút "Privacy Policy"** trong Settings, cạnh dòng bản quyền, **mọi portal** (CrazyGames đòi khi upload): mở `PRIVACY_POLICY_URL` của `sdk/copyright.js` (`https://azgames.io/privacy-policy/`) ở tab mới. Lấy URL từ hằng này, không tự gõ (`check-export` cảnh báo khi code game tự viết tên miền của chủ bản quyền). Chữ trên nút qua `i18n` (khoá `privacy_policy`).
+- **Nút "Privacy Policy"** trong Settings, cạnh dòng bản quyền, **như More Games: server quyết**. `privacyPolicyUrl(sdk)` của `sdk/copyright.js` trả link `gameinfo.privacy_policy` của API giấy phép; rỗng / không có thì trả `''` và **ẩn nút**. Trang dev luôn có nút (link của server, không có thì `PRIVACY_POLICY_URL` = `https://azgames.io/privacy-policy/`) để kiểm chỗ đặt, chữ. Mở ở tab mới. Không tự gõ link, không mở thẳng `PRIVACY_POLICY_URL` (`check-export --src` cảnh báo). Chữ trên nút qua `i18n` (khoá `privacy_policy`). CrazyGames đòi nút này khi upload: admin phải điền `privacy_policy` cho domain CrazyGames.
 - **Luôn làm nút More Games** (theo mẫu trên), kể cả khi lúc làm chưa thấy link: trên portal, server quyết có nút hay không. Trang dev (`platform: 'dev'`) server không trả link, nên shim trả **`https://azgames.io`** (`DEV_MORE_GAMES`): nút luôn hiện trên trang dev để kiểm chỗ đặt, chữ, bấm mở tab mới. Gói build lên portal thì theo server (GD, CrazyGames, Poki: không có nút).
 - Trademark và phiên bản thường đặt ở góc màn hình menu hoặc bảng Settings.
 - **Chữ bản quyền chỉ lấy từ `copyrightText(sdk)`** (`sdk/copyright.js`, [LOADING.md §2](LOADING.md)): mặc định `© 2026 Azgames.io`; server đổi (`gameinfo.trademark`: tên miền / tên khác) thì theo server; `0` và trang GD / Poki thì `''`, không hiện gì; trang CrazyGames có chữ (không làm thành link). Không viết `©`, `AZ Games`, `azgames.io`, `1games.io`… ở chỗ khác trong code hay `i18n/*.json`: `check-export` cảnh báo.

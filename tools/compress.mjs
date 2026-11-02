@@ -4,7 +4,7 @@
  * bitrate, then every reference to a renamed file in game.js and the package's text files. The sources in public/
  * are not touched. Prints a report: sizes before / after, the largest files left, how to compress more.
  *
- *   node docs/GMSDK_JS/tools/compress.mjs [<packageDir>]        default export/build/<version>-<id> from public/game.json
+ *   node docs/GMSDK_JS/tools/compress.mjs [<packageDir>] [--src <dir>]   default export/build/<version>-<id>, --src src
  *
  * The level comes from config.json "compress" (chosen once with the owner, AI_INSTALL.md step 0); none = "normal":
  *
@@ -18,6 +18,14 @@
  *           more     MP3 96 / 64 kbps
  *           off      as it is
  *   keep    globs of package paths left untouched (* within a folder, ** across folders)
+ *   dynamicPaths  source files (globs, from the repo root) that build file names at run time and were checked: their
+ *           files are in keep (or the owner chose so); compress no longer stops on them
+ *
+ * Paths built at run time ('img/' + name + '.png', `${id}.ogg`) cannot be rewritten: the file becomes .webp / .mp3 and
+ * the game asks for one that is gone. So before touching anything compress reads the game's sources (--src, default
+ * src/) and STOPS (exit 1, nothing changed) on a line that writes ".png" / "png" (or an audio extension it would
+ * rename) on its own, with the line and the ways out (docs/EXPORT.md §4): keep those files and list the source in
+ * dynamicPaths, write whole file names in the code (the owner says yes first), or images / audio "off".
  *
  * icons/ (the loading screen, docs/LOADING.md) is never touched: its files are called by fixed names.
  *
@@ -56,7 +64,32 @@ export function settingsOf(config) {
   if (audio !== 'off' && !(audio in AUDIO_LEVELS)) problems.push(`compress.audio "${audio}": normal | more | off`);
   const keep = Array.isArray(c.keep) ? c.keep.filter((k) => typeof k === 'string') : [];
   if (c.keep !== undefined && !Array.isArray(c.keep)) problems.push('compress.keep: a list of package paths (globs)');
-  return { images, audio, keep, problems };
+  const dynamicPaths = Array.isArray(c.dynamicPaths) ? c.dynamicPaths.filter((k) => typeof k === 'string') : [];
+  if (c.dynamicPaths !== undefined && !Array.isArray(c.dynamicPaths)) problems.push('compress.dynamicPaths: a list of source files (globs)');
+  return { images, audio, keep, dynamicPaths, problems };
+}
+
+/** Extensions compress renames: PNG → WebP, these audio files → MP3. */
+const RENAMED_AUDIO = ['wav', 'ogg', 'm4a', 'aac', 'flac'];
+
+/**
+ * Lines of the game's sources that write a renamed extension on its own, so a file name is built at run time:
+ * '.png', "png", `${name}.png`. sources: [[path, text]]; exts: the extensions that will be renamed. Comment lines do
+ * not count. Returns [{ file, line, text, ext }].
+ */
+export function builtPathLines(sources, exts) {
+  if (!exts.length) return [];
+  const alt = exts.join('|');
+  const re = new RegExp(`(?:["'\`}]\\.(${alt})\\b|(["'\`])(${alt})\\2)`, 'i');
+  const found = [];
+  for (const [file, text] of sources) {
+    text.split('\n').forEach((line, i) => {
+      if (/^\s*(\/\/|\/?\*)/.test(line)) return;
+      const m = re.exec(line);
+      if (m) found.push({ file, line: i + 1, text: line.trim().slice(0, 140), ext: (m[1] ?? m[3]).toLowerCase() });
+    });
+  }
+  return found;
 }
 
 /** A glob (* in a folder, ** across folders, ? one character) as a RegExp on a package path (a/b/c.png). */
@@ -142,6 +175,32 @@ async function main() {
   const audio = s.audio in AUDIO_LEVELS || s.audio === 'off' ? s.audio : 'normal';
   const keep = s.keep.map(globToRegExp);
   const kept = (rel) => keep.some((re) => re.test(rel));
+
+  // --- paths built at run time: stop before anything changes ------------------------------------------------------
+  const args = process.argv.slice(2);
+  const srcAt = args.indexOf('--src');
+  const srcDir = resolve(srcAt >= 0 ? args[srcAt + 1] : 'src');
+  if (existsSync(srcDir) && (images !== 'off' || audio !== 'off')) {
+    const checked = s.dynamicPaths.map(globToRegExp);
+    const sources = walk(srcDir)
+      .map((abs) => posix(relative(process.cwd(), abs)))
+      .filter((rel) => /\.(m?js|ts|tsx|jsx|vue|svelte)$/i.test(rel) && !checked.some((re) => re.test(rel)))
+      .map((rel) => [rel, readFileSync(rel, 'utf8')]);
+    const exts = [...(images !== 'off' ? ['png'] : []), ...(audio !== 'off' ? RENAMED_AUDIO : [])];
+    const built = builtPathLines(sources, exts);
+    if (built.length) {
+      const files = [...new Set(built.map((b) => `"${b.file}"`))].join(', ');
+      console.error('ERROR: compress stopped, nothing was changed. The code builds file names at run time; compress would');
+      console.error('rename those files (.png → .webp, .ogg / .wav → .mp3) and the game would ask for files that are gone:');
+      for (const b of built.slice(0, 12)) console.error(`  ${b.file}:${b.line}  ${b.text}`);
+      if (built.length > 12) console.error(`  … ${built.length - 12} more`);
+      console.error('Fix it one way, then build again (docs/EXPORT.md §4, "Đường dẫn ghép lúc chạy"), and tell the owner what was done:');
+      console.error(`  1. no code change: keep those files as they are, config.json "compress": { "keep": ["assets/<their folder>/**"], "dynamicPaths": [${files}] }`);
+      console.error('  2. write whole file names in the code (a list of the files): the game\'s loading code changes, so only with the owner\'s OK');
+      console.error('  3. config.json "compress": { "images": "off" } (or "audio": "off"): nothing compressed');
+      process.exit(1);
+    }
+  }
 
   const files = walk(dir)
     .map((abs) => ({ abs, rel: posix(relative(dir, abs)) }))

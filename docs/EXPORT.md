@@ -110,7 +110,17 @@ export default {
 - **Nén (`tools/compress.mjs`)**, ngay sau bundler, trên gói xuất (ảnh / nhạc gốc trong `public/` để nguyên). Cần `npm i -D sharp ffmpeg-static`.
   - Ảnh: PNG → WebP (trừ `icons/`: màn loading gọi theo tên cố định, không đổi). Nhạc (`mp3`, `wav`, `ogg`, `m4a`, `flac`) → MP3; dài hơn 20 giây là nhạc nền, ngắn hơn là hiệu ứng. Không dùng Opus: Safari / iPhone cũ không phát được.
   - Chỉ thay khi file mới nhỏ hơn; MP3 đã ở mức đích thì để nguyên; file lỗi giữ nguyên (cảnh báo, không hỏng build).
-  - Tên file đổi (`.png` → `.webp`, `.wav` / `.ogg` → `.mp3`) được sửa trong `game.js` và các file chữ của gói (JSON, CSS, atlas…). Hai file trùng tên ở hai thư mục mà một file giữ nguyên thì chỉ sửa theo đường dẫn đầy đủ. Đường dẫn ghép lúc chạy (`'img/' + name + '.png'`) không sửa được: dùng `keep` hoặc tự đổi trong code. `check-export` cảnh báo khi `game.js` gọi file `assets/…` không có trong gói.
+  - Tên file đổi (`.png` → `.webp`, `.wav` / `.ogg` → `.mp3`) được sửa trong `game.js` và các file chữ của gói (JSON, CSS, atlas…). Hai file trùng tên ở hai thư mục mà một file giữ nguyên thì chỉ sửa theo đường dẫn đầy đủ. `check-export` cảnh báo khi `game.js` gọi file `assets/…` không có trong gói.
+  - **Đường dẫn ghép lúc chạy** (`'img/' + name + '.png'`, `` `${id}.ogg` ``, đuôi tách riêng `"png"`) thì không sửa được: file đã thành `.webp` / `.mp3`, game gọi file không còn, mất ảnh / tiếng. Vì vậy:
+    - **`compress` đọc mã nguồn (`src/`, hoặc `--src <thư mục>`) trước khi nén**: thấy dòng ghép đuôi sẽ bị đổi thì **dừng build, chưa đổi file nào**, in file:dòng và 3 cách xử lý. Dòng chú thích không tính.
+    - **`check-export` báo lỗi** khi `game.js` còn gọi `.png` / `.ogg`… mà gói chỉ có `.webp` / `.mp3`, kể cả đường dẫn ghép `assets/items/${f}.png` khi thư mục đó chỉ còn `.webp`.
+    - **AI xử lý:**
+      1. Mặc định, **không sửa code**: thêm thư mục các file đó vào `compress.keep`, thêm file nguồn đã kiểm vào `compress.dynamicPaths` (để `compress` không dừng ở đó nữa), build lại.
+      2. Muốn nén cả các file đó: đổi code tải sang tên file đầy đủ (danh sách file), **chỉ khi chủ game đồng ý**, vì đây là sửa logic tải của game.
+      3. Chủ game muốn bỏ nén: `"images": "off"` / `"audio": "off"`.
+
+      Ảnh code đọc từng điểm ảnh (va chạm, bản đồ) luôn `keep` hoặc `lossless`.
+    - **Báo chủ game rõ** mỗi lần build dừng: vì sao (file:dòng), đã chọn cách nào, file nào giữ nguyên, gói nặng thêm bao nhiêu (bảng nén của `compress`).
   - In bảng: số file, dung lượng trước / sau, các file lớn nhất, cách nén thêm.
 
   | `config.json` `compress` | Ảnh | Nhạc nền / hiệu ứng |
@@ -120,6 +130,7 @@ export default {
   | `lossless` (chỉ ảnh) | WebP không mất chất lượng (pixel art, ảnh code đọc từng điểm) | – |
   | `off` | Giữ PNG | Giữ nguyên |
   | `keep: ["assets/maps/**"]` | Không đụng các file khớp (`*` trong thư mục, `**` qua thư mục) | |
+  | `dynamicPaths: ["src/scenes/Boot.js"]` | File nguồn ghép tên file lúc chạy, đã kiểm (file của nó nằm trong `keep`): `compress` không dừng ở đó nữa | |
 
   Nén thêm khi truyền (`.br` / `.gz`) là việc của server (§6); không xung đột, nhưng với ảnh / nhạc đã nén thì gần như không nhỏ thêm.
 - `public/` chứa `game.json`, `i18n/`, `assets/`: Vite chép nguyên vào gói.

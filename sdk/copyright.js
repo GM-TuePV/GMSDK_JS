@@ -15,12 +15,47 @@ export const COPYRIGHT_OWNER = 'Azgames.io';
 export const COPYRIGHT_DEFAULT = `© ${COPYRIGHT_YEAR} ${COPYRIGHT_OWNER}`;
 
 /**
- * The Privacy Policy link (docs/INTEGRATION.md §9): a "Privacy Policy" button in Settings next to the copyright line,
- * on every portal (CrazyGames asks for it at upload), opened in a new tab:
- *   button.onclick = () => window.open(PRIVACY_POLICY_URL, '_blank', 'noopener');
- * Use this constant: check-export warns when the game writes the owner's domain itself.
+ * The Privacy Policy link of the dev page (docs/INTEGRATION.md §9). On a portal the link is the server's, like More
+ * Games: privacyPolicyUrl(sdk) below. check-export warns when the game writes the owner's domain itself.
  */
 export const PRIVACY_POLICY_URL = 'https://azgames.io/privacy-policy/';
+
+/**
+ * The "Privacy Policy" button in Settings next to the copyright line (docs/INTEGRATION.md §9), like More Games: the
+ * server decides (gameinfo.privacy_policy of the licence API, through sdk.info.gameInfo):
+ *
+ *   a link from the server        → that link
+ *   empty, none, no answer        → ''  (hide the button)
+ *   dev page (no SDK, or platform 'dev') → the server's link, else PRIVACY_POLICY_URL: the button always shows there
+ *
+ *   const url = privacyPolicyUrl(sdk);                 // after sdk.ready(): the server's answer is in
+ *   privacyButton.hidden = !url;
+ *   privacyButton.onclick = () => window.open(url, '_blank', 'noopener');
+ *
+ * @param {object} [sdk] getSDK() of the shim @returns {string} '' = no button
+ */
+export function privacyPolicyUrl(sdk) {
+  let info = null;
+  try {
+    if (sdk && sdk.version !== 'fallback') info = sdk.info;
+  } catch {
+    info = null;
+  }
+  let url = '';
+  try {
+    const raw = info?.gameInfo?.privacy_policy;
+    if (typeof raw === 'string' && raw.trim()) {
+      const u = new URL(raw.trim());
+      if (u.protocol === 'https:' || u.protocol === 'http:') url = u.href;
+    }
+  } catch {
+    url = '';
+  }
+  // The dev page (the shim's fallback has no server; gmsdkjs on localhost gets no link): the default, so the button's
+  // place and text can be checked.
+  const dev = !info || info.version === 'fallback' || info.platform === 'dev';
+  return url || (dev ? PRIVACY_POLICY_URL : '');
+}
 
 /** @param {object} [sdk] getSDK() of the shim @returns {string} '' = show nothing */
 export function copyrightText(sdk) {

@@ -31,7 +31,7 @@ Luồng tối thiểu. Người mới phải vào được gameplay sau **tối 
 | Thua / thắng | Kết quả, lý do thua + mẹo, Retry 1 cú bấm (cả màn thắng nếu chơi lại để lấy điểm cao hơn được), nút thưởng (nếu có); hạng vừa đạt (nếu có bảng xếp hạng) | `gameplayStop()`, `rewarded()` trong click, `board.submit(score)` |
 | Bảng xếp hạng (nếu có `leaderboardId`) | Mở từ menu và màn kết quả; 4 kỳ, hạng của người chơi, đổi tên + cờ ([LEADERBOARD.md](LEADERBOARD.md)) | `openLeaderboard()` hoặc màn tự vẽ |
 | Về menu sau ván | Chỗ nghỉ tự nhiên | `interstitial()` theo luật của game |
-| Settings | Âm lượng nhạc / hiệu ứng, ngôn ngữ, Show tutorial, More Games, `V<version>`, dòng bản quyền, nút Privacy Policy cạnh dòng bản quyền | `setMuted()`, `moreGamesUrl()`, `copyrightText(sdk)`, `PRIVACY_POLICY_URL` |
+| Settings | Âm lượng nhạc / hiệu ứng, ngôn ngữ, Show tutorial, More Games, `V<version>`, dòng bản quyền, nút Privacy Policy cạnh dòng bản quyền | `setMuted()`, `moreGamesUrl()`, `copyrightText(sdk)`, `privacyPolicyUrl(sdk)` |
 
 Thứ tự gọi SDK: [INTEGRATION.md](INTEGRATION.md) §2–§5, §9.
 

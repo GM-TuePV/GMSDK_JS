@@ -32,7 +32,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - `loading/loader.js` mặc định trỏ `gmsdkjs/1.0.2/`; `assemble` mặc định đọc `templates/1.0.2/`.
 - **`gameplayStart`** chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup / màn kết quả đang che; `gameplayStop` khi hết màn, về menu, pause, khi bảng che hiện giữa lúc chơi ([INTEGRATION.md §4](docs/INTEGRATION.md), QA 4.12).
 - **Retry ở màn thắng** khi game cho chơi lại để lấy điểm cao hơn ([UX.md](docs/UX.md), QA 9.10).
-- **Nút "Privacy Policy"** cạnh dòng bản quyền, mọi portal: `PRIVACY_POLICY_URL` (`https://azgames.io/privacy-policy/`) trong `sdk/copyright.js` ([INTEGRATION.md §9](docs/INTEGRATION.md), QA 7.11). `check-export` không báo nhầm link này.
+- **Nút "Privacy Policy"** cạnh dòng bản quyền, **như More Games**: `privacyPolicyUrl(sdk)` trong `sdk/copyright.js` trả link `gameinfo.privacy_policy` của API giấy phép, rỗng thì `''` và game ẩn nút; trang dev luôn có nút (`PRIVACY_POLICY_URL`, `https://azgames.io/privacy-policy/`) ([INTEGRATION.md §9](docs/INTEGRATION.md), QA 7.11). `check-export --src` cảnh báo code còn mở thẳng `PRIVACY_POLICY_URL`; không báo nhầm link mặc định.
 - **CrazyGames có dòng bản quyền** như trang nhà (theo `gameinfo.trademark`), chỉ là chữ, không link; GD, Poki vẫn không có (QA 7.4, [LOADING.md §2](docs/LOADING.md)). Cần preset `crazy` của tool build bỏ `trademark: false` và admin không tắt trademark cho domain CrazyGames. Code game không đổi.
 - **Bố cục màn loading mặc định** ([LOADING.md](docs/LOADING.md)): logo publisher trên cùng giữa → tên game → key art khung 16:9 to ở giữa → thanh % ngắn ngay dưới ảnh; số build góc dưới phải. Màu, chữ, luồng giữ nguyên; tên class giữ nguyên nên `icons/loader.css` của game vẫn dùng được (logo giờ nằm trong `.gmLoaderStage`).
 - **Cờ bảng xếp hạng: bộ mới, một atlas** ([LEADERBOARD.md](docs/LEADERBOARD.md)): 254 file PNG `leaderboard/flags/` thay bằng `leaderboard/flags.webp` (253 cờ do GM vẽ, ô 100×75, 241 KB) + `flags.json`; một lần tải thay cho từng cờ, và bước nén lúc build không đổi tên được nữa (bộ PNG cũ bị `compress` đổi sang WebP làm mất cờ nếu game không `keep`). Chưa chọn nước hiện cờ **US** (bỏ `GLOBE`). `countries.json` thêm England (`GB-ENG`). `ui.js` có `loadFlags()` cho màn tự vẽ. `tools/build-flags.mjs` dựng lại atlas.
@@ -43,12 +43,13 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
 - **Marketing kit: thêm 3 ảnh, ảnh nhỏ bớt rối** ([HANDOFF.md §4, §6](docs/HANDOFF.md)): `800x800` và `800x1200` (cover vuông và dọc 2:3 CrazyGames đòi), `512x512_logo` (vuông có logo, cho CrazyGames và site của mình); `512x512` giờ **không chữ** (Poki cấm chữ). Luật "Ảnh nhỏ phải đọc được": một vật chính, nền gọn, tương phản mạnh, thử ở 128 / 96 px; mẫu prompt Codex có câu cấm rối. `check-marketing` đòi đủ 11 ảnh.
 - **Content brief thêm mục 11 "Control Guide"** ([HANDOFF.md §5](docs/HANDOFF.md)): **Controls** (hướng dẫn điều khiển theo bàn phím / chuột / cảm ứng, đúng phím trong code) và **How to play** (hướng dẫn chơi 3–6 bước), tiếng Anh, dán thẳng lên cổng game. `check-marketing` đòi 11 mục và đủ hai phần.
+- **Nén ảnh / nhạc không làm hỏng game** ([EXPORT.md §4](docs/EXPORT.md)): `compress` đọc `src/` trước khi nén, thấy code ghép tên file lúc chạy (`'img/' + n + '.png'`, `` `${id}.ogg` ``, `"png"`) thì **dừng build, chưa đổi gì**, in file:dòng và cách xử lý. `check-export` **báo lỗi** khi `game.js` còn gọi `.png` / `.ogg`… mà gói chỉ có `.webp` / `.mp3`. Thêm `config.json` → `compress.dynamicPaths`: các file nguồn đã kiểm (file của nó nằm trong `keep`). Luật cho AI (`PROMPT.md`): mặc định giữ file (`keep`), không sửa code; sửa code tải chỉ khi chủ game đồng ý; luôn báo chủ game đã làm gì, gói nặng thêm bao nhiêu.
 - **Quảng cáo bắt buộc:** plan có bảng "Chỗ quảng cáo" (`PROMPT.md`, AI_INSTALL Bước 3, NEW_GAME Bước 7); `check-export` **báo lỗi** khi `game.js` không gọi `preroll()` hoặc `interstitial()`, cảnh báo khi không có `rewarded()`.
 - **Trang và gói ở hai tên miền** trên site của mình (trang `game.1games.io`, gói qua `<base href>` trên CDN `gdn.1games.io`): EMBED.md trước ghi sai là file trong gói cùng tên miền. Luật trong `PROMPT.md` và EMBED.md: ảnh đọc điểm ảnh / làm texture luôn `crossOrigin`, không dựng URL từ `location.href`, Worker từ blob. `check-export` cảnh báo các dấu hiệu này; `tools/screens.mjs` chạy hai tên miền như site (QA §2.1); SERVER_NOTES: CORS trên CDN là bắt buộc.
 
 **Dấu hiệu** (còn một trong các điều này là phải làm)
 - `public/loader.js` khác `docs/GMSDK_JS/loading/loader.js` (còn trỏ `gmsdkjs/1.0.1/`).
-- `src/sdk/copyright.js` chưa có `PRIVACY_POLICY_URL`, hoặc màn Settings chưa có nút "Privacy Policy".
+- `src/sdk/copyright.js` chưa có `privacyPolicyUrl`, màn Settings chưa có nút "Privacy Policy", hoặc nút mở thẳng `PRIVACY_POLICY_URL` / luôn hiện trên portal.
 - Có chỗ gọi `gameplayStart` lúc tải, ở menu, hoặc khi bảng hướng dẫn / popup đang che.
 - Game cho chơi lại để lấy điểm cao hơn mà màn thắng chưa có Retry.
 - Code game có `CrazyGames.SDK` (gọi thẳng SDK của portal).
@@ -56,12 +57,13 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - Game có bảng xếp hạng mà `public/assets/leaderboard/` còn thư mục `flags/`, hoặc chưa có `flags.webp` + `flags.json`.
 - Marketing kit thiếu `800x800`, `800x1200` hay `512x512_logo` (`check-marketing` báo), hoặc `512x512` còn logo / chữ.
 - `check-export` báo `never calls sdk.preroll()` / `sdk.interstitial()`, hoặc cảnh báo đọc điểm ảnh không `crossOrigin`, URL dựng từ `location.href`, Worker từ file.
+- `compress` dừng với `compress stopped … builds file names at run time`, hoặc `check-export` báo `asks for files that compress renamed`.
 - Content brief chưa có mục `## 11. Control Guide` (`check-marketing` báo).
 - `screens.mjs` có lỗi `cross-origin data` / CORS ở cột "Lỗi trang".
 
 **Game cần làm**
 1. Chép lại `loading/loader.js` → `public/loader.js`, `loading/loading.js` (+ `.d.ts`) → `src/sdk/loading/` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`. Chỗ gọi `loader.error()` truyền file tải lỗi nếu biết: `loader.error(null, file)`.
-2. Thêm nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ), mở `PRIVACY_POLICY_URL` ở tab mới.
+2. Nút "Privacy Policy" trong Settings cạnh dòng bản quyền (chữ qua `i18n`, khoá `privacy_policy`, mọi ngôn ngữ): `const url = privacyPolicyUrl(sdk)` sau `ready()`, `hidden = !url`, bấm mở `url` ở tab mới.
 3. Rà mọi chỗ gọi `gameplayStart` / `gameplayStop` theo luật mới.
 4. Màn thắng có Retry nếu game cho chơi lại để lấy điểm cao hơn.
 5. Chép lại `sdk/gmsdkjs-shim.js` (+ `.d.ts`) → `src/sdk/`; âm thanh xét thêm `sdk.portalMuted()` và nghe `sdk.onPortalMuted` ([INTEGRATION.md §3](docs/INTEGRATION.md)).
@@ -70,6 +72,7 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 8. Marketing kit đã làm: vẽ thêm `800x800`, `800x1200`, `512x512_logo`, vẽ lại `512x512` không chữ (prompt theo HANDOFF.md §6), dựng lại kit, `check-marketing` → `OK`.
 9. Gắn đủ quảng cáo theo bảng "Chỗ quảng cáo" đã duyệt (`preroll`, `interstitial`, `rewarded` nếu có thưởng). Sửa các chỗ vướng hai tên miền (EMBED.md, đầu file), chạy `screens.mjs` không còn lỗi `cross-origin`.
 10. Marketing kit đã làm: thêm mục 11 Control Guide vào cả ba file brief (HTML: trước Image kit), `check-marketing` → `OK`.
+11. Build lại: `compress` dừng ở code ghép tên file thì xử lý theo EXPORT.md §4 (mặc định `keep` + `dynamicPaths`, không sửa code) và báo chủ game. Game đã tự `keep` các thư mục đó (ví dụ golfbattle) chỉ cần thêm `dynamicPaths`.
 
 ## 1.0.1 — 2026-10-22
 

@@ -166,7 +166,7 @@ Lưu ý khi đọc kết quả trên GD: SDK của GD tự giới hạn tần su
 | 7.8 | Mọi font, âm thanh, ảnh có nguồn và giấy phép trong `licenses.json`: không NC, không "personal use", không asset lấy từ game khác; CC-BY có dòng ghi công người chơi thấy được | `check-export` không lỗi, không cảnh báo giấy phép ([ASSETS.md](ASSETS.md)) | Major | [Nội bộ] |
 | 7.9 | Game trong iframe trên tên miền khác chạy đủ: không lỗi CORS / SecurityError / Mixed Content / Worker trong console, có tiếng sau cú chạm đầu, phím game không cuộn trang ngoài | `preview.html?debug` trên portal thật, hoặc trang và file ngoài ở hai cổng khác nhau ([EMBED.md](EMBED.md) §12) | Major | [Nội bộ] |
 | 7.10 | Có nút More Games, đúng chỗ, bấm mở tab mới (không `location.href`) | Trang dev: nút luôn hiện, mở `https://azgames.io` ([INTEGRATION.md](INTEGRATION.md) §9). Trên gm theo link của server | Minor | [Nội bộ] |
-| 7.11 | Nút "Privacy Policy" trong Settings, cạnh dòng bản quyền, mọi portal: bấm mở `https://azgames.io/privacy-policy/` ở tab mới (`PRIVACY_POLICY_URL` của `sdk/copyright.js`) | Mở Settings, bấm nút | Major | [CG] |
+| 7.11 | Nút "Privacy Policy" trong Settings, cạnh dòng bản quyền, như More Games: server có `gameinfo.privacy_policy` thì nút hiện và mở đúng link đó ở tab mới; rỗng thì không có nút (`privacyPolicyUrl(sdk)` của `sdk/copyright.js`). Trang dev luôn có nút | Mở Settings, bấm nút; trên portal so link với admin | Major | [CG] |
 
 ### 3.8 Tracking và gói xuất
 

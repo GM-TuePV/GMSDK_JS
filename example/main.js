@@ -1,7 +1,7 @@
 // A tiny "game" that uses every part of the SDK the way a real game should (docs/INTEGRATION.md).
 // A run is: press Tap until the time is up. Plain JS modules, no build step.
 import { loadSDK } from '../sdk/gmsdkjs-shim.js';
-import { copyrightText, PRIVACY_POLICY_URL } from '../sdk/copyright.js';
+import { copyrightText, privacyPolicyUrl } from '../sdk/copyright.js';
 import { createLoader } from '../loading/loading.js';
 import { initI18n, languageList, onLangChange, setLang, t } from '../sdk/i18n.js';
 import { loadJSON } from '../sdk/net.js';
@@ -112,10 +112,12 @@ function showMenu() {
 
   document.getElementById('version').textContent = `V${manifest.version}`;
   document.getElementById('trademark').textContent = copyrightText(sdk); // "© 2026 Azgames.io" unless the server says otherwise; '' = show nothing
-  // Privacy Policy next to the copyright line, every portal (CrazyGames asks for it), new tab.
+  // Privacy Policy next to the copyright line, like More Games: the server's link, none = no button; new tab.
   const privacy = document.getElementById('privacy');
+  const privacyUrl = privacyPolicyUrl(sdk);
+  privacy.hidden = !privacyUrl;
   privacy.textContent = t('privacy_policy');
-  privacy.onclick = () => window.open(PRIVACY_POLICY_URL, '_blank', 'noopener');
+  privacy.onclick = () => window.open(privacyUrl, '_blank', 'noopener');
 }
 
 let runs = 0;

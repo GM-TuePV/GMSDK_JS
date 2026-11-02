@@ -116,6 +116,21 @@ function existsLoose(root, rel) {
 function assetPathProblem(dir, p) {
   const at = p.indexOf('${');
   const rel = at < 0 ? p : p.slice(0, p.lastIndexOf('/', at) + 1);
+  // tools/compress.mjs renamed the file (.png → .webp, audio → .mp3) and this path still asks for the old name: sure
+  // to break ('converted'). Built at run time: the folder holds only the new kind of file.
+  const from = /\.(png|wav|ogg|m4a|aac|flac)$/i.exec(p)?.[1]?.toLowerCase();
+  if (from) {
+    const to = from === 'png' ? '.webp' : '.mp3';
+    if (at < 0) {
+      if (!existsExact(dir, p) && existsExact(dir, p.replace(/\.[^.]+$/, to))) return 'converted';
+    } else if (rel && existsExact(dir, rel)) {
+      let names = [];
+      try {
+        names = readdirSync(join(dir, rel)).map((n) => n.toLowerCase());
+      } catch {}
+      if (!names.some((n) => n.endsWith(`.${from}`)) && names.some((n) => n.endsWith(to))) return 'converted';
+    }
+  }
   if (!rel || existsExact(dir, rel)) return null;
   return existsLoose(dir, rel) ? 'case' : 'missing';
 }
@@ -305,6 +320,7 @@ if (configPath) {
         if (c.images !== undefined && !['normal', 'more', 'lossless', 'off'].includes(c.images)) err(`config.json compress.images "${c.images}": normal | more | lossless | off`);
         if (c.audio !== undefined && !['normal', 'more', 'off'].includes(c.audio)) err(`config.json compress.audio "${c.audio}": normal | more | off`);
         if (c.keep !== undefined && (!Array.isArray(c.keep) || c.keep.some((k) => typeof k !== 'string'))) err('config.json compress.keep: a list of package paths (globs)');
+        if (c.dynamicPaths !== undefined && (!Array.isArray(c.dynamicPaths) || c.dynamicPaths.some((k) => typeof k !== 'string'))) err('config.json compress.dynamicPaths: a list of source files (globs) that build file names at run time');
       }
     }
     // loadingScreen (docs/LOADING.md §1.1): the kit look or the game's look (icons/loader.css), asked once.
@@ -623,12 +639,13 @@ function checkPackage() {
     // in the package (fine on Windows, broken on the CDN); not there at all is a warning (an atlas key, a typo, a
     // renamed file of tools/compress.mjs missed).
     const assetPaths = [...new Set((js.match(/["'`](assets\/[^"'`?#\s]+\.(?:png|webp|jpe?g|mp3|ogg|wav|m4a|json))["'`?#]/gi) ?? []).map((m) => m.slice(1, -1)))];
-    const byProblem = { case: [], missing: [] };
+    const byProblem = { case: [], missing: [], converted: [] };
     for (const p of assetPaths) {
       const problem = assetPathProblem(dir, p);
       if (problem) byProblem[problem].push(p);
     }
     if (byProblem.case.length) err(`${entry} names files whose upper / lower case differs from the package (works on Windows, missing on the CDN): ${byProblem.case.slice(0, 6).join(', ')}`);
+    if (byProblem.converted.length) err(`${entry} asks for files that compress renamed (.png → .webp, audio → .mp3), so the game cannot load them: ${byProblem.converted.slice(0, 6).join(', ')}. Keep them (config.json compress.keep + dynamicPaths) or write whole file names in the code (docs/EXPORT.md §4)`);
     if (byProblem.missing.length) warn(`${entry} names files that are not in the package (fine if they are keys, e.g. of an atlas; else a typo or a renamed file): ${byProblem.missing.slice(0, 6).join(', ')}`);
     // The leaderboard (docs/LEADERBOARD.md): its events name it in the minified code; the default screen its class.
     if (/leaderboard_submit/.test(js) && !m?.leaderboardId) err(`${entry} uses the leaderboard but game.json has no leaderboardId: set it in config.json`);
@@ -740,6 +757,10 @@ if (srcDir) {
         // (Vite: "iife does not support top-level await"). Await inside boot() (docs/EXPORT.md §3).
         if (/^[^\s/*][^]*\bawait\b/.test(line) && !/^\s*(\/\/|\/?\*)/.test(line) && !/^(export\s+)?(async\s+)?function\b|=>/.test(line)) {
           warn(`${relative(process.cwd(), f)}:${i + 1} looks like a top-level await: put it inside an async function (boot()), the export package is an iife (docs/EXPORT.md §3)`);
+        }
+        // The Privacy Policy button follows the server like More Games (kit 1.0.2): its link is privacyPolicyUrl(sdk).
+        if (/\bPRIVACY_POLICY_URL\b/.test(line) && !/^\s*(\/\/|\/?\*)/.test(line) && !/[\\/]sdk[\\/]copyright\./.test(f)) {
+          warn(`${relative(process.cwd(), f)}:${i + 1} uses PRIVACY_POLICY_URL: the Privacy Policy button opens privacyPolicyUrl(sdk) and hides when it is '' (the server's gameinfo.privacy_policy, docs/INTEGRATION.md §9)`);
         }
       });
     }

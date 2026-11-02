@@ -104,4 +104,4 @@ copyrightLabel.textContent = copyrightText(sdk);   // sau sdk.ready(); '' = khô
 - Năm cố định `2026` (`COPYRIGHT_YEAR` trong `copyright.js`), đổi ở đó khi cần.
 - Game **không tự viết** `©`, `Azgames.io`, `AZ Games`… ở chỗ khác: `check-export` cảnh báo (trừ chuỗi của `copyright.js`).
 - Chỗ đặt: góc menu hoặc chân bảng Settings, cạnh `V<version>` ([INTEGRATION.md §9](INTEGRATION.md)).
-- Cạnh dòng bản quyền là nút **"Privacy Policy"**, mở `PRIVACY_POLICY_URL` (`https://azgames.io/privacy-policy/`) cũng của `copyright.js`, mọi portal.
+- Cạnh dòng bản quyền là nút **"Privacy Policy"**, như More Games: mở `privacyPolicyUrl(sdk)` cũng của `copyright.js` (link `gameinfo.privacy_policy` của server); `''` thì ẩn nút ([INTEGRATION.md §9](INTEGRATION.md)).
