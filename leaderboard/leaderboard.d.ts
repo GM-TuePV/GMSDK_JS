@@ -8,7 +8,7 @@ export const PERIODS: readonly Period[];
 export interface Player {
   /** GMA player id. */
   id: string;
-  /** Display name: 1-20 of A-Z a-z 0-9 _ - (the server's rule). */
+  /** Display name: 1-20 of A-Z a-z 0-9 _ - (the server's rule); a portal's username keeps its period (kit 1.0.3). */
   name: string;
   /** ISO 3166 code of the flag (US, VN, GB-ENG); '' = none chosen. */
   country: string;
@@ -44,8 +44,14 @@ export interface Leaderboard {
   ready(): Promise<boolean>;
   /** The signed-in player; null before ready(). */
   player(): Player | null;
-  /** True while the player still has the default name. */
+  /** True while the player still has the default name; false where the name is locked. */
   needsName(): boolean;
+  /** False where the portal owns the name (CrazyGames, gmsdkjs 1.0.2 playerPolicy): only the flag can change. */
+  nameEditable(): boolean;
+  /** False where this player's score is not sent (a CrazyGames guest); the board still shows. */
+  canSubmit(): boolean;
+  /** True for a CrazyGames guest (gmsdkjs 1.0.3): show "Guest", not the player's random name. */
+  isGuest(): boolean;
   /** Change name and / or flag; true when the server accepted it. */
   setPlayer(p: { name?: string; country?: string }): Promise<boolean>;
   /** Submit a score (signed here); null when it did not reach the board. */
@@ -66,5 +72,7 @@ export function createLeaderboard(o: {
 }): Leaderboard;
 
 export function cleanName(name: unknown): string;
+/** cleanName plus the period: a portal username as the portal shows it (kit 1.0.3). */
+export function cleanPortalName(name: unknown): string;
 export function cleanCountry(code: unknown): string;
 export function scoreToken(playerId: string, score: number, now?: number): string;

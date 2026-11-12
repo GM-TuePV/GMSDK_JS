@@ -20,6 +20,35 @@ AI xét từng mục, từ cũ (dưới cùng) tới mới. Repo còn **dấu hi
 
 Thay đổi chỉ ở tài liệu thì không cần mục.
 
+## 1.0.3 — 2026-11-04
+
+### CrazyGames: người chơi là tài khoản CrazyGames, dữ liệu theo tài khoản
+
+Cần **gmsdkjs 1.0.3** ở `…/gmsdkjs/1.0.3/` và **template 1.0.3** (`…/gmsdkjs/templates/1.0.3/`) trên server ([SERVER_NOTES.md §1](docs/SERVER_NOTES.md)). Chỉ bản build **CrazyGames** chạy khác; build cho site của mình, GD, Poki chạy như 1.0.2. Game đã build theo 1.0.2 không bị ảnh hưởng (vẫn gmsdkjs 1.0.2).
+
+**Thay đổi**
+- **Save của game lên dữ liệu người chơi CrazyGames** (module Data, "Progress Save"): `sdk/storage.js` đọc / ghi key `azgames.<gameCode>` ở đó thay vì `localStorage`, cả khi khách chơi. Khách đăng nhập mà tài khoản chưa có save thì CrazyGames tự chuyển save của khách lên; tài khoản đã có save (chơi máy khác) thì dùng save của tài khoản; cùng tài khoản mở máy nào cũng ra cùng save. Save cũ trong `localStorage` (bản build trước) được chép sang **một lần**. Không bật "Progress Save" thì vẫn `localStorage` như 1.0.2 ([INTEGRATION.md §6](docs/INTEGRATION.md)).
+- `loading/loader.js`: trên CrazyGames, `GMLoader.ready()` chờ gmsdkjs biết dữ liệu người chơi (tối đa 8 giây) rồi game mới đọc save. Mặc định trỏ `gmsdkjs/1.0.3/`; `assemble` đọc `templates/1.0.3/`.
+- **gmsdkjs 1.0.3 trên CrazyGames:** mỗi tài khoản CrazyGames là **một** người chơi GMA trên mọi máy (phiên GMA cất trong dữ liệu người chơi); hai tài khoản dùng chung trình duyệt không đè điểm nhau. `getUser()` trả chậm vẫn nhận tên, vẫn gửi được điểm. Game không gọi gì thêm.
+- **Bảng xếp hạng** ([LEADERBOARD.md §3](docs/LEADERBOARD.md)):
+  - tên CrazyGames giữ dấu chấm (`SingingCheese.TLNU`, `cleanPortalName()`); tên gõ trong game ở site khác giữ luật cũ;
+  - khách hiện **"Guest"** (`board.isGuest()`, khoá `guest_name`), kể cả khi CrazyGames chưa trả username, không bao giờ hiện tên ngẫu nhiên `playerXXXXXX`; cờ của khách là **Mỹ**, không đổi được: khách bấm nút **Name & flag** thì không mở bảng sửa, chỉ hiện lời nhắn đăng nhập (`guest_flag`);
+  - màn "Name & flag" trên CrazyGames **vẫn có ô tên** (1.0.2 giấu đi): ô chỉ đọc, hiện username; bấm vào thì hiện lời nhắn "đổi tên ở hồ sơ CrazyGames" (`name_portal`). Không có nút đăng nhập;
+  - cờ mặc định của người đã đăng nhập theo nước của họ trên CrazyGames (`systemInfo.countryCode`), vẫn đổi được;
+  - đổi cờ trên CrazyGames chỉ gửi cờ, không gửi tên.
+
+**Dấu hiệu**
+- `public/loader.js` trỏ `gmsdkjs/1.0.2/`, hoặc không có `portalData`.
+- `src/sdk/storage.js` không có `portalDataNow`.
+- Game có bảng xếp hạng mà `src/sdk/leaderboard/leaderboard.js` không có `isGuest`, hoặc nhóm `leaderboard` của `i18n` thiếu `guest_name` / `name_portal`.
+- Code game tự đọc / ghi `localStorage` cho tiến độ chơi, ngoài `sdk.storage` (phần đó sẽ không theo tài khoản CrazyGames).
+
+**Game cần làm**
+1. Chép lại `loading/loader.js` → `public/loader.js` và `sdk/storage.js` → `src/sdk/`. Game có bảng xếp hạng: chép `leaderboard/leaderboard.js` (+ `.d.ts`) và `ui.js` → `src/sdk/leaderboard/`, thêm khoá `guest_name`, `name_portal`, `guest_flag` vào nhóm `leaderboard` của `i18n` (chữ tiếng Anh ở [LEADERBOARD.md §4](docs/LEADERBOARD.md)).
+2. Màn bảng tự vẽ: khách (`board.isGuest()`) hiện chữ "Guest" và cờ Mỹ, không hiện `board.player().name`; không cho khách đổi tên / cờ: nút đổi tên / cờ của khách chỉ hiện lời nhắn `guest_flag`, không mở bảng sửa. Ô tên khi `board.nameEditable()` là `false`: **hiện, chỉ đọc**, bấm vào thì hiện lời nhắn `name_portal`; không giấu ô tên như 1.0.2.
+3. Tiến độ chơi phải đi qua `sdk.storage`. Game còn tự lưu `localStorage` riêng thì chuyển vào `sdk.storage` (`sdk.storage.migrate`).
+4. Build lại; nộp CrazyGames thì bật **"Progress Save"** ([EXPORT.md §6](docs/EXPORT.md)).
+
 ## 1.0.2 — 2026-10-27
 
 ### Theo yêu cầu CrazyGames (mẫu: Wacky Flip đã qua duyệt)
@@ -27,7 +56,7 @@ Thay đổi chỉ ở tài liệu thì không cần mục.
 Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gmsdkjs/templates/1.0.2/`) trên server ([SERVER_NOTES.md §1](docs/SERVER_NOTES.md)). Kit 1.0.1 và game đã build theo 1.0.1 không bị ảnh hưởng.
 
 **Thay đổi**
-- **gmsdkjs 1.0.2:** trên CrazyGames gọi `user.getUser()` đúng một lần mỗi lần mở trang; tài khoản GMA tạo lần đầu mang `username` CrazyGames, đã có tài khoản thì giữ tên GMA ([SERVER_NOTES.md §6](docs/SERVER_NOTES.md)). Game không gọi gì; game **không được** tự gọi `CrazyGames.SDK.user.getUser()`.
+- **gmsdkjs 1.0.2:** trên CrazyGames gọi `user.getUser()` đúng một lần mỗi lần mở trang; tài khoản GMA tạo lần đầu mang `username` CrazyGames ([SERVER_NOTES.md §6](docs/SERVER_NOTES.md)); từ 2026-11-03 người đã đăng nhập luôn mang đúng username đó (tài khoản cũ cũng được đổi theo). Game không gọi gì; game **không được** tự gọi `CrazyGames.SDK.user.getUser()`.
 - **Portal bắt tắt tiếng (CrazyGames `muteAudio`):** gmsdkjs 1.0.2 có `sdk.portalMuted()` và `sdk.onPortalMuted(fn)`; lệnh của portal đứng trên nút âm thanh của game, nút đó không bật lại tiếng khi portal đang bắt tắt ([INTEGRATION.md §3](docs/INTEGRATION.md), QA 4.15, [SERVER_NOTES.md §7](docs/SERVER_NOTES.md)). Làm xong thì tick được mục "muting audio through SDK" của CrazyGames.
 - `loading/loader.js` mặc định trỏ `gmsdkjs/1.0.2/`; `assemble` mặc định đọc `templates/1.0.2/`.
 - **`gameplayStart`** chỉ khi người chơi thật sự vào màn và điều khiển được, không khi hướng dẫn / popup / màn kết quả đang che; `gameplayStop` khi hết màn, về menu, pause, khi bảng che hiện giữa lúc chơi ([INTEGRATION.md §4](docs/INTEGRATION.md), QA 4.12).
@@ -43,6 +72,12 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - **Sự kiện `LoadingFail { name }`** mỗi khi màn loading hiện Reload ([LOADING.md](docs/LOADING.md)): `name` là file tải lỗi (`gmsdkjs.js`, `game.js`, hoặc file game truyền vào `loader.error(text, file)`; không truyền thì `game`). Gửi như mọi sự kiện tracking; gmsdkjs.js hỏng thì giữ trên máy, gửi ở lần mở sau.
 - **Marketing kit: thêm 3 ảnh, ảnh nhỏ bớt rối** ([HANDOFF.md §4, §6](docs/HANDOFF.md)): `800x800` và `800x1200` (cover vuông và dọc 2:3 CrazyGames đòi), `512x512_logo` (vuông có logo, cho CrazyGames và site của mình); `512x512` giờ **không chữ** (Poki cấm chữ). Luật "Ảnh nhỏ phải đọc được": một vật chính, nền gọn, tương phản mạnh, thử ở 128 / 96 px; mẫu prompt Codex có câu cấm rối. `check-marketing` đòi đủ 11 ảnh.
 - **Content brief thêm mục 11 "Control Guide"** ([HANDOFF.md §5](docs/HANDOFF.md)): **Controls** (hướng dẫn điều khiển theo bàn phím / chuột / cảm ứng, đúng phím trong code) và **How to play** (hướng dẫn chơi 3–6 bước), tiếng Anh, dán thẳng lên cổng game. `check-marketing` đòi 11 mục và đủ hai phần.
+- **Bảng xếp hạng trên CrazyGames** (Tap Road 2 bị trả về, 2026-11-03; [LEADERBOARD.md §3](docs/LEADERBOARD.md)):
+  - Tên là username CrazyGames, không sửa được, kể cả khách. Khách (chưa đăng nhập) không lên bảng.
+  - gmsdkjs 1.0.2 có `playerPolicy()` và chặn luôn ở GMA (đổi tên, điểm của khách đều bị từ chối).
+  - `leaderboard.js` có `board.nameEditable()` và `board.canSubmit()`; `needsName()` luôn `false` ở đó.
+  - `ui.js` chỉ còn nút **Flag**; khách thấy dòng "Sign in to put your score on the leaderboard." (khoá `edit_flag`, `guest`).
+- **Không tự đếm giờ quảng cáo trên CrazyGames / Poki:** họ tự giãn cách (CrazyGames 3 phút giữa hai midgame). gmsdkjs 1.0.2 chuyển mọi `interstitial()` cho SDK của họ, template build đặt `time_show_inter: 0`. Game không tự đếm giờ giữa hai quảng cáo: gọi `sdk.interstitial()` ở mọi chỗ nghỉ hợp lý.
 - **Nén ảnh / nhạc không làm hỏng game** ([EXPORT.md §4](docs/EXPORT.md)): `compress` đọc `src/` trước khi nén, thấy code ghép tên file lúc chạy (`'img/' + n + '.png'`, `` `${id}.ogg` ``, `"png"`) thì **dừng build, chưa đổi gì**, in file:dòng và cách xử lý. `check-export` **báo lỗi** khi `game.js` còn gọi `.png` / `.ogg`… mà gói chỉ có `.webp` / `.mp3`. Thêm `config.json` → `compress.dynamicPaths`: các file nguồn đã kiểm (file của nó nằm trong `keep`). Luật cho AI (`PROMPT.md`): mặc định giữ file (`keep`), không sửa code; sửa code tải chỉ khi chủ game đồng ý; luôn báo chủ game đã làm gì, gói nặng thêm bao nhiêu.
 - **Quảng cáo bắt buộc:** plan có bảng "Chỗ quảng cáo" (`PROMPT.md`, AI_INSTALL Bước 3, NEW_GAME Bước 7); `check-export` **báo lỗi** khi `game.js` không gọi `preroll()` hoặc `interstitial()`, cảnh báo khi không có `rewarded()`.
 - **Trang và gói ở hai tên miền** trên site của mình (trang `game.1games.io`, gói qua `<base href>` trên CDN `gdn.1games.io`): EMBED.md trước ghi sai là file trong gói cùng tên miền. Luật trong `PROMPT.md` và EMBED.md: ảnh đọc điểm ảnh / làm texture luôn `crossOrigin`, không dựng URL từ `location.href`, Worker từ blob. `check-export` cảnh báo các dấu hiệu này; `tools/screens.mjs` chạy hai tên miền như site (QA §2.1); SERVER_NOTES: CORS trên CDN là bắt buộc.
@@ -60,6 +95,8 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 - `compress` dừng với `compress stopped … builds file names at run time`, hoặc `check-export` báo `asks for files that compress renamed`.
 - Content brief chưa có mục `## 11. Control Guide` (`check-marketing` báo).
 - `screens.mjs` có lỗi `cross-origin data` / CORS ở cột "Lỗi trang".
+- Game có bảng xếp hạng mà `src/sdk/leaderboard/leaderboard.js` chưa có `canSubmit`, hoặc game có ô nhập tên riêng không xét `board.nameEditable()`.
+- Code game tự đếm thời gian giữa hai lần `interstitial()` (biến kiểu `lastAdTime`, `adCooldown`).
 
 **Game cần làm**
 1. Chép lại `loading/loader.js` → `public/loader.js`, `loading/loading.js` (+ `.d.ts`) → `src/sdk/loading/` và `sdk/copyright.js` (+ `.d.ts`) → `src/sdk/`. Chỗ gọi `loader.error()` truyền file tải lỗi nếu biết: `loader.error(null, file)`.
@@ -73,6 +110,8 @@ Cần **gmsdkjs 1.0.2** ở `…/gmsdkjs/1.0.2/` và **template 1.0.2** (`…/gm
 9. Gắn đủ quảng cáo theo bảng "Chỗ quảng cáo" đã duyệt (`preroll`, `interstitial`, `rewarded` nếu có thưởng). Sửa các chỗ vướng hai tên miền (EMBED.md, đầu file), chạy `screens.mjs` không còn lỗi `cross-origin`.
 10. Marketing kit đã làm: thêm mục 11 Control Guide vào cả ba file brief (HTML: trước Image kit), `check-marketing` → `OK`.
 11. Build lại: `compress` dừng ở code ghép tên file thì xử lý theo EXPORT.md §4 (mặc định `keep` + `dynamicPaths`, không sửa code) và báo chủ game. Game đã tự `keep` các thư mục đó (ví dụ golfbattle) chỉ cần thêm `dynamicPaths`.
+12. Game có bảng xếp hạng: chép lại `leaderboard/leaderboard.js` (+ `.d.ts`) và `ui.js` → `src/sdk/leaderboard/`, thêm khoá `edit_flag`, `guest` vào nhóm `leaderboard` của `i18n`. Màn tự vẽ / ô nhập tên riêng: ẩn ô tên khi `board.nameEditable()` là `false`, không mời gửi điểm khi `board.canSubmit()` là `false`.
+13. Bỏ bộ đếm giờ quảng cáo riêng của game (nếu có): SDK và portal lo giãn cách.
 
 ## 1.0.1 — 2026-10-22
 

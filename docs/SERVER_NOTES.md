@@ -2,7 +2,19 @@
 
 Tổng quan luồng chạy và ai lo phần nào: [OVERVIEW.md](OVERVIEW.md).
 
-## 1. Bắt buộc cho kit 1.0.2
+## 1. Bắt buộc cho kit 1.0.3
+
+Kit 1.0.3 trỏ **gmsdkjs 1.0.3** và **template 1.0.3**. Thư mục 1.0.2 giữ nguyên cho game đang chạy (quy ước §5).
+
+| # | Việc | Vì sao |
+| --- | --- | --- |
+| 1 | Đưa **gmsdkjs 1.0.3** vào `…/gmsdkjs/1.0.3/` của cả ba publisher (`games.1games.io/lib/1games/gmsdkjs/1.0.3/` qua Sync SDK Lib, `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.3/`, `games.ofree.io/gmsdk/lib/ofree/gmsdkjs/1.0.3/`), bản `_dev` và bản obfuscate. Không ghi đè `1.0.2/` | §8: trên CrazyGames mỗi tài khoản là một người chơi GMA, save của game trong dữ liệu người chơi. `VERSION = "1.0.3"` |
+| 2 | Thêm **template 1.0.3** `templates/1.0.3/gamesforfree-{gm,gd,crazy,poki}.html`: chép từ `1.0.2/`, chỉ đổi `sdkUrl` sang gmsdkjs 1.0.3 | `loader.js` của kit 1.0.3 mặc định trỏ `1.0.3/`; `assemble` đọc `templates/1.0.3/` |
+| 3 | **Tool build:** bundle lại (có `build/kit-1.0.3/`, `presets.json` có `sdkUrls` `1.0.3`). Gói đóng dấu kit 1.0.3, hoặc `loader.js` trỏ gmsdkjs 1.0.3, dùng template và `check-export` 1.0.3 | Gói 1.0.3 trên template 1.0.2 thì chạy gmsdkjs 1.0.2 (không có phần §8) |
+
+**Thứ tự:** gmsdkjs 1.0.3 + template 1.0.3 + tool lên **trước**, kiểm một game trên CrazyGames (bật "Progress Save", làm theo phần "Kiểm" của §8), rồi mới phát kit 1.0.3.
+
+### Kit 1.0.2
 
 Kit 1.0.2 trỏ **gmsdkjs 1.0.2** và **template 1.0.2**. Thư mục 1.0.1 giữ nguyên cho game đang chạy (quy ước §5).
 
@@ -91,3 +103,20 @@ Mục "The game supports CrazyGames muting audio through SDK" của CrazyGames (
 - Game dùng theo [INTEGRATION.md §3](INTEGRATION.md), QA 4.15. Shim của kit trả `false` khi trang chạy gmsdkjs cũ.
 
 **Kiểm:** mở game trên CrazyGames với `?muteAudio=true` (`?debug` có dòng `portal mute true`): game im, bấm nút âm thanh vẫn im.
+
+## 8. gmsdkjs 1.0.3: người chơi là tài khoản CrazyGames
+
+Chỉ khi `sdkType === "crazy"`; các portal khác chạy như 1.0.2. Thay §6 ở các điểm sau.
+
+- **Phiên GMA theo tài khoản.** SDK GMA giữ phiên của nó trong `localStorage` (`gm_player_id`, `gm_player_token`, `gm_refresh_token`, `gm_previous_identity`). Trước `GMGameSDK.init()`, gmsdkjs đặt vào đó phiên của tài khoản đang chơi, sau đó ghi lại mỗi khi SDK gia hạn:
+  - có module Data ("Progress Save"): phiên nằm ở key `gmsdkjs.gma` trong dữ liệu người chơi, CrazyGames tự mang theo (khách: trong trình duyệt; tài khoản: mọi máy; khách đăng nhập mà tài khoản chưa có dữ liệu: chuyển lên tài khoản);
+  - không có module Data: mỗi tài khoản một phiên trên trình duyệt (`gmsdkjs.gma.<userId>`, `gmsdkjs.gma.owner` ghi phiên trong `gm_*` là của ai). Đổi tài khoản trên một trình duyệt không đè điểm; sang máy khác là người chơi khác.
+  - Mỗi phiên cất kèm **chủ** (`owner`: `userId` hoặc `guest`). Tài khoản **không bao giờ** dùng người chơi của khách và ngược lại: khách đăng nhập lần đầu, CrazyGames **chép** dữ liệu khách sang tài khoản và khách vẫn giữ bản của mình, nên dùng chung một người chơi thì đăng xuất ra khách thấy cờ và điểm của tài khoản (lỗi bản đầu 26110404). Phiên của chủ khác: tạo người chơi riêng.
+  - Phiên không có chủ (chỉ có trong `gm_*` của trình duyệt, hoặc cất trước khi có `owner`): tài khoản dùng tiếp khi tên GMA đúng username; khách dùng tiếp khi tên GMA là tên ngẫu nhiên (`player<6>`, trống); còn lại tạo người chơi mới.
+- **Người chơi mới** tạo bằng `signInAnonymously({ name: username, country: systemInfo.countryCode })`; khách: `player<6>`. Không bao giờ để `refreshSession({})` tạo người chơi không tên.
+- **Tên** giữ dấu chấm (`cleanPortalName`), đổi theo `username` mỗi lần mở trang; `updateMyProfile` với tên khác bị chặn; khách không gửi điểm (như 1.0.2).
+- **`getUser()` trả muộn** (quá `gmaNameMs`): chưa coi là khách; kết quả về thì nhận tên, đổi tên GMA, cho gửi điểm. Vẫn chỉ một lần `getUser()` mỗi trang.
+- **Save của game:** `GMSDKJS.portalData()` / `portalDataNow()` trao module Data cho `sdk/storage.js` của kit khi `getItem` trả kết quả ngay (như `localStorage`); module trả kết quả muộn, tắt, hay không giữ gì (gmsdkjs ghi thử key `gmsdkjs.probe` rồi đọc lại) thì `null`, save ở lại `localStorage`. `loader.js` của kit chờ `portalData()` (tối đa 8 giây) trước khi game đọc save.
+- `playerPolicy()` thêm `guest` và `country`.
+
+**Kiểm** (bản build CrazyGames có bật "Progress Save", trang thử QA của CrazyGames): đăng nhập tài khoản A, gửi điểm; đăng xuất, đăng nhập B trên cùng trình duyệt, gửi điểm → hai người chơi GMA khác nhau, tên đúng username (giữ dấu chấm); A trên trình duyệt khác → đúng người chơi và save của A; khách → bảng hiện "Guest", không gửi điểm; khách chơi rồi đăng nhập tài khoản mới → save và người chơi của khách thành của tài khoản.

@@ -1,5 +1,6 @@
 // The game's save (docs/INTEGRATION.md §6): one localStorage key per game, azgames.<gameCode> (azgames.dev without a
 // real code), split into areas (settings, profile, leaderboard, …). It belongs to the game: gmsdkjs keeps its own key.
+// On CrazyGames (kit 1.0.3) the same key is in the player's data there (Data module), when gmsdkjs hands it over.
 // Plain JS, no build step, no packages: copy to src/sdk/storage.js. getSDK() hands it out as sdk.storage.
 //
 // Stored value: "gm1" + 8 hex check + the JSON, compressed (LZ, lz-string's UTF-16 coding: ~15 bits per character,
@@ -113,6 +114,50 @@ export function createStorage({ gameCode = '', onEvent = () => {}, delayMs = 300
       return err; // QuotaExceededError & co.
     }
   };
+  // CrazyGames (kit 1.0.3, gmsdkjs 1.0.3): the save lives in the player's data there (Data module, "Progress Save"):
+  // a guest's in the browser, an account's on every device, a guest's moved to an account that has none. loader.js
+  // waits for it before game.js; another portal, or no Data module, keeps localStorage.
+  const portal = () => {
+    try {
+      const d = g.GMSDKJS?.portalDataNow?.();
+      return d && typeof d.getItem === 'function' && typeof d.setItem === 'function' ? d : null;
+    } catch {
+      return null;
+    }
+  };
+  // The save this browser kept before the Data module (an older build) goes there once, never again (MOVED).
+  const MOVED = `${key}.portal`;
+  const readSave = () => {
+    const p = portal();
+    if (!p) return read(key);
+    let text = null;
+    try {
+      text = p.getItem(key);
+    } catch {
+      text = null;
+    }
+    if (read(MOVED) === null) {
+      const old = text == null ? read(key) : null;
+      try {
+        if (old !== null) p.setItem(key, old);
+        write(MOVED, '1');
+        if (old !== null) text = old;
+      } catch {
+        // not moved: the next start tries again
+      }
+    }
+    return typeof text === 'string' ? text : null;
+  };
+  const writeSave = (text) => {
+    const p = portal();
+    if (!p) return write(key, text);
+    try {
+      p.setItem(key, text);
+      return true;
+    } catch (err) {
+      return err; // dataLimitExcedeed (1 MB) & co.
+    }
+  };
   const reported = new Set();
   const report = (kind, info) => {
     if (reported.has(kind)) return;
@@ -132,7 +177,7 @@ export function createStorage({ gameCode = '', onEvent = () => {}, delayMs = 300
 
   /** The stored areas, or {} (no save yet, or a save that does not decode: dropped). */
   function stored() {
-    const text = read(key);
+    const text = readSave();
     if (text === null) return { data: {}, bad: false };
     const d = decodeSave(text, seed);
     return d ? { data: d, bad: false } : { data: {}, bad: true };
@@ -141,7 +186,7 @@ export function createStorage({ gameCode = '', onEvent = () => {}, delayMs = 300
     if (data === undefined) {
       const s = stored();
       data = s.data;
-      existedAtLoad = !s.bad && read(key) !== null;
+      existedAtLoad = !s.bad && readSave() !== null;
       if (s.bad) {
         tampered = true;
         report('tampered', { key });
@@ -160,9 +205,9 @@ export function createStorage({ gameCode = '', onEvent = () => {}, delayMs = 300
       else base[area] = data[area];
     }
     const text = encodeSave(base, seed);
-    const ok = write(key, text);
+    const ok = writeSave(text);
     if (ok !== true) {
-      report('failed', { key, chars: text.length, error: ok ? String(ok.name || ok) : 'no localStorage' });
+      report('failed', { key, chars: text.length, error: ok ? String(ok.code || ok.name || ok) : 'no localStorage' });
       return false; // stays dirty: retried on the next save / flush
     }
     if (text.length > LARGE) report('large', { key, chars: text.length });

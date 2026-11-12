@@ -155,7 +155,7 @@ Chạy ở gốc repo. Tool tự đọc `docs/GMSDK_JS/config.json` (giá trị 
 Giao `export/build/<version>-<id>/<version>-<id>.zip` (§8) cho người vận hành API. Trên admin API (api.1games.io `GMSDK_JS/docs/GUIDE.md`):
 - **Build SDK JS:** chọn game và template (gm, gd, crazy, poki), thả zip. Tool kiểm gói (`check-export`), ghép template của portal (khối `GMSDKJS_OPTIONS` với `gameId`, `version` của `game.json`; `gameCode`, key GD lấy từ form game trên API, trống thì lấy `game.json`; `sdkUrl`; `#game`; `<script src="loader.js">`, từ kit 1.0.2), obfuscate `loader.js` + `game.js` và khoá domain, ra một zip của portal đó;
 - **zip gm:** form game → khung SOURCE: thả zip, server nén `.br` / `.gz`, ra bản xem thử `game.1games.io/<id>/<version>/`; duyệt xong bấm "Dùng bản này" thì asset lên CDN `gdn.1games.io/game/<id>/<version>/` và người chơi mở `game.1games.io/<id>/`;
-- **zip gd / crazy / poki:** tải về nộp lên portal.
+- **zip gd / crazy / poki:** tải về nộp lên portal. **CrazyGames: bật "Progress Save"** lúc nộp (kit 1.0.3): save của game và người chơi trên bảng xếp hạng theo tài khoản CrazyGames ([INTEGRATION.md §6](INTEGRATION.md)). Không bật thì game vẫn chạy, save chỉ ở trình duyệt đó.
 
 Game không cần biết bước này.
 

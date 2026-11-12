@@ -1,4 +1,4 @@
-# Tổng quan: kit GMSDK JS 1.0.2 + gmsdkjs 1.0.2
+# Tổng quan: kit GMSDK JS 1.0.3 + gmsdkjs 1.0.3
 
 Một trang để thấy cả hệ thống: game chạy từ lúc mở trang tới lúc chơi qua những bước nào, phần nào nằm ở đâu, kit quy định những gì. Chi tiết từng phần ở các file được dẫn.
 
@@ -25,7 +25,7 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 2. loader.js chạy ngay
    ├─ dựng màn loading: icons/loading.webp, logo (không có trên gd / crazy / poki), tên game, thanh %; giao diện theo icons/loader.css
    ├─ tải SONG SONG, mỗi file tối đa 3 lần (10 giây mỗi lần, nghỉ 1 rồi 2 giây):
-   │    ├─ gmsdkjs.js (sdkUrl; mặc định …/gmsdkjs/1.0.2/gmsdkjs.js)   kiểm thêm: phải có window.GMSDKJS
+   │    ├─ gmsdkjs.js (sdkUrl; mặc định …/gmsdkjs/1.0.3/gmsdkjs.js)   kiểm thêm: phải có window.GMSDKJS
    │    └─ game.js
    │   hai file này chạy thanh 0 → 30 %
    ├─ gmsdkjs 3 lần vẫn lỗi → "Connection problem. Please check your network and reload the page." + nút Reload; DỪNG
@@ -70,13 +70,13 @@ Một trang để thấy cả hệ thống: game chạy từ lúc mở trang t�
 | Build: bump-version → Vite → nén → `assemble` → `check-export` → zip | `tools/` | Kit |
 | Obfuscate `loader.js` + `game.js`, khoá domain, trang từng portal, CDN | Tool build trên API | Server |
 
-## 4. gmsdkjs 1.0.2 trên server
+## 4. gmsdkjs 1.0.3 trên server
 
-Kit này dùng **gmsdkjs 1.0.2** ở **thư mục riêng** `…/gmsdkjs/1.0.2/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.2/gmsdkjs.js`; az: `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.2/`). Chi tiết, thứ tự đưa lên, quy ước thư mục theo phiên bản: [SERVER_NOTES.md](SERVER_NOTES.md).
+Kit này dùng **gmsdkjs 1.0.3** ở **thư mục riêng** `…/gmsdkjs/1.0.3/` (`https://games.1games.io/lib/1games/gmsdkjs/1.0.3/gmsdkjs.js`; az: `api.azgame.io/static/lib/azgames/gmsdkjs/1.0.3/`; ofree: `games.ofree.io/gmsdk/lib/ofree/gmsdkjs/1.0.3/`). Chi tiết, thứ tự đưa lên, quy ước thư mục theo phiên bản: [SERVER_NOTES.md](SERVER_NOTES.md).
 
-- **Không lưu dữ liệu game**: lưu là của kit (`sdk/storage.js`). gmsdkjs chỉ giữ tên GMA ở key riêng **`gma_<gameCode>.name`**.
+- **Không lưu dữ liệu game**: lưu là của kit (`sdk/storage.js`). gmsdkjs chỉ giữ tên GMA ở key riêng **`gma_<gameCode>.name`**. Trên CrazyGames gmsdkjs trao module Data (dữ liệu người chơi) cho `storage.js` và cất phiên GMA ở đó (SERVER_NOTES §8).
 - Được `loader.js` chèn bằng code (không có thẻ `gmsdkjs.js` trong template).
-- **Template 1.0.2** (`templates/1.0.2/`, 4 portal × 2 host): chỉ `<script src="loader.js">`; `GMSDKJS_OPTIONS` có `sdkUrl` (gmsdkjs 1.0.2 của chính host đó) và `language: "<!--LANGUAGE-->"`.
+- **Template 1.0.3** (`templates/1.0.3/`, 4 portal × 3 host): chỉ `<script src="loader.js">`; `GMSDKJS_OPTIONS` có `sdkUrl` (gmsdkjs 1.0.3 của chính host đó) và `language: "<!--LANGUAGE-->"`.
 - **Tool build** trên API: obfuscate `loader.js` + `game.js`; thay `icons/logo.webp` bằng logo brand của publisher; các file khác trong `icons/` (`loading.webp`, `loader.css`, ảnh của giao diện game) giữ nguyên.
 
 ## 5. Kit quy định những gì

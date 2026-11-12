@@ -42,6 +42,21 @@ export function cleanName(name) {
     .slice(0, NAME_MAX);
 }
 
+/**
+ * A portal username as the player sees it there (kit 1.0.3): cleanName's rule plus the period (CrazyGames usernames:
+ * letters, digits, period, underscore; the GMA server takes the period). Names typed in the game keep cleanName.
+ */
+export function cleanPortalName(name) {
+  return String(name ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[đĐ]/g, (c) => (c === 'đ' ? 'd' : 'D'))
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[^A-Za-z0-9_.-]/g, '')
+    .slice(0, NAME_MAX);
+}
+
 /** An ISO 3166 code as the flags are named (US, GB, GB-ENG); '' when it is not one. */
 export function cleanCountry(code) {
   const c = String(code ?? '').trim().toUpperCase();
@@ -106,6 +121,30 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
     }
   };
 
+  /**
+   * gmsdkjs's rules for the player (playerPolicy, gmsdkjs 1.0.2): on CrazyGames the name is the CrazyGames username
+   * and cannot change, and a guest's score is not sent (their rules). Older gmsdkjs: no rule, everything allowed.
+   * gmsdkjs 1.0.3 adds guest (no one signed in on the portal) and country (the portal's, the default flag).
+   */
+  const policy = () => {
+    try {
+      const p = g.GMSDKJS?.playerPolicy?.();
+      return p && typeof p === 'object' ? p : {};
+    } catch {
+      return {};
+    }
+  };
+  const nameEditable = () => policy().nameEditable !== false;
+  /** The portal's name for the player now (locked: the username, the period kept), or ''. */
+  const portalName = () => (nameEditable() ? '' : cleanPortalName(policy().name));
+  /** A name as this board keeps it: the portal's rule where the portal owns the name, cleanName elsewhere. */
+  const nameOf = (n) => (nameEditable() ? cleanName(n) : cleanPortalName(n));
+  /**
+   * A guest where the portal owns the name (kit 1.0.3): the portal says so, or has not given a username yet (the board
+   * may open before getUser answers): shown as Guest with the US flag, never under its GMA player's random name.
+   */
+  const guestNow = () => policy().guest === true || (!nameEditable() && !portalName());
+
   /** The GM SDK gmsdkjs loaded, once a player is signed in; null after waitMs (no gma on this page, offline, blocked). */
   async function signedIn() {
     const until = Date.now() + waitMs;
@@ -143,14 +182,15 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
       console.warn('[leaderboard] profile:', reason(e));
     }
     const mine = saved();
-    const serverName = cleanName(p?.name);
+    const serverName = nameOf(p?.name);
     const serverCountry = cleanCountry(p?.country);
     const chosenHere = cleanName(mine.name);
-    const seed = p && chosenHere && (!serverName || DEFAULT_NAME.test(serverName)) && !DEFAULT_NAME.test(chosenHere);
+    const seed = nameEditable() && p && chosenHere && (!serverName || DEFAULT_NAME.test(serverName)) && !DEFAULT_NAME.test(chosenHere);
     profile = {
       id: String(gm.getPlayerId() ?? ''),
-      name: seed ? chosenHere : serverName || chosenHere,
-      country: seed ? cleanCountry(mine.country) || serverCountry : serverCountry || cleanCountry(mine.country),
+      name: portalName() || (seed ? chosenHere : serverName || chosenHere),
+      // no flag anywhere yet: the portal's country (gmsdkjs 1.0.3), the player can still pick another
+      country: (seed ? cleanCountry(mine.country) || serverCountry : serverCountry || cleanCountry(mine.country)) || cleanCountry(policy().country),
     };
     if (seed) {
       try {
@@ -185,26 +225,49 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
       });
     },
 
-    /** { id, name, country } of the signed-in player; null before ready(). `name` may be the random default. */
+    /**
+     * { id, name, country } of the signed-in player; null before ready(). `name` may be the random default. Where the
+     * portal owns the name it is the portal's now (a late answer of the portal shows at once).
+     */
     player() {
-      return profile ? { ...profile } : null;
+      if (!profile) return null;
+      if (guestNow()) return { ...profile, name: '', country: 'US' };
+      const now = portalName();
+      return now ? { ...profile, name: now } : { ...profile };
     },
 
-    /** True when the player has not picked a name yet (still gmsdkjs's "playerXXXXXX"). */
+    /**
+     * True for a CrazyGames guest (gmsdkjs 1.0.3: no one signed in on the portal, or no username yet): shown as
+     * "Guest" with the US flag, not on the board, no flag change.
+     */
+    isGuest: guestNow,
+
+    /** True when the player has not picked a name yet (still gmsdkjs's "playerXXXXXX"); never where the name is locked. */
     needsName() {
+      if (!nameEditable()) return false;
       return !profile || !profile.name || DEFAULT_NAME.test(profile.name);
+    },
+
+    /** False where the portal owns the name (CrazyGames): no name field, only the flag. */
+    nameEditable,
+
+    /** False where this player's score is not sent (a CrazyGames guest): the board still shows. */
+    canSubmit() {
+      return policy().leaderboard !== false;
     },
 
     /** Change the name and / or flag. The local copy changes only when the server accepts it. */
     async setPlayer({ name, country } = {}) {
       if (!(await this.ready())) return false;
+      if (guestNow()) return false; // a guest signs in on the portal for a name and a flag of its own
+      const named = nameEditable(); // else the portal's name: only the flag changes, the name is never sent
       const next = {
-        name: name === undefined ? profile.name : cleanName(name),
+        name: !named || name === undefined ? profile.name : cleanName(name),
         country: country === undefined ? profile.country : cleanCountry(country),
       };
-      if (!next.name) return false;
+      if (named && !next.name) return false;
       try {
-        await gm.updateMyProfile({ name: next.name, country: next.country });
+        await gm.updateMyProfile(named ? { name: next.name, country: next.country } : { country: next.country });
         profile = { ...profile, ...next };
         save(profile);
         track('leaderboard_profile', { ok: 1 });
@@ -223,6 +286,11 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
     async submit(score, metadata) {
       const value = Number(score);
       if (!Number.isFinite(value)) return null;
+      if (!this.canSubmit()) {
+        console.info('[leaderboard] not submitted: a guest (sign in on the portal to be on the board)');
+        track('leaderboard_submit', { ok: 0, score: value, reason: 'guest' });
+        return null;
+      }
       if (!(await this.ready())) return null;
       try {
         const playerId = gm.getPlayerId();

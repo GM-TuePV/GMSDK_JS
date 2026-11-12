@@ -11,6 +11,7 @@
  *    These two files fill the bar to 30 %.
  * 3. gmsdkjs is required: after the 3rd failed try the screen says so and offers Reload; nothing else runs.
  *    Only the dev page (GMSDKJS_OPTIONS.platform 'dev') goes on without it, for working offline.
+ *    On CrazyGames, ready() also waits (up to 8 s) for the player's data there, where the game's save lives.
  * 4. The game takes over through window.GMLoader: await GMLoader.ready() (the SDK), GMLoader.progress(p) while it
  *    loads its assets (30 → 100 %), GMLoader.done() when its first screen is on (hides the screen, tells the SDK).
  *    The game reaches this through sdk/gmsdkjs-shim.js (loadSDK) and loading/loading.js (createLoader).
@@ -22,7 +23,8 @@
   var g = window;
   if (g.GMLoader) return; // one loader per page
 
-  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.2/gmsdkjs.js'; // gmsdkjs 1.0.2, the version this kit is made for (docs/SERVER_NOTES.md)
+  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.3/gmsdkjs.js'; // gmsdkjs 1.0.3, the version this kit is made for (docs/SERVER_NOTES.md)
+  var DATA_WAIT_MS = 8000; // CrazyGames: the player's data (Data module) before the game reads its save
   var TRIES = 3;
   var TIMEOUT_MS = 10000;
   var WAITS_MS = [1000, 2000];
@@ -55,7 +57,7 @@
 .gmLoaderBackdrop{position:absolute;inset:0;z-index:0;background-position:center;background-size:cover;background-repeat:no-repeat;filter:blur(14px) brightness(.42) saturate(1.05);transform:scale(1.08)}
 .gmLoaderBackdrop::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 50% 45%,rgba(12,13,20,.15),rgba(12,13,20,.55))}
 .gmLoaderStage{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center}
-.gmLoaderThumb{display:block;width:min(86vw,74.7vh,780px);height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:clamp(6px,1.2vh,10px);box-shadow:0 8px 28px rgba(0,0,0,.45);background:#1a1b26;animation:gmFadeUp .4s .05s ease-out both}
+.gmLoaderThumb{display:block;height:min(48.4vw,42vh,439px);width:auto;max-width:min(86vw,780px);object-fit:cover;border-radius:clamp(6px,1.2vh,10px);box-shadow:0 8px 28px rgba(0,0,0,.45);background:#1a1b26;animation:gmFadeUp .4s .05s ease-out both}
 .gmLoaderTitle{margin:0 0 clamp(8px,1.8vh,14px);max-width:90vw;color:var(--gm-white);font-size:clamp(14px,3.2vh,26px);font-weight:800;line-height:1.2;letter-spacing:-.005em;text-shadow:0 2px 10px rgba(0,0,0,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:gmFadeUp .4s ease-out both}
 .gmLoaderProgress{position:relative;width:var(--gm-bar-w);height:clamp(48px,9vh,72px);margin-top:clamp(10px,2.8vh,18px)}
 .gmLoaderSpinner{position:absolute;left:50%;top:0;width:clamp(32px,7vh,48px);height:clamp(32px,7vh,48px);margin-left:calc(clamp(32px,7vh,48px) / -2);border-radius:50%;border:4px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.85);border-right-color:rgba(255,255,255,.85);animation:gmSpin .8s linear infinite}
@@ -70,10 +72,10 @@
 #gmLoader.gmAlmost #gmLoaderFill::after{content:"";position:absolute;top:0;bottom:0;left:0;width:52%;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45) 60%,rgba(255,255,255,0));animation:gmAlmost 1.6s ease-in-out infinite}
 #gmLoader.gmAlmost .gmLoaderInfo{color:var(--gm-muted);font-weight:800;animation:gmBlink 1.6s ease-in-out infinite}
 #gmLoader.gmFailed .gmLoaderInfo{max-width:90vw;white-space:normal;line-height:1.4}
-.gmLoaderBrand{margin:0 0 clamp(14px,6vh,48px);pointer-events:none;animation:gmFadeUp .4s ease-out both}
-.gmLoaderBrand img{display:block;height:clamp(32px,8vh,64px);width:auto;max-width:70vw;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.gmLoaderBrand{margin:0 0 clamp(10px,3.5vh,32px);pointer-events:none;animation:gmFadeUp .4s ease-out both}
+.gmLoaderBrand img{display:block;height:clamp(44px,16vh,180px);width:auto;max-width:min(70vw,600px);object-fit:contain;filter:drop-shadow(0 2px 10px rgba(0,0,0,.55))}
 .gmLoaderVersion{position:absolute;z-index:1;right:clamp(10px,2vw,22px);bottom:clamp(8px,1.8vw,18px);font:600 12px/1 var(--gm-font);letter-spacing:.06em;color:var(--gm-white);opacity:.5;pointer-events:none}
-@media (max-height:420px){.gmLoaderThumb{width:min(70vw,60vh)}.gmLoaderBrand{margin-bottom:8px}.gmLoaderBrand img{height:26px}.gmLoaderTitle{margin-bottom:6px}.gmLoaderProgress{height:40px;margin-top:8px}}
+@media (max-height:420px){.gmLoaderThumb{height:min(39.4vw,33.75vh);max-width:70vw}.gmLoaderBrand{margin-bottom:8px}.gmLoaderBrand img{height:26px}.gmLoaderTitle{margin-bottom:6px}.gmLoaderProgress{height:40px;margin-top:8px}}
 @keyframes gmSpin{to{transform:rotate(360deg)}}
 @keyframes gmFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes gmAlmost{0%{transform:translateX(-105%)}100%{transform:translateX(200%)}}
@@ -415,7 +417,16 @@
         filesDone++;
         show();
         reportFail();
-        resolveReady(g.GMSDKJS);
+        // CrazyGames (kit 1.0.3): the game's save lives in the player's data there; ready() waits until gmsdkjs knows
+        // it (portalData), so sdk/storage.js reads the right save. Up to DATA_WAIT_MS; other portals go on at once.
+        var sdk = g.GMSDKJS;
+        var crazy = String(opts.sdkType || '').toLowerCase() === 'crazy';
+        var data = crazy && sdk && typeof sdk.portalData === 'function'
+          ? Promise.race([Promise.resolve().then(function () { return sdk.portalData(); }).catch(function () { return null; }), wait(DATA_WAIT_MS)])
+          : Promise.resolve(null);
+        data.then(function () {
+          resolveReady(sdk);
+        });
         return;
       }
       if (dev) {

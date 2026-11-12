@@ -20,6 +20,11 @@ const EN = {
   no_score: 'No score yet',
   more: 'More',
   edit_profile: 'Name & flag',
+  edit_flag: 'Flag',
+  guest: 'Sign in to put your score on the leaderboard.',
+  guest_name: 'Guest',
+  name_portal: 'Your name is your CrazyGames username. Change it in your CrazyGames profile.',
+  guest_flag: 'Sign in to CrazyGames to use your username and choose your flag.',
   name: 'Name',
   name_rule: 'Up to 20 letters, numbers, _ or -',
   country: 'Flag',
@@ -274,23 +279,37 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     // The player's own line: rank and score, or "no score yet"; the name / flag button.
     const p = board.player();
     if (p) {
-      const me = mine ? row({ ...mine, name: p.name, country: p.country }, true) : row({ rank: 0, name: p.name, country: p.country, score: text('no_score') }, true);
+      // a CrazyGames guest (kit 1.0.3) is shown as Guest, never under the random name of its GMA player
+      const guest = board.isGuest?.() === true;
+      const shown = guest ? text('guest_name') : p.name;
+      const me = mine ? row({ ...mine, name: shown, country: p.country }, true) : row({ rank: 0, name: shown, country: p.country, score: text('no_score') }, true);
       const actions = el('div', 'gmlb-actions');
+      // kit 1.0.3: Name & flag everywhere; where the portal owns the name, the name shows there, not editable
       const edit = el('button', '', text('edit_profile'));
-      edit.addEventListener('click', showProfile);
       actions.appendChild(edit);
       foot.append(me, actions);
+      if (board.canSubmit?.() === false) foot.append(el('div', 'gmlb-hint', text('guest')));
+      if (guest) {
+        // a guest has no name or flag of its own: the button tells to sign in on CrazyGames, no form
+        const why = el('div', 'gmlb-hint', '');
+        foot.append(why);
+        edit.addEventListener('click', () => {
+          why.textContent = text('guest_flag');
+        });
+      } else edit.addEventListener('click', showProfile);
     }
   }
 
   async function showProfile() {
     const p = board.player() ?? { name: '', country: '' };
+    const named = board.nameEditable?.() !== false;
+    const guest = board.isGuest?.() === true;
     panel.replaceChildren(head(text('edit_profile')));
     const form = el('form', 'gmlb-form');
     const nameBox = el('label', '', text('name'));
     const name = el('input');
     name.maxLength = 20;
-    name.value = p.name;
+    name.value = !named && guest ? text('guest_name') : p.name;
     name.autocomplete = 'off';
     name.spellcheck = false;
     // The server's rule (1-20 of A-Z a-z 0-9 _ -): cleaned while typing, so Save never sends a name it refuses.
@@ -298,7 +317,19 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
       const clean = cleanName(name.value);
       if (clean !== name.value) name.value = clean;
     });
-    nameBox.append(name, el('span', 'gmlb-hint', text('name_rule')));
+    if (named) nameBox.append(name, el('span', 'gmlb-hint', text('name_rule')));
+    else {
+      // CrazyGames (kit 1.0.3): the username shows like any name; a try to change it tells where it is changed
+      name.readOnly = true;
+      const why = el('span', 'gmlb-hint', '');
+      const tell = () => {
+        why.textContent = text(guest ? 'guest_flag' : 'name_portal');
+      };
+      name.addEventListener('pointerdown', tell);
+      name.addEventListener('focus', tell);
+      name.addEventListener('keydown', tell);
+      nameBox.append(name, why);
+    }
 
     const countryBox = el('label', '', text('country'));
     const pick = el('div', 'gmlb-pick');
@@ -307,6 +338,18 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     select.appendChild(new Option('—', ''));
     pick.append(preview, select);
     countryBox.appendChild(pick);
+    // a CrazyGames guest (kit 1.0.3): the US flag, not changed here; a try tells to sign in on CrazyGames
+    const lockedFlag = !named && guest;
+    if (lockedFlag) {
+      select.disabled = true;
+      const why = el('span', 'gmlb-hint', '');
+      const tell = () => {
+        why.textContent = text('guest_flag');
+      };
+      pick.addEventListener('pointerdown', tell);
+      pick.addEventListener('click', tell);
+      countryBox.appendChild(why);
+    }
     select.addEventListener('change', () => {
       paint(preview, select.value);
     });
@@ -328,20 +371,21 @@ export function openLeaderboard({ board, t, assets = 'assets/leaderboard/', peri
     cancel.addEventListener('click', showBoard);
     const save = el('button', '', text('save'));
     save.type = 'submit';
+    if (lockedFlag) save.disabled = true;
     actions.append(cancel, save);
     form.append(nameBox, countryBox, error, actions);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       save.disabled = true;
       error.textContent = '';
-      const ok = await board.setPlayer({ name: name.value, country: select.value });
+      const ok = await board.setPlayer(named ? { name: name.value, country: select.value } : { country: select.value });
       if (closed) return;
       save.disabled = false;
       if (ok) showBoard();
       else error.textContent = text('save_failed');
     });
     panel.appendChild(form);
-    name.focus();
+    if (named) name.focus();
   }
 
   showBoard();

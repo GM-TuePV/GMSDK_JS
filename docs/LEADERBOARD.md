@@ -48,12 +48,19 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 | --- | --- | --- |
 | `createLeaderboard({ sdk, boardId, waitMs? })` | `board` | `sdk` = `getSDK()` (bản sao tên / cờ trong save của game, gửi sự kiện). `waitMs` mặc định 20 000. **Tên và cờ lấy từ hồ sơ GMA** (`getMyProfile`): đặt ở game nào cùng người chơi GMA thì game khác cũng thấy. Bản trong save chỉ dùng khi không đọc được GMA; riêng khi GMA còn tên ngẫu nhiên `playerXXXXXX` mà máy có tên người chơi đã chọn thì tên đó được gửi lên |
 | `board.ready()` | `Promise<boolean>` | Đã đăng nhập, dùng được. Lần đầu chờ gmsdkjs tối đa `waitMs`; `false` thì lần gọi sau thử lại |
-| `board.player()` | `{ id, name, country } \| null` | `null` trước khi `ready()`. `country` là mã ISO (`US`, `VN`, `GB-ENG`), `''` = chưa chọn |
-| `board.needsName()` | `boolean` | Người chơi còn tên mặc định `playerXXXXXX` |
-| `board.setPlayer({ name?, country? })` | `Promise<boolean>` | Đổi tên / cờ. Bản trên máy chỉ đổi khi máy chủ nhận. **Luật tên của máy chủ:** 1–20 ký tự `A-Z a-z 0-9 _ -`; `cleanName()` tự đổi dấu cách thành `_`, bỏ dấu (é → e) và ký tự khác |
+| `board.player()` | `{ id, name, country } \| null` | `null` trước khi `ready()`. `country` là mã ISO (`US`, `VN`, `GB-ENG`), `''` = chưa chọn. Trên CrazyGames `name` là username lúc này (giữ dấu chấm, kit 1.0.3), `country` chưa có thì là nước của người chơi trên CrazyGames |
+| `board.needsName()` | `boolean` | Người chơi còn tên mặc định `playerXXXXXX`. Luôn `false` ở nơi tên bị khoá (CrazyGames): game không được hỏi tên |
+| `board.nameEditable()` | `boolean` | `false` trên CrazyGames: tên là username CrazyGames, không đổi được (cả khách). Kit 1.0.3: màn mặc định vẫn có "Name & flag" và ô tên, nhưng ô tên chỉ đọc (username); bấm vào thì hiện lời nhắn đổi tên ở hồ sơ CrazyGames (`name_portal`). Khách không mở được bảng sửa (xem `isGuest()`). Màn tự vẽ làm giống vậy, không giấu ô tên |
+| `board.canSubmit()` | `boolean` | `false` với khách CrazyGames (chưa đăng nhập): `submit()` không gửi, trả `null`; bảng vẫn xem được |
+| `board.isGuest()` | `boolean` | Kit 1.0.3: `true` với khách CrazyGames, và cả khi CrazyGames **chưa** trả username (màn bảng có thể mở trước khi `getUser()` xong). Khách: hiện chữ **Guest** (khoá `guest_name`), cờ **Mỹ**, không đổi được cờ (`setPlayer` trả `false`, gmsdkjs cũng chặn); `player()` của khách có `name: ''`, `country: 'US'`. Màn mặc định: khách bấm nút **Name & flag** thì không mở bảng sửa, chỉ hiện lời nhắn đăng nhập (`guest_flag`) |
+| `board.setPlayer({ name?, country? })` | `Promise<boolean>` | Đổi tên / cờ. Bản trên máy chỉ đổi khi máy chủ nhận. **Luật tên của máy chủ:** 1–20 ký tự `A-Z a-z 0-9 _ -`; `cleanName()` tự đổi dấu cách thành `_`, bỏ dấu (é → e) và ký tự khác. Trên CrazyGames chỉ gửi cờ (tên là của CrazyGames); `cleanPortalName()` là luật của tên đó: thêm dấu chấm |
 | `board.submit(score, metadata?)` | `Promise<{ rank, score } \| null>` | Ký rồi gửi. `null` = điểm không lên bảng (mạng, token, chưa đăng nhập) |
 | `board.top(period?, { offset?, limit? })` | `Promise<{ period, total, entries } \| null>` | `period`: `daily` / `weekly` / `monthly` / `alltime` (mặc định). **`null` = không tải được**, khác bảng trống (`entries: []`) |
 | `board.me(period?)` | `Promise<entry \| null \| undefined>` | Hạng của người chơi. `null` = chưa có điểm kỳ này, `undefined` = không tải được. Máy chủ trả "chưa có điểm" bằng 204 No Content (trước là 404; `gm-sdk.js` ném `{ status: 204 }`), `me()` nhận cả hai: mỗi kỳ chỉ hỏi một lần mỗi lần mở trang, gửi điểm xong thì hỏi lại. Game không tự nhớ thêm |
+
+**CrazyGames** (luật của họ, gmsdkjs 1.0.2 `playerPolicy()`): tên người chơi là username CrazyGames, không sửa được kể cả khách; khách không lên bảng xếp hạng. gmsdkjs chặn cả ở GMA (`updateMyProfile` đổi tên, `submitScore` của khách đều bị từ chối), nên game tự vẽ bảng cũng không vượt được. Game có ô nhập tên riêng thì ẩn nó khi `board.nameEditable()` là `false`.
+
+**Kit 1.0.3 + gmsdkjs 1.0.3:** mỗi tài khoản CrazyGames là **một** người chơi GMA trên mọi máy (phiên GMA nằm trong dữ liệu người chơi CrazyGames, game nộp có bật "Progress Save"); hai tài khoản dùng chung trình duyệt không đè điểm nhau. Tên giữ dấu chấm (`SingingCheese.TLNU`). CrazyGames trả `getUser()` chậm thì tên và quyền gửi điểm có ngay khi có kết quả: đọc lại `player()` / `canSubmit()` lúc vẽ, đừng giữ bản cũ.
 
 `entry` = `{ rank, playerId, name, country, score }`. Kỳ là giờ **UTC** của máy chủ: "hôm nay" đổi lúc 0 h UTC, tuần bắt đầu thứ Hai (ISO).
 
@@ -70,7 +77,7 @@ openLeaderboard({ board, t, onClose: resumeMenu });
   Object.assign(span.style, flags.style('VN'));   // DOM: hộp tỉ lệ 4:3, ví dụ 1.6em × 1.2em
   const r = flags.rect('VN');                     // canvas: ctx.drawImage(ảnh flags.webp, r.x, r.y, r.w, r.h, x, y, w, h)
   ```
-- **Cờ:** `flags.webp` là một atlas (mỗi ô 100×75, tỉ lệ 4:3, 253 nước / vùng theo `countries.json`, gồm England), `flags.json` ghi thứ tự. Người chơi **chưa chọn nước, hay mã không có trong atlas, hiện cờ US** (gmsdkjs tạo người chơi GMA mới với nước US). Cờ do GM tự vẽ; dựng lại atlas: `node tools/build-flags.mjs <thư mục PNG>` (người giữ kit).
+- **Cờ:** `flags.webp` là một atlas (mỗi ô 100×75, tỉ lệ 4:3, 253 nước / vùng theo `countries.json`, gồm England), `flags.json` ghi thứ tự. Người chơi **chưa chọn nước, hay mã không có trong atlas, hiện cờ US** (gmsdkjs tạo người chơi GMA mới với nước US; trên CrazyGames, gmsdkjs 1.0.3: nước của người chơi). Cờ do GM tự vẽ; dựng lại atlas: `node tools/build-flags.mjs <thư mục PNG>` (người giữ kit).
 
 Khoá chữ (nhóm `leaderboard`, `t('leaderboard.title')`…):
 
@@ -80,7 +87,9 @@ Khoá chữ (nhóm `leaderboard`, `t('leaderboard.title')`…):
     "title": "Leaderboard", "daily": "Today", "weekly": "This week", "monthly": "This month", "alltime": "All time",
     "loading": "Loading…", "offline": "Could not load the leaderboard.", "retry": "Try again",
     "empty": "No scores yet. Be the first!", "you": "You", "no_score": "No score yet", "more": "More",
-    "edit_profile": "Name & flag", "name": "Name", "name_rule": "Up to 20 letters, numbers, _ or -", "country": "Flag", "save": "Save", "cancel": "Cancel",
+    "edit_profile": "Name & flag", "edit_flag": "Flag", "guest": "Sign in to put your score on the leaderboard.", "guest_name": "Guest",
+    "name_portal": "Your name is your CrazyGames username. Change it in your CrazyGames profile.",
+    "guest_flag": "Sign in to CrazyGames to use your username and choose your flag.", "name": "Name", "name_rule": "Up to 20 letters, numbers, _ or -", "country": "Flag", "save": "Save", "cancel": "Cancel",
     "save_failed": "Could not save. Check the name and try again.", "close": "Close"
   }
 }
