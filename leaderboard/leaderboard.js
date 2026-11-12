@@ -145,13 +145,48 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
    */
   const guestNow = () => policy().guest === true || (!nameEditable() && !portalName());
 
+  /**
+   * A guest's best score, per board (kit 1.0.4), kept in the save (sdk.storage, this module's area, key pending). On
+   * CrazyGames the save is the player's data (Data module): at a sign-in CrazyGames copies the guest's data to an
+   * account that has none, this score with it, and the account sends it once its board is ready; an account with
+   * data of its own never gets the guest's, so nothing of the guest is sent. Written at once (flush): the sign-in
+   * may come right after.
+   */
+  const pending = {
+    all() {
+      const o = saved().pending;
+      return o && typeof o === 'object' && !Array.isArray(o) ? { ...o } : {};
+    },
+    put(o) {
+      try {
+        if (sdk?.storage?.patch(AREA, { pending: o })) sdk.storage.flush?.();
+      } catch {
+        // no storage: nothing kept
+      }
+    },
+    keep(value, metadata) {
+      const o = this.all();
+      if (!(o[id]?.score >= value)) o[id] = metadata === undefined ? { score: value } : { score: value, metadata };
+      this.put(o);
+    },
+    take() {
+      const o = this.all();
+      const p = o[id];
+      if (!p) return null;
+      delete o[id];
+      this.put(o);
+      return p && Number.isFinite(Number(p.score)) ? p : null;
+    },
+  };
+
   /** The GM SDK gmsdkjs loaded, once a player is signed in; null after waitMs (no gma on this page, offline, blocked). */
   async function signedIn() {
     const until = Date.now() + waitMs;
     for (;;) {
       const s = g.GMGameSDK;
       try {
-        if (s && typeof s.leaderboard === 'function' && s.getPlayerId?.() && !s.isTokenExpired?.()) return s;
+        // gmsdkjs 1.0.4 says when the player is settled (its session chosen): before, the id may still change
+        if (s && typeof s.leaderboard === 'function' && s.getPlayerId?.() && !s.isTokenExpired?.() && policy().ready !== false) return s;
       } catch {
         // not ready yet
       }
@@ -201,10 +236,37 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
     }
     if (p) save(profile); // keep the cache in line with the server
     track('leaderboard_ready', { ok: 1 });
+    if (!guestNow()) {
+      // a guest's score in this save: the account took the guest's data (CrazyGames copies it to an account with none)
+      const kept = pending.take();
+      if (kept) {
+        console.info(`[leaderboard] the guest's best score, in the data this account took: ${kept.score}`);
+        void sendScore(Number(kept.score), kept.metadata);
+      }
+    }
     return true;
   }
 
   const board = () => gm.leaderboard(id);
+  /** Sign and send a score (submit, or a guest's score of this tab after a sign-in). */
+  async function sendScore(value, metadata) {
+    try {
+      const playerId = gm.getPlayerId();
+      const opts = { token: scoreToken(playerId, value) };
+      if (metadata !== undefined) opts.metadata = metadata;
+      const r = await board().submitScore(value, opts);
+      // Logged in release builds too: "my score is not on the board" is answered by this line.
+      console.info(`[leaderboard] submitted ${value} as ${playerId} to ${id}: rank ${r?.rank}`);
+      noScore.clear();
+      track('leaderboard_submit', { ok: 1, score: value });
+      return { rank: Number(r?.rank ?? 0), score: Number(r?.score ?? value) };
+    } catch (e) {
+      console.warn('[leaderboard] submit failed:', reason(e), e);
+      track('leaderboard_submit', { ok: 0, score: value, reason: reason(e) });
+      return null;
+    }
+  }
+
   // Periods where the server said "no score yet" (204 No Content; 404 before): asked once per page, until a score is
   // submitted. Each ask is a request for nothing (with 404, a red line in the console), and a tab / mode switch asks again.
   const noScore = new Set();
@@ -231,9 +293,17 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
      */
     player() {
       if (!profile) return null;
-      if (guestNow()) return { ...profile, name: '', country: 'US' };
+      // a guest has no id here (kit 1.0.4): a screen that marks the player's own row marks none for it
+      if (guestNow()) return { ...profile, id: '', name: '', country: 'US' };
+      const live = (() => {
+        try {
+          return String(gm?.getPlayerId?.() ?? '');
+        } catch {
+          return '';
+        }
+      })();
       const now = portalName();
-      return now ? { ...profile, name: now } : { ...profile };
+      return { ...profile, id: live || profile.id, ...(now ? { name: now } : {}) };
     },
 
     /**
@@ -289,24 +359,11 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
       if (!this.canSubmit()) {
         console.info('[leaderboard] not submitted: a guest (sign in on the portal to be on the board)');
         track('leaderboard_submit', { ok: 0, score: value, reason: 'guest' });
+        if (guestNow()) pending.keep(value, metadata);
         return null;
       }
       if (!(await this.ready())) return null;
-      try {
-        const playerId = gm.getPlayerId();
-        const opts = { token: scoreToken(playerId, value) };
-        if (metadata !== undefined) opts.metadata = metadata;
-        const r = await board().submitScore(value, opts);
-        // Logged in release builds too: "my score is not on the board" is answered by this line.
-        console.info(`[leaderboard] submitted ${value} as ${playerId} to ${id}: rank ${r?.rank}`);
-        noScore.clear();
-        track('leaderboard_submit', { ok: 1, score: value });
-        return { rank: Number(r?.rank ?? 0), score: Number(r?.score ?? value) };
-      } catch (e) {
-        console.warn('[leaderboard] submit failed:', reason(e), e);
-        track('leaderboard_submit', { ok: 0, score: value, reason: reason(e) });
-        return null;
-      }
+      return sendScore(value, metadata);
     },
 
     /**
@@ -335,6 +392,7 @@ export function createLeaderboard({ sdk, boardId, waitMs = 20000, g = globalThis
      */
     async me(period = 'alltime') {
       if (!PERIODS.includes(period)) period = 'alltime';
+      if (guestNow()) return null; // kit 1.0.4: a guest has no row of its own
       if (noScore.has(period)) return null;
       if (!(await this.ready())) return undefined;
       try {

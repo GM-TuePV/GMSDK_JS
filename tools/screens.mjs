@@ -18,9 +18,15 @@
  * Run once per game, on the final art: the shots are the reference for the banners (marketing). The AI asks the
  * owner after a build while export/qa/ has no folder yet; after that only when the owner asks for new shots.
  *
- * Needs Playwright in the game repo: npm i -D playwright, then npx playwright install chromium; or
- * --channel msedge / chrome to use the browser already on the machine. The page loads gmsdkjs.js from the server
- * (needs the internet, like a player).
+ *   node docs/GMSDK_JS/tools/screens.mjs --check [<packageDir>]
+ *
+ * --check (kit 1.0.4): a step of every build (docs/EXPORT.md §5), after check-export: one size, the two domains, no
+ * screenshot; ERROR lines and exit 1 when the page has a CORS / tainted canvas / worker error, a file of the package
+ * fails, or the loading screen never goes. It sees the loading and the menu only: QA.md 7.9 covers the other screens.
+ *
+ * Needs Playwright in the game repo: npm i -D playwright-core (then the Edge of Windows is used), or
+ * npm i -D playwright + npx playwright install chromium; --channel msedge / chrome picks the browser. The page loads
+ * gmsdkjs.js from the server (needs the internet, like a player).
  */
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, statSync, createReadStream, writeFileSync } from 'node:fs';
@@ -89,14 +95,17 @@ async function main() {
   const game = JSON.parse(readFileSync(join(dir, 'game.json'), 'utf8').replace(/^\uFEFF/, ''));
   // export/build/<version>-<id> → export/qa/<version>-<id>
   const out = resolve(dir, '..', '..', 'qa', `${game.version}-${game.id}`);
-  mkdirSync(out, { recursive: true });
+  // --check (kit 1.0.4, a step of npm run build): one size, no screenshots; exit 1 on a page error (CORS, tainted
+  // canvas, worker, a file that failed) or a loading screen that never goes
+  const check = args.includes('--check');
+  if (!check) mkdirSync(out, { recursive: true });
   const pw = await loadPlaywright();
   if (!pw) {
-    console.error('Playwright is missing: npm i -D playwright, then npx playwright install chromium (or --channel msedge)');
+    console.error('Playwright is missing: npm i -D playwright-core (Edge of Windows is used then), or npm i -D playwright + npx playwright install chromium');
     process.exitCode = 2;
     return;
   }
-  const waitMs = (Number(opt('--wait')) || 60) * 1000;
+  const waitMs = (Number(opt('--wait')) || (check ? 30 : 60)) * 1000;
 
   // The package as the CDN serves it (relative paths, CORS for every file). As on the own site (docs/EMBED.md), the
   // page is on another domain: 127.0.0.1 serves only index.html with <base href> on the package at localhost, so CORS,
@@ -125,10 +134,20 @@ async function main() {
   }
   console.log(sameOrigin ? `page and package on ${cdn}` : `page on ${base}, package on ${cdn} (two domains, as on the own site)`);
 
-  const browser = await pw.chromium.launch({ headless: true, ...(opt('--channel') ? { channel: opt('--channel') } : {}) });
+  // Chromium of Playwright, else the Edge every Windows has (playwright-core alone has no browser of its own)
+  const launch = (channel) => pw.chromium.launch({ headless: true, ...(channel ? { channel } : {}) });
+  let browser;
+  try {
+    browser = await launch(opt('--channel'));
+  } catch (e) {
+    if (opt('--channel')) throw e;
+    browser = await launch('msedge').catch(() => {
+      throw e;
+    });
+  }
   const rows = [];
   try {
-    for (const s of SIZES) {
+    for (const s of check ? SIZES.slice(0, 1) : SIZES) {
       const ctx = await browser.newContext({
         viewport: { width: s.w, height: s.h },
         deviceScaleFactor: s.dpr,
@@ -151,9 +170,9 @@ async function main() {
         .waitForSelector('#gmLoader[hidden]', { state: 'attached', timeout: waitMs })
         .then(() => true)
         .catch(() => false);
-      await page.waitForTimeout(1500); // let the menu settle (fonts, first frames)
+      await page.waitForTimeout(check ? 3000 : 1500); // let the menu settle (fonts, first frames, images it draws)
       const name = `${s.w}x${s.h}.jpg`;
-      await page.screenshot({ path: join(out, name), type: 'jpeg', quality: 80 });
+      if (!check) await page.screenshot({ path: join(out, name), type: 'jpeg', quality: 80 });
       const state = await page.evaluate(() => (window.GMLoader ? window.GMLoader.state : null)).catch(() => null);
       const ms = Date.now() - t0;
       rows.push({ ...s, name, ok, ms, errors, state });
@@ -164,6 +183,17 @@ async function main() {
     await browser.close();
     server.close();
     pageServer?.close();
+  }
+
+  if (check) {
+    const bad = rows.filter((r) => !r.ok || r.errors.length);
+    for (const r of bad) {
+      if (!r.ok) console.log(`ERROR: the loading screen never went (${waitMs / 1000} s)`);
+      for (const e of [...new Set(r.errors)].slice(0, 10)) console.log(`ERROR: ${e}`);
+    }
+    console.log(bad.length ? `FAILED: the game breaks with page and package on two domains (own site): fix the code (docs/EMBED.md)` : 'OK: page and package on two domains, no page error');
+    process.exitCode = bad.length ? 1 : 0;
+    return;
   }
 
   const md = [

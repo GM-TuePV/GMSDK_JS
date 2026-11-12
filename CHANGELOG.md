@@ -20,6 +20,42 @@ AI xét từng mục, từ cũ (dưới cùng) tới mới. Repo còn **dấu hi
 
 Thay đổi chỉ ở tài liệu thì không cần mục.
 
+## 1.0.4 — 2026-11-06
+
+### CrazyGames: khách đăng nhập trong lúc chơi
+
+Cần **gmsdkjs 1.0.4** ở `…/gmsdkjs/1.0.4/` và **template 1.0.4** (`…/gmsdkjs/templates/1.0.4/`) trên server ([SERVER_NOTES.md §1](docs/SERVER_NOTES.md)). Chỉ bản build **CrazyGames** chạy khác; nơi khác như 1.0.3. Game đã build theo 1.0.3 không bị ảnh hưởng (vẫn gmsdkjs 1.0.3).
+
+**Thay đổi**
+- **Khách đăng nhập CrazyGames giữa lúc chơi** (CrazyGames không tự tải lại trang; yêu cầu "implement AuthListener"): gmsdkjs nghe `addAuthListener`, ghi lại người chơi GMA và save của khách trong tab, rồi **tải lại trang** để game chạy bằng tài khoản:
+  - tài khoản **chưa có dữ liệu**: nhận hết của khách (save, tiến độ), có người chơi GMA mới tên username; **điểm cao nhất khách đã chơi trong tab này** được gửi lên bảng xếp hạng;
+  - tài khoản **đã có dữ liệu**: dùng dữ liệu cũ của tài khoản, **không nhận gì của khách**, kể cả điểm.
+- `leaderboard.js`:
+  - khách gửi điểm: không lên bảng, điểm cao nhất được giữ trong save của kit (`sdk.storage`, vùng `leaderboard`, khoá `pending`; trên CrazyGames là dữ liệu người chơi). CrazyGames chép dữ liệu khách sang tài khoản chưa có dữ liệu, điểm theo cùng, và tài khoản gửi nó một lần khi bảng sẵn sàng; tài khoản đã có dữ liệu không nhận gì của khách nên không gửi gì. Kit không gọi thẳng `localStorage` / `sessionStorage` (`check-export --src` không báo lỗi file của kit);
+  - khách: `player().id` rỗng, `me()` trả `null` (màn tự vẽ không tô dòng nào là "của mình");
+  - chờ gmsdkjs chọn xong người chơi (`playerPolicy().ready`) rồi mới sẵn sàng; `player().id` là người chơi hiện tại của GM SDK (không giữ mã cũ khi mở bảng sớm).
+- **Phiên bản ở Settings là `v1.0`, không phải số build:** trường mới `versionName` (chủ game đặt trong `config.json`, `bump-version.mjs` chép sang `game.json`, chưa có thì `"1.0"`); Settings hiện `v${manifest.versionName}`. `version` (`yymmddXX`) vẫn là số build: gửi GMA, tên gói, góc màn tải. `check-export` cảnh báo khi `game.json` thiếu `versionName` ([INTEGRATION.md §9](docs/INTEGRATION.md), [EXPORT.md §2](docs/EXPORT.md)).
+- **Ảnh tải từ CDN (hai tên miền) không còn lọt kiểm tra:**
+  - `sdk/net.js`: `loadImage()` đặt `crossOrigin = 'anonymous'` trước `src` (trước đây thiếu: canvas vẽ ảnh đó bị "bẩn" trên site của mình);
+  - `check-export --src` **báo lỗi** từng chỗ code game tự tạo ảnh (`new Image()`, `createElement('img')`) mà không đặt `crossOrigin` trước `src`. Luật cũ dò chữ `crossOrigin` trên cả `game.js` nên Three.js / Phaser (tự có chữ đó) che mất chỗ game quên, và chỉ là cảnh báo;
+  - `screens.mjs --check`: bước mới của `npm run build`, chạy gói trên hai tên miền như site của mình, dừng build khi có lỗi CORS / canvas bẩn / Worker / file hỏng ([EXPORT.md §4](docs/EXPORT.md)).
+- **Luật của kit cho mọi phiên AI:** `AGENT_RULES.md`, được `bump-version.mjs` ghi vào `CLAUDE.md` và `AGENTS.md` của game mỗi lần build (giữa `GMSDK_JS:BEGIN` / `GMSDK_JS:END`, phần còn lại là của game; `tools/agent-rules.mjs`). Trước đây luật chỉ nằm trong `PROMPT.md` lúc cài kit, nên phiên làm thêm tính năng sau đó quên (ảnh thiếu `crossOrigin`).
+- gmsdkjs 1.0.4: phiên GMA chỉ ghi kèm chủ khi đã kiểm xong; phiên của khách mang tên không phải dạng ngẫu nhiên (dữ liệu cũ lỗi) thì khách có người chơi mới.
+
+**Dấu hiệu**
+- `public/loader.js` trỏ `gmsdkjs/1.0.3/`.
+- `src/sdk/leaderboard/leaderboard.js` không có `pending.take()`.
+- `game.json` không có `versionName`, hoặc Settings hiện `V${manifest.version}` (số build).
+- `src/sdk/net.js` không có `img.crossOrigin`; `CLAUDE.md` không có `GMSDK_JS:BEGIN`; script `build` không có `screens.mjs --check`.
+
+**Game cần làm**
+1. Chép lại `loading/loader.js` → `public/loader.js`, `leaderboard/leaderboard.js` (+ `.d.ts`) → `src/sdk/leaderboard/` (game có bảng xếp hạng).
+2. Màn bảng tự vẽ: dòng "của mình" so với `board.player().id` như cũ (khách có id rỗng nên không dòng nào được tô); không cần đổi gì khác.
+3. Settings: nhãn phiên bản đổi thành `v${manifest.versionName}` (không dùng `manifest.version`); thêm `"versionName": "1.0"` vào `docs/GMSDK_JS/config.json` (hỏi chủ game nếu game đã có số phiên bản riêng); chạy `bump-version` để chép sang `game.json`.
+4. Chép lại `sdk/net.js` → `src/sdk/`; chép cả thư mục `tools/` và `AGENT_RULES.md` của kit (đã nằm trong `docs/GMSDK_JS/` nếu chép nguyên kit); chạy `node docs/GMSDK_JS/tools/agent-rules.mjs` rồi commit `CLAUDE.md` / `AGENTS.md`. Thêm `screens.mjs --check` vào script `build` sau `check-export` ([EXPORT.md §4](docs/EXPORT.md)), `npm i -D playwright-core`. Chạy `check-export --src src`: sửa mọi chỗ `makes an image without CORS` (đặt `crossOrigin` trước `src`, hoặc dùng `loadImage()`).
+5. Không tự lưu tiến độ ngoài `sdk.storage` (như 1.0.3): trang tải lại lúc khách đăng nhập, thứ chỉ nằm trong bộ nhớ game sẽ mất.
+6. Build lại; nộp CrazyGames có bật "Progress Save". Báo CrazyGames: khách đăng nhập thì game tải lại; tài khoản đã có dữ liệu thì giữ dữ liệu của tài khoản, không lấy điểm khách.
+
 ## 1.0.3 — 2026-11-04
 
 ### CrazyGames: người chơi là tài khoản CrazyGames, dữ liệu theo tài khoản

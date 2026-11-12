@@ -144,7 +144,7 @@ sdk.storage.patch('settings', { muted: true });
 ```
 
 - **`sdk.storage` là bộ lưu của game** ([`sdk/storage.js`](../sdk/storage.js), kit), không phải của gmsdkjs: một key `azgames.<gameCode>` (`azgames.dev` khi chưa có mã thật). gmsdkjs chỉ giữ tên GMA ở key riêng `gma_<gameCode>.name`, không đụng save của game.
-- **Trên CrazyGames (kit 1.0.3)** save nằm trong **dữ liệu người chơi của CrazyGames** (module Data, game nộp có bật "Progress Save"), không phải `localStorage`: cùng key, cùng cách nén. Khách chơi thì CrazyGames giữ trong trình duyệt; đăng nhập thì save theo tài khoản, máy nào cũng như nhau; khách đăng nhập mà tài khoản chưa có save thì save của khách được chuyển lên. Save cũ trong `localStorage` (bản build trước) được chép sang một lần. Game không làm gì thêm, chỉ cần **mọi tiến độ chơi đi qua `sdk.storage`**: thứ game tự ghi `localStorage` sẽ không theo tài khoản. Giới hạn của CrazyGames: 1 MB mỗi game; ghi quá thì `flush()` trả `false`, tracking `save_failed`.
+- **Trên CrazyGames (kit 1.0.3)** save nằm trong **dữ liệu người chơi của CrazyGames** (module Data, game nộp có bật "Progress Save"), không phải `localStorage`: cùng key, cùng cách nén. Khách chơi thì CrazyGames giữ trong trình duyệt; đăng nhập thì save theo tài khoản, máy nào cũng như nhau; khách đăng nhập mà tài khoản chưa có save thì save của khách được chuyển lên. Save cũ trong `localStorage` (bản build trước) được chép sang một lần. **Kit 1.0.4:** khách đăng nhập trong lúc chơi thì trang tải lại; tài khoản chưa có dữ liệu nhận tiến độ của khách, tài khoản đã có dữ liệu giữ của mình (tiến độ khách bỏ). Game không làm gì thêm, chỉ cần **mọi tiến độ chơi đi qua `sdk.storage`**: thứ game tự ghi `localStorage` sẽ không theo tài khoản. Giới hạn của CrazyGames: 1 MB mỗi game; ghi quá thì `flush()` trả `false`, tracking `save_failed`.
 - **Giá trị lưu được nén và trộn**: JSON → nén LZ (chuỗi UTF-16, khoảng 15 bit mỗi ký tự; localStorage tính theo ký tự) → trộn theo key → thêm mã kiểm. Save 9 KB JSON còn khoảng 1 KB. Mở DevTools không đọc được; **sửa tay một ký tự là hỏng**: save đó bị bỏ, người chơi chơi lại từ đầu, gửi tracking `save_tampered`. Chống sửa tay, không phải chống người đọc được code.
 - Mọi bước chạy đồng bộ (vài ms với save 40 KB) để lần ghi cuối lúc đóng tab chắc chắn xong.
 - Vùng `settings` cho cài đặt, `profile` cho tiến trình. Thêm vùng riêng nếu cần (ví dụ `levels`).
@@ -187,7 +187,7 @@ const privacy = privacyPolicyUrl(sdk);                      // sdk/copyright.js:
 privacyButton.hidden = !privacy;
 privacyButton.textContent = t('privacy_policy');            // "Privacy Policy", cạnh dòng bản quyền
 privacyButton.onclick = () => window.open(privacy, '_blank', 'noopener');
-versionLabel.textContent = `V${manifest.version}`;          // từ game.json
+versionLabel.textContent = `v${manifest.versionName}`;     // game.json versionName ("1.0"), không phải version (số build)
 ```
 
 - Đọc `moreGamesUrl()`, `copyrightText(sdk)` và `privacyPolicyUrl(sdk)` **sau `ready()`**: giá trị đến từ API.

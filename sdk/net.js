@@ -45,6 +45,9 @@ export async function withRetry(fn, label = '') {
 function loadImageOnce(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    // kit 1.0.4: CORS mode, before src: on the own site the package comes from the CDN, another domain than the page;
+    // without it a canvas that draws this image is tainted (getImageData / WebGL textures fail, docs/EMBED.md)
+    img.crossOrigin = 'anonymous';
     const timer = setTimeout(() => {
       img.onload = img.onerror = null;
       img.src = '';

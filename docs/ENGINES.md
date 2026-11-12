@@ -104,4 +104,4 @@ Engine tự sinh `index.html` thì vẫn chỉ lấy JS + tài nguyên ra gói (
 | Webpack / Rollup / Parcel | Cấu hình ra một file IIFE `game.js` và bố cục [EXPORT.md §1](EXPORT.md) |
 | Engine có trình xuất riêng (Cocos, Construct…) | Lấy file JS và tài nguyên của bản xuất, sắp lại theo [EXPORT.md §1](EXPORT.md); nhiều file JS thì gộp bằng esbuild như trên |
 
-Sau cùng luôn chạy `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src`, rồi `node docs/GMSDK_JS/tools/zip.mjs`.
+Sau cùng luôn chạy `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src`, `node docs/GMSDK_JS/tools/screens.mjs --check export/build/<version>-<id>` (gói trên hai tên miền, kit 1.0.4), rồi `node docs/GMSDK_JS/tools/zip.mjs`.

@@ -110,7 +110,7 @@ function showMenu() {
   });
   root.append(mute);
 
-  document.getElementById('version').textContent = `V${manifest.version}`;
+  document.getElementById('version').textContent = `v${manifest.versionName ?? '1.0'}`; // not the build number
   document.getElementById('trademark').textContent = copyrightText(sdk); // "© 2026 Azgames.io" unless the server says otherwise; '' = show nothing
   // Privacy Policy next to the copyright line, like More Games: the server's link, none = no button; new tab.
   const privacy = document.getElementById('privacy');

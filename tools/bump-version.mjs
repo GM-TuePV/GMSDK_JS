@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * The first step of every build (docs/EXPORT.md §4). config.json (next to the kit) is the one source of the
- * game's values: they are copied into game.json (id, gameCode, name, languages, defaultLanguage, leaderboardId,
+ * game's values: they are copied into game.json (id, gameCode, name, versionName, languages, defaultLanguage, leaderboardId,
  * portals.gd.gameKey) and the dev page (gameId, gameCode; language from defaultLanguage while it is a placeholder). Then the next version, GM standard yymmddXX
  * (EXPORT.md §2): today's date (this machine's local time) and the build of the day, 01, 02, … Plain Node 18+.
  *
@@ -17,14 +17,26 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { writeRules } from './agent-rules.mjs';
 
 const KIT_CONFIG = join(dirname(dirname(fileURLToPath(import.meta.url))), 'config.json');
 const readJson = (text) => JSON.parse(text.replace(/^\uFEFF/, ''));
+
+/** The version players see when the owner has set none (kit 1.0.4). */
+export const DEFAULT_VERSION_NAME = '1.0';
+
+/** A version for players, 1 to 3 numbers with dots (1.0, 2.1.3), or null. */
+export function cleanVersionName(v) {
+  const s = typeof v === 'number' ? String(v) : typeof v === 'string' ? v.trim().replace(/^v/i, '') : '';
+  return /^\d+(\.\d+){0,2}$/.test(s) ? s : null;
+}
 
 /** game.json with config.json's values (config wins; keys config does not have are kept). */
 export function withConfig(game, config) {
   const out = { ...game };
   for (const key of ['id', 'gameCode', 'name', 'languages', 'defaultLanguage']) if (config[key] !== undefined) out[key] = config[key];
+  // versionName (kit 1.0.4): the version players see in Settings (v1.0), set by the owner; version stays the build number
+  out.versionName = cleanVersionName(config.versionName) ?? cleanVersionName(out.versionName) ?? DEFAULT_VERSION_NAME;
   // leaderboardId: the board of docs/LEADERBOARD.md; null = the game has none (and none in game.json).
   if (typeof config.leaderboardId === 'string') out.leaderboardId = config.leaderboardId;
   else if (config.leaderboardId === null) delete out.leaderboardId;
@@ -88,7 +100,7 @@ function main() {
   const version = nextVersion(game.version);
   game = { ...game, version };
   // id, gameCode, name, version first, as in docs/EXPORT.md §2; the rest in its own order.
-  const order = ['id', 'gameCode', 'name', 'version'];
+  const order = ['id', 'gameCode', 'name', 'version', 'versionName'];
   game = Object.fromEntries([...order.filter((k) => k in game).map((k) => [k, game[k]]), ...Object.entries(game).filter(([k]) => !order.includes(k))]);
   mkdirSync(dirname(resolve(file)), { recursive: true });
   writeFileSync(file, `${formatJson(game)}\n`);
@@ -107,6 +119,13 @@ function main() {
       if (/\blanguage:\s*(['"])<!--LANGUAGE-->\1/.test(html)) set('language', config.defaultLanguage);
     }
     writeFileSync(page, html);
+  }
+  // kit 1.0.4: the kit's rules in CLAUDE.md / AGENTS.md of the game, for every AI session (tools/agent-rules.mjs)
+  try {
+    const changed = writeRules(process.cwd());
+    if (changed.length) console.log(`kit rules written to ${changed.join(', ')} (docs/GMSDK_JS/AGENT_RULES.md): commit them with the game`);
+  } catch (e) {
+    console.warn(`kit rules not written: ${e?.message ?? e}`);
   }
   console.log(config ? `${version} (values from ${KIT_CONFIG})` : version);
 }

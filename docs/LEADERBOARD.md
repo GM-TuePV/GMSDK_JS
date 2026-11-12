@@ -60,6 +60,8 @@ openLeaderboard({ board, t, onClose: resumeMenu });
 
 **CrazyGames** (luật của họ, gmsdkjs 1.0.2 `playerPolicy()`): tên người chơi là username CrazyGames, không sửa được kể cả khách; khách không lên bảng xếp hạng. gmsdkjs chặn cả ở GMA (`updateMyProfile` đổi tên, `submitScore` của khách đều bị từ chối), nên game tự vẽ bảng cũng không vượt được. Game có ô nhập tên riêng thì ẩn nó khi `board.nameEditable()` là `false`.
 
+**Kit 1.0.4 + gmsdkjs 1.0.4:** khách đăng nhập CrazyGames trong lúc chơi thì trang tải lại bằng tài khoản. Điểm khách gửi (không lên bảng) được giữ trong save của kit (`sdk.storage`, vùng `leaderboard`, khoá `pending`: dữ liệu người chơi trên CrazyGames). Tài khoản **chưa có dữ liệu** nhận dữ liệu khách (CrazyGames chép sang) nên điểm cao nhất đó được gửi lên một lần khi bảng sẵn sàng; tài khoản **đã có dữ liệu** không nhận gì của khách nên không gửi (có thể không phải của họ). Game không phải làm gì thêm, chỉ gọi `submit()` như cũ. Khách: `player().id` rỗng, `me()` trả `null`.
+
 **Kit 1.0.3 + gmsdkjs 1.0.3:** mỗi tài khoản CrazyGames là **một** người chơi GMA trên mọi máy (phiên GMA nằm trong dữ liệu người chơi CrazyGames, game nộp có bật "Progress Save"); hai tài khoản dùng chung trình duyệt không đè điểm nhau. Tên giữ dấu chấm (`SingingCheese.TLNU`). CrazyGames trả `getUser()` chậm thì tên và quyền gửi điểm có ngay khi có kết quả: đọc lại `player()` / `canSubmit()` lúc vẽ, đừng giữ bản cũ.
 
 `entry` = `{ rank, playerId, name, country, score }`. Kỳ là giờ **UTC** của máy chủ: "hôm nay" đổi lúc 0 h UTC, tuần bắt đầu thứ Hai (ISO).

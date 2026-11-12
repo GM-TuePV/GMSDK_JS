@@ -11,8 +11,10 @@
  * is checked against the files under its roots. analytics.json next to it (the
  * event dictionary, docs/ANALYTICS.md §6) is checked too, and the package's game.js must name its events.
  *
- * Errors (exit code 1) break the contract; warnings are worth a look. --src also scans the game's sources for
- * direct localStorage / sessionStorage use (the built game.js is minified, so it is checked there).
+ * Errors (exit code 1) break the contract; warnings are worth a look. --src also scans the game's sources (the built
+ * game.js is minified and mixed with its engine, so they are checked there): direct localStorage / sessionStorage use,
+ * and (kit 1.0.4) every image the game makes itself (new Image() / createElement('img')) has crossOrigin set before
+ * its src (docs/EMBED.md §1).
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
@@ -283,7 +285,7 @@ function checkSkin(dir) {
 }
 
 // --- config.json: the game's values (AI_INSTALL.md step 0) -----------------------------------------------------
-const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'languages', 'defaultLanguage', 'leaderboardId', 'compress', 'loadingScreen', 'gdKey', 'notes', 'brief']);
+const CONFIG_KEYS = new Set(['id', 'gameCode', 'name', 'versionName', 'languages', 'defaultLanguage', 'leaderboardId', 'compress', 'loadingScreen', 'gdKey', 'notes', 'brief']);
 /** A GMA board id (docs/LEADERBOARD.md), e.g. leaderboard-topscore. */
 const BOARD_ID = /^[a-z0-9][a-z0-9_-]*$/i;
 const PLACEHOLDER_BOARDS = new Set(['idleaderboard', 'id-leaderboard', 'leaderboard-id', 'leaderboardid']);
@@ -308,6 +310,7 @@ if (configPath) {
     if (config.gameCode === null) warn('config.json gameCode is null: run tools/bump-version.mjs once (it writes a temporary code), or ask the owner');
     else if (!GAME_CODE.test(config.gameCode ?? '')) err(`config.json gameCode "${config.gameCode}": g<number> the owner gives, or null`);
     else if (TEMP_CODE.test(config.gameCode)) warn(`config.json gameCode ${config.gameCode} is temporary: replace it with the owner's code before release (or gameCode in the package's index.html)`);
+    if (config.versionName !== undefined && !/^v?\d+(\.\d+){0,2}$/.test(String(config.versionName))) err(`config.json versionName "${config.versionName}": a version for players such as 1.0 (Settings shows v<versionName>)`);
     if (!config.name || typeof config.name !== 'string' || config.name.includes('<')) err(`config.json name "${config.name}": the display name is required`);
     checkLanguages('config.json', Array.isArray(config.languages) ? config.languages : [], config.defaultLanguage);
     if (config.leaderboardId === undefined) warn('config.json leaderboardId is missing: the board id the owner gives (docs/LEADERBOARD.md), or null when the game has no leaderboard');
@@ -524,7 +527,7 @@ function assembledPages(dir, entry, m) {
   if (html !== readFileSync(join(dir, 'preview.html'), 'utf8')) return { error: 'preview.html must be index.html byte for byte (tools/assemble.mjs)' };
   // The page loads loader.js only; loader.js loads gmsdkjs.js and the entry (docs/LOADING.md).
   if (/id="gmsoft-jssdk"/.test(html) || new RegExp(`<script[^>]*\\bsrc="${entry.replace(/\./g, '\\.')}"`).test(html))
-    return { error: 'index.html loads gmsdkjs.js / the game itself: the platform template must load loader.js only (templates/1.0.3/, docs/EXPORT.md §7)' };
+    return { error: 'index.html loads gmsdkjs.js / the game itself: the platform template must load loader.js only (templates/1.0.4/, docs/EXPORT.md §7)' };
   const template = /GMSDKJS_OPTIONS\s*=/.test(html) && /<script[^>]*\bsrc="loader\.js"/.test(html);
   if (!template) return { error: 'index.html is not the platform template: the package has no page of its own (tools/assemble.mjs makes the gm page)' };
   if (/<!--[A-Z_]+-->/.test(html)) return { error: 'index.html still has <!--…--> placeholders: run tools/assemble.mjs again' };
@@ -558,6 +561,8 @@ function checkPackage() {
     else if (TEMP_CODE.test(m.gameCode)) warn(`game.json gameCode ${m.gameCode} is temporary: replace it before release (config.json, or gameCode in index.html after the build)`);
     if (!m.name || typeof m.name !== 'string') err('game.json name is missing');
     if (!validVersion(m.version)) err(`game.json version "${m.version}": yymmddXX is required (date + build of the day, tools/bump-version.mjs)`);
+    // versionName (kit 1.0.4): what Settings shows (v1.0); version is the build number (GMA, the package, the loading screen)
+    if (!/^\d+(\.\d+){0,2}$/.test(String(m.versionName ?? ''))) warn(`game.json versionName "${m.versionName ?? ''}": a version for players (1.0) is expected, set in config.json; Settings shows v<versionName>, not the build number (tools/bump-version.mjs)`);
     entry = m.entry ?? 'game.js';
     if (!['any', 'landscape', 'portrait'].includes(m.orientation ?? 'any')) warn(`game.json orientation "${m.orientation}": any | landscape | portrait`);
     languages = Array.isArray(m.languages) ? m.languages : [];
@@ -739,7 +744,43 @@ function checkPackage() {
 if (dir) checkPackage();
 
 
-// --- sources: no direct storage --------------------------------------------------------------------------------
+/**
+ * Images a source file makes without CORS (kit 1.0.4): new Image() / createElement('img') whose crossOrigin is not set
+ * before its src. On the own site the package is on the CDN, another domain than the page: such an image taints the
+ * canvas that draws it (getImageData / toDataURL / WebGL textures throw), and a copy the browser or the CDN keeps
+ * without CORS breaks the later loads of the same file that ask for it (docs/EMBED.md §1, §3). Checked in the game's
+ * own code, where the engine's "crossOrigin" (Three.js, Phaser…) cannot hide a forgotten one. Engine loaders set CORS
+ * themselves. A comment gmsdk-allow-no-crossorigin on the line or the one above skips one (an image never drawn).
+ * @returns {{ line: number, why: string }[]}
+ */
+function imagesWithoutCors(text) {
+  const lines = text.split('\n');
+  const lineOf = (i) => text.slice(0, i).split('\n').length;
+  const esc = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const made = /(?:([\w$]+(?:\.[\w$]+)*)\s*(?::\s*[\w$.<>|\s]+?)?\s*=\s*)?(?:new\s+(?:window\.|globalThis\.|self\.)?Image\s*\(|\bdocument\.createElement\s*\(\s*['"`]img['"`]\s*\))/g;
+  const out = [];
+  for (const m of text.matchAll(made)) {
+    const line = lineOf(m.index);
+    const here = lines[line - 1] ?? '';
+    if (/^\s*(\/\/|\/?\*)/.test(here)) continue;
+    if (/gmsdk-allow-no-crossorigin/.test(here) || /gmsdk-allow-no-crossorigin/.test(lines[line - 2] ?? '')) continue;
+    const after = text.slice(m.index, m.index + 1500);
+    const v = m[1] && !/^(?:const|let|var|return)$/.test(m[1]) ? m[1] : null;
+    if (!v) {
+      // not kept in a variable (Object.assign(new Image(), { crossOrigin, src }), a factory): crossOrigin close after
+      if (!/crossOrigin/.test(after.slice(0, 400))) out.push({ line, why: 'never sets crossOrigin' });
+      continue;
+    }
+    const q = esc(v);
+    const cors = after.search(new RegExp(`${q}\\s*\\.\\s*crossOrigin\\s*=(?!=)|${q}\\s*\\.\\s*setAttribute\\s*\\(\\s*['"\`]crossorigin['"\`]|crossOrigin\\s*:`, 'i'));
+    const src = after.search(new RegExp(`${q}\\s*\\.\\s*src\\s*=(?!=)|${q}\\s*\\.\\s*setAttribute\\s*\\(\\s*['"\`]src['"\`]`));
+    if (cors < 0) out.push({ line, why: `${v}: never sets crossOrigin` });
+    else if (src >= 0 && src < cors) out.push({ line, why: `${v}: src set before crossOrigin (too late, the load has started)` });
+  }
+  return out;
+}
+
+// --- sources: no direct storage, images in CORS mode -------------------------------------------------------------
 if (srcDir) {
   if (!existsSync(srcDir)) err(`--src ${srcDir}: not found`);
   else {
@@ -747,6 +788,9 @@ if (srcDir) {
       // legacy-save.*: the game's own old save (AI_INSTALL.md, Cách làm: converter or old players on the old save).
       if (!/\.(m?js|ts|tsx|jsx)$/.test(f) || /gmsdkjs-shim|[\\/]sdk[\\/]storage\.|[\\/]legacy-save\./.test(f)) continue;
       if (/createLeaderboard\(/.test(readFileSync(f, 'utf8')) && config && !config.leaderboardId && !/[\\/]leaderboard[\\/]/.test(f)) err(`${relative(process.cwd(), f)} creates a leaderboard but config.json leaderboardId is null`);
+      for (const { line, why } of imagesWithoutCors(readFileSync(f, 'utf8'))) {
+        err(`${relative(process.cwd(), f)}:${line} makes an image without CORS (${why}): set img.crossOrigin = 'anonymous' BEFORE img.src, or load it with loadImage() of src/sdk/net.js; the package is on another domain than the page (docs/EMBED.md §1). An image never drawn on a canvas: comment gmsdk-allow-no-crossorigin`);
+      }
       const lines = readFileSync(f, 'utf8').split('\n');
       lines.forEach((line, i) => {
         // Comment lines (//, /* or /**, and * inside a block) only talk about storage.

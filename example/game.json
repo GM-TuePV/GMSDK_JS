@@ -3,6 +3,7 @@
   "gameCode": "g0",
   "name": "GMSDK Example",
   "version": "26101701",
+  "versionName": "1.0",
   "entry": "game.js",
   "orientation": "any",
   "languages": ["en", "es"],

@@ -3,6 +3,7 @@
   "id": "<slug on the portal, e.g. wheelie-spooky>",
   "gameCode": null,
   "name": "<display name, e.g. Wheelie Spooky>",
+  "versionName": "1.0",
   "languages": ["en"],
   "defaultLanguage": "en",
   "leaderboardId": null,

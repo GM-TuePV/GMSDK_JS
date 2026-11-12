@@ -27,6 +27,7 @@ Chỉ những mục đó ở gốc, không source map. **Tên thư mục và fil
   "gameCode": "g131",
   "name": "Wheelie Spooky",
   "version": "26101701",
+  "versionName": "1.0",
   "entry": "game.js",
   "orientation": "any",
   "languages": ["en", "es", "pt", "fr", "de", "it"],
@@ -40,7 +41,8 @@ Chỉ những mục đó ở gốc, không source map. **Tên thư mục và fil
 | `id` | ✓ | Slug của game trên portal (`a-z`, `0-9`, `-`). Tool build điền vào `GMSDKJS_OPTIONS.gameId` |
 | `gameCode` | ✓ | `g<số>`: key lưu trữ `azgames.<gameCode>`. Tool build điền vào `GMSDKJS_OPTIONS.gameCode`, sửa được ở `index.html` sau khi build. Chủ game chưa có mã: `bump-version` đặt mã tạm `g` + năm tháng ngày giờ phút giây (`check-export` cảnh báo), đổi trước khi phát hành |
 | `name` | ✓ | Tên hiển thị |
-| `version` | ✓ | Quy chuẩn GM `yymmddXX`: ngày build và lần build trong ngày (`01`, `02`…), ví dụ `26101701`. Mỗi lần build tăng 1, bằng `tools/bump-version.mjs` (§4). Gửi GMA và hiện ở góc màn hình (`V26101701`) |
+| `version` | ✓ | Quy chuẩn GM `yymmddXX`: ngày build và lần build trong ngày (`01`, `02`…), ví dụ `26101701`. Mỗi lần build tăng 1, bằng `tools/bump-version.mjs` (§4). Số **build**: gửi GMA, đặt tên gói, hiện ở góc màn tải (`26101701`). **Không** hiện ở Settings |
+| `versionName` | | Phiên bản người chơi thấy ở Settings (`v1.0`): chủ game đặt trong `config.json` (`"versionName": "1.0"`), tăng khi có bản cập nhật lớn; `bump-version.mjs` chép sang, chưa có thì `"1.0"` (kit 1.0.4) |
 | `entry` | | Mặc định `game.js` |
 | `orientation` | | `any` (mặc định), `landscape`, `portrait` |
 | `languages` | ✓ | Thẻ BCP 47 có file trong `i18n/` (`en`, `en-US`, `zh-TW`…, đúng chữ hoa / thường). Phải có một tiếng Anh (`en` hoặc `en-XX`) |
@@ -103,8 +105,10 @@ export default {
 - **Script build chuẩn**, đúng thứ tự:
 
   ```json
-  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/compress.mjs && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src && node docs/GMSDK_JS/tools/zip.mjs"
+  "build": "node docs/GMSDK_JS/tools/bump-version.mjs && vite build && node docs/GMSDK_JS/tools/compress.mjs && node docs/GMSDK_JS/tools/assemble.mjs && node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src && node docs/GMSDK_JS/tools/screens.mjs --check export/build/<version>-<id> && node docs/GMSDK_JS/tools/zip.mjs"
   ```
+
+  `screens.mjs --check` (kit 1.0.4) mở gói như site của mình, trang và gói ở hai tên miền, rồi dừng build khi có lỗi CORS, canvas bẩn, Worker, file tải hỏng hay màn loading không tắt ([EMBED.md](EMBED.md)). Cần `npm i -D playwright-core` (dùng Edge có sẵn của Windows) hoặc `playwright`. Không bỏ bước này để build qua.
 
   `<version>-<id>` đổi mỗi lần build, nên bước `check-export` thường gọi qua một script nhỏ của game đọc `public/game.json` (Wheelie: `tools/check-package.mjs`). Game có bước riêng (kiểm chữ, typecheck) thì chen vào trước `vite build` hoặc ngay sau nó, trước `assemble`.
 - **Nén (`tools/compress.mjs`)**, ngay sau bundler, trên gói xuất (ảnh / nhạc gốc trong `public/` để nguyên). Cần `npm i -D sharp ffmpeg-static`.
@@ -146,9 +150,10 @@ node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src
 
 Chạy ở gốc repo. Tool tự đọc `docs/GMSDK_JS/config.json` (giá trị của game) để so với `game.json`; `--config <file>` nếu muốn trỏ chỗ khác.
 
-- **Lỗi** (exit 1): thiếu / sai `game.json`; `game.json` khác `config.json` (id, gameCode, name, ngôn ngữ, key GD); thiếu `en` hay file ngôn ngữ; ngôn ngữ khác có key mà `en.json` không có; có `index.html` / `preview.html` không phải trang gm do `assemble` ghép (trang riêng của game, hai file khác nhau, còn `<!--…-->`, `gameId` / `gameCode` / `version` khác `game.json`); đường dẫn tuyệt đối; `import()` từ URL; mã nguồn gọi `localStorage` trực tiếp.
+- **Lỗi** (exit 1): thiếu / sai `game.json`; `game.json` khác `config.json` (id, gameCode, name, ngôn ngữ, key GD); thiếu `en` hay file ngôn ngữ; ngôn ngữ khác có key mà `en.json` không có; có `index.html` / `preview.html` không phải trang gm do `assemble` ghép (trang riêng của game, hai file khác nhau, còn `<!--…-->`, `gameId` / `gameCode` / `version` khác `game.json`); đường dẫn tuyệt đối; `import()` từ URL; mã nguồn gọi `localStorage` trực tiếp; mã nguồn tự tạo ảnh (`new Image()`, `createElement('img')`) mà không đặt `crossOrigin` **trước** `src` (kit 1.0.4: kiểm từng ảnh trong `--src`, vì `game.js` đã gộp thư viện, chữ `crossOrigin` của Three.js / Phaser che mất chỗ game quên; ảnh không bao giờ vẽ lên canvas thì ghi chú `gmsdk-allow-no-crossorigin` ở dòng đó).
 - **Cảnh báo**: file lạ ở gốc, ngôn ngữ thiếu key (sẽ hiện tiếng Anh), BOM, source map, tạo thẻ `<script>`, `game.js` không nhắc tới SDK.
 - Chạy trước mỗi lần giao gói. Gói lỗi thì không giao.
+- Sau đó `node docs/GMSDK_JS/tools/screens.mjs --check export/build/<version>-<id>` (kit 1.0.4): chạy gói trên hai tên miền như site của mình; `ERROR` thì sửa code. Chỉ thấy màn loading và menu: màn khác (cửa hàng, skin, nâng cấp) kiểm theo [QA.md](QA.md) 7.9.
 
 ## 6. Sau khi giao gói
 

@@ -64,6 +64,7 @@ Kiểm trước khi làm, ở gốc repo: `node docs/GMSDK_JS/tools/check-export
 | `sdk/gmsdkjs-shim.js`, `sdk/storage.js`, `sdk/i18n.js`, `sdk/net.js`, `sdk/copyright.js` (+ các `.d.ts`) | `src/sdk/` | Chép nguyên, không sửa. Luôn có `gmsdkjs-shim.js` và `storage.js` (+ các `.d.ts` nếu game dùng TypeScript). Game đã có i18n / tải có thử lại đạt [INTEGRATION.md §7–§8](docs/INTEGRATION.md) thì giữ của game, không chép `i18n.js` / `net.js`, chỉ đổi chỗ lưu sang `sdk.storage` |
 | `template/index.html` | `index.html` ở gốc | Trang dev. Game đã có `index.html`: thêm khối `GMSDKJS_OPTIONS` vào `<head>`, `<div id="game">`, và **chỉ một script** `<script src="loader.js" data-entry="src/main.js" data-module>` thay cho thẻ entry. Bỏ mọi thẻ `gmsdkjs.js`, `gmsdkv2.js`, Firebase, `gm-sdk.js`, SDK portal |
 | `template/vite.config.mjs` | gốc repo | Chỉ khi dùng Vite. Đã có cấu hình thì gộp theo [EXPORT.md §4](docs/EXPORT.md) |
+| `AGENT_RULES.md` | Khối `GMSDK_JS` trong `CLAUDE.md` và `AGENTS.md` ở gốc repo | **Không chép tay:** `bump-version.mjs` (bước đầu của mọi build) tự ghi / cập nhật khối giữa hai dấu `GMSDK_JS:BEGIN` / `GMSDK_JS:END`, phần còn lại của hai file là của game. Chạy ngay một lần lúc cài: `node docs/GMSDK_JS/tools/agent-rules.mjs`. Nhờ khối này, phiên AI sau (thêm tính năng, đổi ảnh) vẫn theo luật của kit (kit 1.0.4) |
 | `leaderboard/leaderboard.js`, `hmac.js`, `ui.js` (+ `.d.ts`); `leaderboard/flags.webp`, `flags.json`, `countries.json` | `src/sdk/leaderboard/`; `public/assets/leaderboard/` | Chỉ khi `leaderboardId` khác `null` ([LEADERBOARD.md §2](docs/LEADERBOARD.md)). Bỏ `JS_GMSDK/Leaderboard` cũ |
 
 ## Bước 2. Manifest và bảng dịch
@@ -88,7 +89,7 @@ Theo [INTEGRATION.md](docs/INTEGRATION.md), đúng thứ tự. Phần riêng c�
 
    `check-export` báo lỗi khi `game.js` không gọi `preroll` hoặc `interstitial`; cảnh báo khi không có `rewarded`.
 5. Mọi lưu trữ qua `sdk.storage` (§6); mọi tải file qua `sdk/net.js` (§8).
-6. More Games, trademark, `V<version>` (§9).
+6. More Games, trademark, `v<versionName>` (§9; `v1.0`, không phải số build).
    Có bảng xếp hạng: `createLeaderboard` sau `game.json`, `submit` một lần mỗi ván, nút mở bảng ([LEADERBOARD.md](docs/LEADERBOARD.md)).
 7. Tracking để phân tích game: làm theo quy trình [ANALYTICS.md §6](docs/ANALYTICS.md), không chờ ai viết sẵn.
    - đọc code, gắn bộ chuẩn §3 và bộ phân tích §4 qua một module tracking của game;
@@ -113,7 +114,7 @@ Tìm những chỗ còn sót: `grep -rnE "localStorage|GMSOFT_|gmsdkv2|PokiSDK|C
 
 1. Chạy trang dev (`adsTest: true`) theo [TESTING.md](docs/TESTING.md), kiểm theo [QA.md §3](docs/QA.md) những mục kiểm được trên máy này (quảng cáo, tạm dừng, âm thanh, lưu trữ, ngôn ngữ, bố cục ở cả hai chiều, tracking, gói xuất).
 2. Chạy typecheck / lint / test có sẵn của repo.
-3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/build/<version>-<id>/` và `export/build/<version>-<id>/<version>-<id>.zip`.
+3. Build theo đúng thứ tự `bump-version` → xuất gói (`npx vite build` hoặc bundler của game) → nén (`node docs/GMSDK_JS/tools/compress.mjs`, cần `npm i -D sharp ffmpeg-static`; chép bảng nén vào báo cáo) → ghép trang gm (`node docs/GMSDK_JS/tools/assemble.mjs`, [EXPORT.md §7](docs/EXPORT.md)) → `node docs/GMSDK_JS/tools/check-export.mjs export/build/<version>-<id> --src src` cho tới khi `OK` (kiểm cả việc `game.json` khớp `config.json`) → `node docs/GMSDK_JS/tools/screens.mjs --check export/build/<version>-<id>` cho tới khi `OK` (gói trên hai tên miền như site của mình; cần `npm i -D playwright-core`) → đóng zip `node docs/GMSDK_JS/tools/zip.mjs` ([EXPORT.md §8](docs/EXPORT.md)). Cả chuỗi nằm trong một script `npm run build`. Kết quả: `export/build/<version>-<id>/` và `export/build/<version>-<id>/<version>-<id>.zip`.
 4. **Ảnh QA và marketing: mỗi game làm một lần, hỏi trước khi làm.** Build xong:
    - `export/qa/` chưa có thư mục nào: hỏi chủ game "Đã build xong `<version>`. Chụp ảnh QA 8 cỡ màn hình không? Ảnh để hỗ trợ làm Banner cho chuẩn nên cần đồ họa bản cuối cùng." Đồng ý thì chụp theo [QA.md §2.1](docs/QA.md): `node docs/GMSDK_JS/tools/screens.mjs` (màn menu), rồi tự vào chơi ở từng cỡ, chụp lúc chơi và màn kết quả; xem từng ảnh, ghi bảng "Màn hình" vào `docs/qa/<version>.md`. Ảnh ở `export/qa/<version>-<id>/`, không commit.
    - Đã có ảnh QA mà `export/marketing/` chưa có thư mục nào (kể cả ngay sau khi vừa chụp xong): hỏi "Viết marketing không? Nội dung để hỗ trợ làm thông tin game nên cần bản game hoàn thiện cuối cùng." Đồng ý thì làm theo [PROMPT_MARKETING.md](PROMPT_MARKETING.md), ra `export/marketing/<version>-<id>/`.

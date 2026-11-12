@@ -23,7 +23,7 @@
   var g = window;
   if (g.GMLoader) return; // one loader per page
 
-  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.3/gmsdkjs.js'; // gmsdkjs 1.0.3, the version this kit is made for (docs/SERVER_NOTES.md)
+  var SDK_URL = 'https://games.1games.io/lib/1games/gmsdkjs/1.0.4/gmsdkjs.js'; // gmsdkjs 1.0.4, the version this kit is made for (docs/SERVER_NOTES.md)
   var DATA_WAIT_MS = 8000; // CrazyGames: the player's data (Data module) before the game reads its save
   var TRIES = 3;
   var TIMEOUT_MS = 10000;

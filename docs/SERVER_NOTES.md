@@ -2,7 +2,18 @@
 
 Tổng quan luồng chạy và ai lo phần nào: [OVERVIEW.md](OVERVIEW.md).
 
-## 1. Bắt buộc cho kit 1.0.3
+## 1. Bắt buộc cho kit 1.0.4
+
+Kit 1.0.4 trỏ **gmsdkjs 1.0.4** và **template 1.0.4**. Thư mục 1.0.3 giữ nguyên cho game đang chạy (quy ước §5).
+
+| # | Việc | Vì sao |
+| --- | --- | --- |
+| 1 | Đưa **gmsdkjs 1.0.4** vào `…/gmsdkjs/1.0.4/` của cả ba publisher (1games qua Sync SDK Lib; azgames, ofree chép tay), bản `_dev` và bản obfuscate. Không ghi đè `1.0.3/` | §9: khách đăng nhập trong lúc chơi. `VERSION = "1.0.4"` |
+| 2 | Thêm **template 1.0.4** `templates/1.0.4/` (chép 1.0.3, `sdkUrl` sang `1.0.4/`) | `loader.js` của kit 1.0.4 trỏ `1.0.4/`; `assemble` đọc `templates/1.0.4/` |
+| 3 | **Tool build:** bundle lại (`build/kit-1.0.4/`, `presets.json` có `sdkUrls` `1.0.4`) | Gói 1.0.4 trên template 1.0.3 thì chạy gmsdkjs 1.0.3 (không có §9) |
+
+### Kit 1.0.3
+
 
 Kit 1.0.3 trỏ **gmsdkjs 1.0.3** và **template 1.0.3**. Thư mục 1.0.2 giữ nguyên cho game đang chạy (quy ước §5).
 
@@ -120,3 +131,17 @@ Chỉ khi `sdkType === "crazy"`; các portal khác chạy như 1.0.2. Thay §6 �
 - `playerPolicy()` thêm `guest` và `country`.
 
 **Kiểm** (bản build CrazyGames có bật "Progress Save", trang thử QA của CrazyGames): đăng nhập tài khoản A, gửi điểm; đăng xuất, đăng nhập B trên cùng trình duyệt, gửi điểm → hai người chơi GMA khác nhau, tên đúng username (giữ dấu chấm); A trên trình duyệt khác → đúng người chơi và save của A; khách → bảng hiện "Guest", không gửi điểm; khách chơi rồi đăng nhập tài khoản mới → save và người chơi của khách thành của tài khoản.
+
+## 9. gmsdkjs 1.0.4: khách đăng nhập trong lúc chơi
+
+CrazyGames không tải lại trang khi khách đăng nhập (họ yêu cầu game dùng `addAuthListener`). Chỉ khi `sdkType === "crazy"`.
+
+- Adapter `crazy` đăng ký `user.addAuthListener` sau `init`; người dùng đi kèm sự kiện, không gọi `getUser()` lần nữa.
+- Khách đang chơi mà đăng nhập: gmsdkjs ghi vào `sessionStorage` (`gmsdkjs.login`) mã người chơi GMA của khách và hash save của khách (`azgames.<gameCode>` trong dữ liệu người chơi, theo dõi qua module Data trao cho kit), **ngừng ghi** dữ liệu người chơi, rồi `location.reload()`.
+- Trang mới (đã là tài khoản) so dữ liệu của tài khoản với ghi chú đó:
+  - phiên GMA không có hoặc là của khách (cùng mã), **và** save không có hoặc trùng hash save khách: tài khoản **chưa có dữ liệu** (CrazyGames đã chép dữ liệu khách sang). Tài khoản có người chơi GMA mới tên username; `GMSDKJS.portalLogin()` trả `{ carried: true }`. Điểm cao nhất của khách nằm trong save (kit 1.0.4: `sdk.storage`, vùng `leaderboard`, khoá `pending`) nên theo dữ liệu sang tài khoản, leaderboard của kit gửi nó một lần;
+  - còn lại: tài khoản **có dữ liệu riêng**, giữ của tài khoản; `{ carried: false }`; save là của tài khoản nên không có điểm khách, không gửi gì của khách.
+- `playerPolicy().ready`: `false` tới khi gmsdkjs chọn xong người chơi; leaderboard của kit chờ nó.
+- Phiên GMA chỉ ghi kèm `owner` khi đã kiểm xong (kiểm không được thì lần sau kiểm lại); phiên của khách mà tên GMA không phải dạng ngẫu nhiên thì khách có người chơi mới.
+
+**Kiểm** (bản build CrazyGames có bật "Progress Save"): khách chơi, gửi điểm (không lên bảng), đăng nhập **tài khoản mới** → trang tải lại, tên là username, điểm đó lên bảng, tiến độ khách còn; khách chơi rồi đăng nhập **tài khoản đã có dữ liệu** → trang tải lại, save và điểm của tài khoản, điểm khách không lên.
